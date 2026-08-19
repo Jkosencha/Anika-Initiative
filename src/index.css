@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-coral: #eb4c47;
+  --color-anika-green: #389a51;
+  --color-gold: #e8a850;
+  --color-anika-blue: #3a7599;
+  --color-ink: #1a1208;
+  --color-cream: #ede8df;
+
+  --font-display: "Anton", sans-serif;
+  --font-body: "Montserrat", sans-serif;
+  --font-editorial: "Cormorant Garamond", serif;
+}
+
+body {
+  @apply bg-cream text-ink font-body;
+}
