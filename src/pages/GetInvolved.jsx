@@ -194,6 +194,17 @@ const GetInvolved = () => {
           })}
         </div>
       </section>
+
+      <section className="px-4 py-16 bg-[#FAF7F2]">
+        <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold">Get In Touch With Us</h2>
+                <p className="mt-2 text-lg text-gray-600 italic font-serif">
+                  We begin with the voice, not the institution. Tell us who you are and what you need to say.
+                </p>
+            </div>
+        </div>
+      </section>
     </main>
   );
 };
