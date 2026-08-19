@@ -1,4 +1,4 @@
-// src/features/about/components/OriginStory.jsx
+
 import { origin } from '../data/aboutContent'
 
 const facts = [
