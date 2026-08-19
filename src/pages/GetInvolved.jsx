@@ -95,12 +95,12 @@ const GetInvolved = () => {
       formBg: "from-yellow-50 to-white",
     },
     media: {
-      bg: "bg-black-50",
-      border: "border-black-500",
-      ring: "ring-black-500",
-      text: "text-black-700",
-      button: "bg-black-600 hover:bg-black-700",
-      icon: "text-black-600",
+      bg: "bg-grey-50",
+      border: "border-grey-500",
+      ring: "ring-grey-500",
+      text: "text-grey-700",
+      button: "bg-grey-600 hover:bg-grey-700",
+      icon: "text-grey-600",
       formBg: "from-black-50 to-white",
     },
   };
@@ -116,7 +116,7 @@ const GetInvolved = () => {
 
     const loadingToast = toast.loading("Sending your message...");
 
-    // Simulate API call
+    // mmh lets simulate a network request with a timeout
     setTimeout(() => {
       toast.dismiss(loadingToast);
       setIsSubmitting(false);
@@ -195,17 +195,178 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      <section className="px-4 py-16 bg-[#FAF7F2]">
-        <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold">Get In Touch With Us</h2>
-                <p className="mt-2 text-lg text-gray-600 italic font-serif">
-                  We begin with the voice, not the institution. Tell us who you are and what you need to say.
-                </p>
+     <section className="px-4 py-16 bg-[#FAF7F2]">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
+            <p className="mt-2 text-lg text-gray-600 italic font-serif">
+              We begin with the voice, not the institution. Tell us who you are
+              and what you need to say.
+            </p>
+          </div>
+
+          <div className="mb-8">
+            <p className="text-sm font-semibold text-gray-700 mb-3">
+              I am joining as:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {roles.map((role) => {
+                const Icon = role.icon;
+                const isActive = selectedRole === role.id;
+                const colors = roleColors[role.id];
+
+                return (
+                  <button
+                    key={role.id}
+                    onClick={() => setSelectedRole(role.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
+                      isActive
+                        ? `${colors.bg} ${colors.border} ${colors.text} shadow-sm`
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? colors.icon : 'text-gray-400'}`} />
+                    {role.label}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className={`rounded-2xl p-8 md:p-10 border-2 shadow-lg transition-all duration-300 ${currentColors.border} bg-gradient-to-br ${currentColors.formBg}`}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              <div>
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  YOUR NAME
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="What do people call you?"
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  EMAIL
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Your email address"
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="organisation" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  ORGANISATION <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+                <input
+                  id="organisation"
+                  name="organisation"
+                  type="text"
+                  value={formData.organisation}
+                  onChange={handleChange}
+                  placeholder="If applicable"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  COUNTRY
+                </label>
+                <input
+                  id="country"
+                  name="country"
+                  type="text"
+                  value={formData.country}
+                  onChange={handleChange}
+                  placeholder="Where are you based?"
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  SUBJECT
+                </label>
+                <select
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90 appearance-none"
+                >
+                  <option value="">Select a subject</option>
+                  <option value="collaboration">Collaboration Opportunity</option>
+                  <option value="partnership">Partnership Enquiry</option>
+                  <option value="event">Event Participation</option>
+                  <option value="donation">Donation / Support</option>
+                  <option value="media">Media / Press</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  YOUR MESSAGE
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  placeholder="What needs to be said?"
+                  required
+                  rows={5}
+                  className="w-full resize-y rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`mt-6 w-full rounded-lg px-6 py-3.5 font-bold text-white transition-all flex items-center justify-center gap-2 ${currentColors.button} focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentColors.ring} disabled:opacity-70 disabled:cursor-not-allowed`}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  SENDING...
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  SEND MESSAGE
+                </>
+              )}
+            </button>
+
+            <p className="text-xs text-center text-gray-400 mt-4">
+              We'll respond within 48 hours. Your information is kept confidential.
+            </p>
+          </form>
         </div>
       </section>
     </main>
   );
 };
+
 export default GetInvolved;
