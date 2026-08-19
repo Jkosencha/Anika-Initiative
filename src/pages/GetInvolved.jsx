@@ -9,7 +9,7 @@ import {
   Mic,
   Sparkles,
   CheckCircle,
-} from "lucid-react";
+} from "lucide-react";
 import { toast } from "sonner";
 
 const GetInvolved = () => {
@@ -151,5 +151,22 @@ const GetInvolved = () => {
     }, 2000);
   };
 
-  const currentColors= roleColors[selectedRole] || roleColors.artist;
+  const currentColors = roleColors[selectedRole] || roleColors.artist;
+
+  return (
+    <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18]">
+      <section className="bg-black px-4 py-16 md:py-20">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-bold text-white font-['Anton'] tracking-wider">
+            GET INVOLVED
+          </h1>
+          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E]">
+            Whether you attend, give or partner, there's a place for you at
+            ANIKA.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
 };
+export default GetInvolved;
