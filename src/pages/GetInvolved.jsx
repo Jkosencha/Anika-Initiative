@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   Handshake,
   Heart,
-  User,
   Users,
   Send,
   Mic,
@@ -13,9 +13,14 @@ import {
 import { toast } from "sonner";
 
 const GetInvolved = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    organisation: "",
+    country: "",
+    subject: "",
     message: "",
   });
 
@@ -38,6 +43,7 @@ const GetInvolved = () => {
         "Give once via our donation page or become a monthly donor to support our work",
       cta: "DONATE NOW",
       color: "red",
+      action: () => navigate("/donate"), 
     },
     {
       icon: Handshake,
@@ -94,14 +100,14 @@ const GetInvolved = () => {
       icon: "text-blue-600",
       formBg: "from-yellow-50 to-white",
     },
-    media: {
-      bg: "bg-grey-50",
-      border: "border-grey-500",
-      ring: "ring-grey-500",
-      text: "text-grey-700",
-      button: "bg-grey-600 hover:bg-grey-700",
-      icon: "text-grey-600",
-      formBg: "from-black-50 to-white",
+    other: {
+      bg: "bg-gray-50",
+      border: "border-gray-500",
+      ring: "ring-gray-500",
+      text: "text-gray-700",
+      button: "bg-gray-600 hover:bg-gray-700",
+      icon: "text-gray-600",
+      formBg: "from-gray-50 to-white",
     },
   };
 
@@ -114,9 +120,9 @@ const GetInvolved = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // mmh lets simulate a network request with a timeout
     const loadingToast = toast.loading("Sending your message...");
 
-    // mmh lets simulate a network request with a timeout
     setTimeout(() => {
       toast.dismiss(loadingToast);
       setIsSubmitting(false);
@@ -131,13 +137,13 @@ const GetInvolved = () => {
             Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            We will get back to you within 48 hours .
+            We will get back to you within 48 hours.
           </p>
         </div>,
         {
           duration: 6000,
           icon: <CheckCircle className="w-6 h-6 text-green-500" />,
-        },
+        }
       );
 
       setFormData({
@@ -155,6 +161,7 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18]">
+
       <section className="bg-black px-4 py-16 md:py-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-white font-['Anton'] tracking-wider">
@@ -185,6 +192,7 @@ const GetInvolved = () => {
                 </p>
                 <button
                   type="button"
+                  onClick={way.action}
                   className="rounded-md bg-red-500 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
                   {way.cta}
@@ -195,8 +203,9 @@ const GetInvolved = () => {
         </div>
       </section>
 
-     <section className="px-4 py-16 bg-[#FAF7F2]">
+      <section className="px-4 py-16 bg-[#FAF7F2]">
         <div className="mx-auto max-w-4xl">
+
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
             <p className="mt-2 text-lg text-gray-600 italic font-serif">
