@@ -166,6 +166,34 @@ const GetInvolved = () => {
           </p>
         </div>
       </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {waysToGetInvolved.map((way) => {
+            const Icon = way.icon;
+            return (
+              <article
+                key={way.title}
+                className="flex min-h-[320px] flex-col items-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-lg"
+              >
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <Icon size={34} strokeWidth={1.8} aria-hidden="true" />
+                </div>
+                <h2 className="mb-3 text-2xl font-bold">{way.title}</h2>
+                <p className="mb-7 flex-1 leading-7 text-gray-600">
+                  {way.description}
+                </p>
+                <button
+                  type="button"
+                  className="rounded-md bg-red-500 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                >
+                  {way.cta}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </main>
   );
 };
