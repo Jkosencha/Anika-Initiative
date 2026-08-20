@@ -1,14 +1,13 @@
-function Impact() {
+import React from 'react'
+import ImpactHeader from '../components/impact/ImpactHeader'
+import ImpactStats from '../components/impact/ImpactStats'
+import { impactStats } from '../data/impact'
+
+export default function Impact() {
   return (
-    <section className="mx-auto max-w-5xl px-6 py-24">
-      <h1 className="font-display text-3xl uppercase tracking-wide text-coral">
-        Impact
-      </h1>
-      <p className="mt-4 font-body text-ink/70">
-        Owner: Lynn — page in progress.
-      </p>
-    </section>
+    <>
+     <ImpactHeader />
+     <ImpactStats stats={impactStats} /> 
+    </>
   )
 }
-
-export default Impact
