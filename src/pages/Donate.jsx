@@ -43,7 +43,7 @@ const DonationPage = () => {
   const handleDonate = () => {
     if (donationMethod === "mpesa") {
       if (!phoneNumber || phoneNumber.length < 9) {
-        toast.error("Please enter a valid M-Pesa phone number.");
+        toast.error("Hey! Please enter a valid M-Pesa phone number.");
         return;
       }
       const loadingToastId = toast.loading(
@@ -84,5 +84,16 @@ const DonationPage = () => {
   const presetAmounts=donationMethod === 'mpesa' ? presetAmountsKES :presetMethodsUSD;
   const currencySymbol=donationMethod ==='mpesa'?'KES':'USD';
   const currencyLabel=donationMethod ==='mpesa'?'KES': '$';
+
+  return(
+    <div className="font-sans bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
+      <section className="relative px-4 py-20 md:py-24 bg-black text-white overflow-hidden">
+        <div className="relative z-10 mr-80">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto">Fund What<span className="text-[#E6A15E]"> Art Can Open</span></h1>
+          <p className="text-lg md:text-xl text-gold max-w-2xl mx-auto">Your gift keeps the rooms open, the mics on and the conversation going</p>
+        </div>
+      </section>
+    </div>
+  )
 };
 export default DonationPage;
