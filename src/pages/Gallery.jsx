@@ -100,7 +100,7 @@ const Gallery = () => {
           </button>
         </div>
 
-        {/* Main grid showing 6 images only */}
+        {/* redesigning ain grid showing 6 images only */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {galleryItems.map((item) => (
             <div
@@ -113,7 +113,7 @@ const Gallery = () => {
                 alt={item.alt}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               />
-              {/* Hover overlay with alt text */}
+              {/* desgining alt text*/}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
                 <span className="text-[#E6A15E] font-medium text-sm tracking-wide bg-[#1E1A18]/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#E6A15E]/30 shadow-lg">
                   {item.alt}
