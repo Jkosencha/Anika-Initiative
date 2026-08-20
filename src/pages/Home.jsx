@@ -1,5 +1,12 @@
 import { NavLink } from 'react-router-dom'
 
+const stats = [
+  { value: '100+', label: 'Events Held', color: 'text-coral' },
+  { value: '2,500+', label: 'Forum Participants', color: 'text-anika-green' },
+  { value: '150', label: 'Artists Engaged', color: 'text-gold' },
+  { value: '24M+', label: 'Online Impressions', color: 'text-anika-blue' },
+]
+
 function Home() {
   return (
     <>
@@ -49,6 +56,17 @@ function Home() {
               </NavLink>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-black">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16 lg:px-12">
+          {stats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>{stat.value}</p>
+              <p className="mt-1 font-body text-xs uppercase tracking-wide text-cream/60">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
     </>
