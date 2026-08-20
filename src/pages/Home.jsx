@@ -44,10 +44,10 @@ function Home() {
           }}
         />
         <img
-          src="/anika-logo.png"
+          src="/anika-flower.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 w-md rotate-12 opacity-90 sm:w-xl"
+          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90 "
         />
         <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-10 lg:px-24 xl:px-34">
           <div className="max-w-5xl text-left">
