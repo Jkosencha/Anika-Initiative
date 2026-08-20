@@ -88,12 +88,12 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative px-4 py-20 md:py-24 bg-ink text-cream text-white overflow-hidden">
-        <div className="relative z-10 text-center mr-150">
+      <section className="relative px-4 py-20 md:py-12 bg-ink text-cream text-white overflow-hidden">
+        <div className="relative z-10 text-center mr-185">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mr-20 font-display">
             SUPPORT OUR WORK
           </h1>
-          <p className="mt-4 max-w-3xl text-lg text-[#E6A15E] font-editorial italic">
+          <p className="mt-4 max-w-3xl text-lg text-[#E6A15E] font-editorial italic mr-20">
             Your gift keeps the rooms open, the mics on and the conversation going
           </p>
         </div>
