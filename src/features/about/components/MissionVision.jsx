@@ -1,4 +1,3 @@
-// src/features/about/components/MissionVision.jsx
 import { missionVision } from '../data/aboutContent'
 
 export default function MissionVision() {

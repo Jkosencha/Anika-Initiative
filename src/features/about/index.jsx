@@ -1,17 +1,30 @@
-// src/features/about/index.js
-// Public entry point for the about feature — the page shell only
-// ever imports from here, never reaches into components/ or data/ directly.
-
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import AboutHero from './components/AboutHero'
 import OriginStory from './components/OriginStory'
 import PoemSpotlight from './components/PoemSpotlight'
 import MissionVision from './components/MissionVision'
 import HistoryTimeline from './components/HistoryTimeline'
 import CoreValues from './components/CoreValues'
-import GovernanceCallout from './components/GovernanceCallout'
 import JoinCTA from './components/JoinCTA'
 
 export default function AboutSection() {
+  const { hash } = useLocation()
+
+  useEffect(() => {
+    if (!hash) return
+
+    // Wait a tick so the section has mounted before we measure/scroll to it.
+    const id = hash.replace('#', '')
+    const scrollToTarget = () => {
+      const el = document.getElementById(id)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    const raf = requestAnimationFrame(scrollToTarget)
+    return () => cancelAnimationFrame(raf)
+  }, [hash])
+
   return (
     <>
       <AboutHero />
@@ -19,7 +32,6 @@ export default function AboutSection() {
       <PoemSpotlight />
       <MissionVision />
       <HistoryTimeline />
-      <GovernanceCallout />
       <CoreValues />
       <JoinCTA />
     </>
@@ -34,6 +46,5 @@ export {
   MissionVision,
   HistoryTimeline,
   CoreValues,
-  GovernanceCallout,
   JoinCTA,
 }

@@ -9,7 +9,7 @@ const StoryGrid = ({ stories, activePillar }) => {
   if (filtered.length === 0) {
     return (
       <p className="text-center font-body text-ink/55 py-8">
-        No stories yet for this pillar — check back soon.
+        No stories yet for this pillar. Check back soon.
       </p>
     );
   }
