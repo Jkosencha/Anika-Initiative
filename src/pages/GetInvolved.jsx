@@ -153,11 +153,11 @@ const GetInvolved = () => {
   const currentColors = roleColors[selectedRole] || roleColors.artist;
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18]">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
 
       <section className="bg-black px-4 py-16 md:py-20">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-['Anton'] tracking-wider">
+          <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-[#E6A15E]">
@@ -186,7 +186,7 @@ const GetInvolved = () => {
                 <button
                   type="button"
                   onClick={way.action}
-                  className="rounded-md bg-red-500 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  className="rounded-md bg-red-500 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer"
                 >
                   {way.cta}
                 </button>
@@ -201,7 +201,7 @@ const GetInvolved = () => {
 
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
-            <p className="mt-2 text-lg text-gray-600 italic font-serif">
+            <p className="mt-2 text-lg text-gray-600 italic font-editorial">
               We begin with the voice, not the institution. Tell us who you are
               and what you need to say.
             </p>
