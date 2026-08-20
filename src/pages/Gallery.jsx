@@ -64,7 +64,7 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative bg-ink text-cream px-4 py-16 md:py-24 overflow-hidden">
+      <section className="relative bg-ink text-cream px-4 py-16 md:py-12 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
             Visual Archive
