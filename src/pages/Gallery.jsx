@@ -64,7 +64,7 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative bg-black px-4 py-16 md:py-24 overflow-hidden">
+      <section className="relative bg-ink text-cream px-4 py-16 md:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
             Visual Archive
@@ -72,7 +72,7 @@ const Gallery = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
             GALLERY
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-light">
+          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
             The rooms, the mics, the faces. Art airing in real time.
           </p>
         </div>
@@ -154,7 +154,7 @@ const Gallery = () => {
         </div>
       )}
 
-{/* lets show all the image */}
+      {/* lets show all the image */}
       {showAllModal && (
         <div
           className="fixed inset-0 bg-black/95 z-50 overflow-y-auto p-4 backdrop-blur-sm"
