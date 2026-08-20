@@ -76,7 +76,52 @@ const Gallery = () => {
             The rooms, the mics, the faces. Art airing in real time.
           </p>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#E6A15E] to-transparent opacity-30"></div>
+      </section>
+
+       <section className="py-16 px-4 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+          <div>
+            <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
+              Moments
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 text-[#1E1A18]">
+              The rooms, the mics, the faces.
+            </h2>
+            <p className="text-gray-600 max-w-2xl mt-2 text-sm md:text-base">
+              Art airing in real time. Moments where something shifts.
+            </p>
+          </div>
+          <button
+            onClick={handleViewAll}
+            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group"
+          >
+            <span>View all</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+
+        {/* Main grid showing 6 images only */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {galleryItems.map((item) => (
+            <div
+              key={item.src}
+              className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 bg-gray-200 aspect-[4/3] cursor-pointer"
+              onClick={() => openLightbox(item)}
+            >
+              <img
+                src={item.src}
+                alt={item.alt}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+              />
+              {/* Hover overlay with alt text */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
+                <span className="text-[#E6A15E] font-medium text-sm tracking-wide bg-[#1E1A18]/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#E6A15E]/30 shadow-lg">
+                  {item.alt}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );
