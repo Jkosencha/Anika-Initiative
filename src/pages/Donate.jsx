@@ -89,6 +89,12 @@ const DonationPage = () => {
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
       <section className="relative px-4 py-20 md:py-12 bg-ink text-cream text-white overflow-hidden">
+          <img
+          src="/anika-flower.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+        />
         <div className="relative z-10 text-center mr-185">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mr-20 font-display">
             SUPPORT OUR WORK
