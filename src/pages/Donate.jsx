@@ -293,6 +293,52 @@ const DonationPage = () => {
           </div>
         </div>
       </section>
+
+
+      
+       {/* making of impact stories */}
+       <section className="py-16 px-4 bg-[#F4EFE9]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
+              Impact Stories
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-md">
+              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Mic className="w-6 h-6 text-[#E6A15E]" />
+              </div>
+              <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
+              <p className="text-sm text-gray-600">
+                Monthly events where artists air the unsaid. Your support keeps the stage open.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-md">
+              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-[#E6A15E]" />
+              </div>
+              <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
+              <p className="text-sm text-gray-600">
+                Cross-border collaborations that bring African artists together to create.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-md">
+              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Heart className="w-6 h-6 text-[#E6A15E]" />
+              </div>
+              <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
+              <p className="text-sm text-gray-600">
+                Therapy workshops and forums where hard conversations finally happen.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
