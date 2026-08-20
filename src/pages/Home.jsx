@@ -21,6 +21,12 @@ const events = [
   { image: '/jaaziya.jpg', category: 'Artist Guest Speaker', date: 'SUN 05 OCT', location: 'Nairobi' },
 ]
 
+const stories = [
+  { image: '/image7.jpg', theme: 'Arts & Culture', title: 'When a room becomes a stage for honest conversation' },
+  { image: '/image8.jpg', theme: 'Youth & Migration', title: 'A generation building belonging across borders' },
+  { image: '/image4.jpg', theme: 'Governance', title: 'The voice that keeps finding its way forward' },
+]
+
 const polaroid = (rotate) =>
   `bg-cream p-2 pb-6 shadow-xl ${rotate} transition-transform duration-300 ease-out hover:rotate-0`
 
@@ -187,6 +193,33 @@ function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <p className="font-body text-sm font-semibold uppercase tracking-wide text-coral">From the Field</p>
+        <h2 className="mt-3 font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
+          Stories with <span className="font-editorial italic normal-case text-coral">a pulse.</span>
+        </h2>
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+          {stories.map((story) => (
+            <div key={story.title}>
+              <img
+                src={story.image}
+                alt={story.title}
+                className="aspect-4/3 w-full rounded object-cover"
+              />
+              <p className="mt-3 font-body text-xs font-semibold uppercase tracking-wide text-coral">{story.theme}</p>
+              <p className="mt-1 font-body font-semibold text-ink">{story.title}</p>
+              <NavLink
+                to="/stories"
+                className="mt-3 inline-block rounded bg-ink px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-cream hover:opacity-90"
+              >
+                Read Our Story
+              </NavLink>
+            </div>
+          ))}
         </div>
       </section>
     </>
