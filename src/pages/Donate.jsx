@@ -16,7 +16,7 @@ const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState("");
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [sendWhatsapp, setSendWhatsapp] = useState(false);
+  const [sendWhatsApp, setSendWhatsApp] = useState(false);
   const [donationMethod, setDonationMethod] = useState("mpesa");
 
   const presetAmountsKES = [100, 500, 1000, 5000];
@@ -81,16 +81,22 @@ const DonationPage = () => {
     }
   };
 
-  const presetAmounts=donationMethod === 'mpesa' ? presetAmountsKES :presetMethodsUSD;
-  const currencySymbol=donationMethod ==='mpesa'?'KES':'USD';
-  const currencyLabel=donationMethod ==='mpesa'?'KES': '$';
+  const presetAmounts =
+    donationMethod === "mpesa" ? presetAmountsKES : presetMethodsUSD;
+  const currencySymbol = donationMethod === "mpesa" ? "KES" : "USD";
+  const currencyLabel = donationMethod === "mpesa" ? "KES" : "$";
 
-  return(
+  return (
     <div className="font-sans bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
       <section className="relative px-4 py-20 md:py-24 bg-black text-white overflow-hidden">
         <div className="relative z-10 mr-80">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto">Fund What<span className="text-[#E6A15E]"> Art Can Open</span></h1>
-          <p className="text-lg md:text-xl text-gold max-w-2xl mx-auto">Your gift keeps the rooms open, the mics on and the conversation going</p>
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto">
+            Fund What<span className="text-[#E6A15E]"> Art Can Open</span>
+          </h1>
+          <p className="text-lg md:text-xl text-gold max-w-2xl mx-auto">
+            Your gift keeps the rooms open, the mics on and the conversation
+            going
+          </p>
         </div>
       </section>
 
@@ -103,7 +109,9 @@ const DonationPage = () => {
                 <div className="flex justify-center mb-2">
                   <Icon className="w-6 h-6 text-[#E6A15E]" />
                 </div>
-                <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
+                  {stat.value}
+                </div>
                 <div className="text-sm text-gray-500">{stat.label}</div>
               </div>
             );
@@ -114,34 +122,145 @@ const DonationPage = () => {
       <section className="py-16 px-4 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
-            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">Why Give</span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">Some realities can't be understood through reports alone.</h2>
+            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
+              Why Give
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
+              Some realities can't be understood through reports alone.
+            </h2>
 
             <div className="space-y-4">
               <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
                 <div className="flex-items-start gap-4">
                   <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
-                    <Gift className="w-5 h-5 text-white"/>
+                    <Gift className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-bold">Your support makes a direct impact</h4>
-                    <p className="text-sm text-gray-600">100% of your donation goes to programs,venues,artist stipend and safe spaces.</p>
+                    <h4 className="font-bold">
+                      Your support makes a direct impact
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      100% of your donation goes to programs,venues,artist
+                      stipend and safe spaces.
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex irems-center justify-center text-[#8a8074] overflow-hidden">
                 {/* <span className="ml-2 font-medium">YOU IMPATIENT WAIT FOR IMAGE MEHN</span> */}
-                <img 
-                src="/public/image6.jpg"
-                alt="Spoken word"
-                className="w-full h-full object-cover"/>
+                <img
+                  src="/public/image6.jpg"
+                  alt="Spoken word"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+            <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Choose your amount and preferred method.
+            </p>
+
+            {/* //toggling donatoin method */}
+            <div className="flex gap-2 mb-6 bg-gray-50 p-1 rounded-xl">
+              <button
+                onClick={() => setDonationMethod("mpesa")}
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  donationMethod === "mpesa"
+                    ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                M-Pesa
+              </button>
+              <button
+                onClick={() => setDonationMethod("usd")}
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                  donationMethod === "usd"
+                    ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                USD (Card / PayPal)
+              </button>
+            </div>
+
+            {/* //amountselections after toggling between hiyo ya kes and usd*/}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {presetAmounts.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => handleAmountSelect(amount)}
+                  className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                    donationAmount === amount && !customAmount
+                      ? "border-[#E6A15E] bg-[#FDF6EE] text-[#1E1A18]"
+                      : "border-gray-200 hover:border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {currencySymbol}
+                  {amount.toLocaleString()}
+                </button>
+              ))}
+            </div>
+
+            {/* //custom amount keyiing */}
+            <div className="relative mb-6">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                {currencySymbol}
+              </span>
+              <input
+                type="number"
+                value={customAmount}
+                onChange={handleCustomAmount}
+                placeholder={`Enter custom amount (${currencyLabel})`}
+                className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 outline-none transition-all bg-cream/95"
+              />
+            </div>
+
+            {/* //mpesa fields if toggled mpesa       */}
+            {donationMethod === "mpesa" && (
+              <>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    M-PESA Phone Number
+                  </label>
+                  <div className="flex items-center border-2 border-gray-200 rounded-xl focus-within:border-[#E6A15E] focus-within:ring-2 focus-within:ring-[#E6A15E]/20 transition-all">
+                    <span className="pl-4 text-gray-500 font-medium">+254</span>
+                    <input
+                      type="tel"
+                      placeholder="712345678"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full p-3 pl-2 outline-none bg-cream/95"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 mb-8">
+                  <input
+                    type="checkbox"
+                    id="whatsapp"
+                    checked={sendWhatsApp}
+                    onChange={() => setSendWhatsApp(!sendWhatsApp)}
+                    className="w-5 h-5 accent-[#E6A15E]"
+                  />
+                  <label
+                    htmlFor="whatsapp"
+                    className="text-sm text-gray-600 flex items-center gap-2 cursor-pointer"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Send my receipt &
+                    updates on WhatsApp
+                  </label>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 };
 export default DonationPage;
