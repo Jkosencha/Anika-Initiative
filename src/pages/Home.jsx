@@ -7,6 +7,9 @@ const stats = [
   { value: '24M+', label: 'Online Impressions', color: 'text-anika-blue' },
 ]
 
+const polaroid = (rotate) =>
+  `bg-cream p-2 pb-6 shadow-xl ${rotate} transition-transform duration-300 ease-out hover:rotate-0`
+
 function Home() {
   return (
     <>
@@ -67,6 +70,38 @@ function Home() {
               <p className="mt-1 font-body text-xs uppercase tracking-wide text-cream/60">{stat.label}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+          <div>
+            <p className="font-body text-base font-semibold uppercase tracking-wide text-anika-green">About Anika</p>
+            <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
+              Art brings into the open what is hidden.
+            </h2>
+            <p className="mt-4 font-body text-lg text-ink/70">
+              ANIKA Initiative is a Pan-African art-based initiative whose journey began in 2015
+              with a gathering of seven poets and rappers seeking to find and amplify their
+              voices.
+            </p>
+            <blockquote className="mt-4 border-l-2 border-coral pl-4 font-editorial text-xl italic text-ink/80">
+              "We began as petals. Seven voices seated around possibility."
+            </blockquote>
+            <NavLink
+              to="/about"
+              className="mt-6 inline-block rounded border border-ink px-5 py-2 font-body text-sm font-semibold uppercase tracking-wide text-ink hover:bg-ink hover:text-cream"
+            >
+              Read Our Story
+            </NavLink>
+          </div>
+          <div className={polaroid('rotate-2')}>
+            <img
+              src="/anika%20team.jpg"
+              alt="Three ANIKA team members smiling together"
+              className="aspect-4/3 w-full object-cover"
+            />
+          </div>
         </div>
       </section>
     </>
