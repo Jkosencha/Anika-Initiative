@@ -110,6 +110,37 @@ const DonationPage = () => {
           })}
         </div>
       </section>
+
+      <section className="py-16 px-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div>
+            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">Why Give</span>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">Some realities can't be understood through reports alone.</h2>
+
+            <div className="space-y-4">
+              <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
+                <div className="flex-items-start gap-4">
+                  <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
+                    <Gift className="w-5 h-5 text-white"/>
+                  </div>
+                  <div>
+                    <h4 className="font-bold">Your support makes a direct impact</h4>
+                    <p className="text-sm text-gray-600">100% of your donation goes to programs,venues,artist stipend and safe spaces.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex irems-center justify-center text-[#8a8074] overflow-hidden">
+                {/* <span className="ml-2 font-medium">YOU IMPATIENT WAIT FOR IMAGE MEHN</span> */}
+                <img 
+                src="/public/image6.jpg"
+                alt="Spoken word"
+                className="w-full h-full object-cover"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 };
