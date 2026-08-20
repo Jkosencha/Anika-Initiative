@@ -15,7 +15,7 @@ export const programs = [
             'Cultural exchange programmes'
         ],
         quote: 'Create what the world still needs.',
-        image: ''
+        image: '/RAYA1.jpg'
     },
 
     {
@@ -34,7 +34,7 @@ export const programs = [
             'Peer creative mentorship'
         ],
         quote: 'Tell beyond the label.',
-        image: ''
+        image: '/image1.jpg'
     },
     {
         id: 'expressions',
@@ -52,7 +52,7 @@ export const programs = [
             'Artist development workshops'
         ],
         quote: 'Create. Air it. Move something.',
-        image: ''
+        image: '/image11.jpg'
     },
     {
         id: 'gender-equality',
@@ -70,7 +70,7 @@ export const programs = [
             'Community storytelling'
         ],
         quote: 'Own the story. Open the conversation',
-        image: ''
+        image: '/image3.jpg'
     },
     {
         id: 'governance',
@@ -88,6 +88,6 @@ export const programs = [
             'Democratic participation campaigns'
         ],
         quote: 'Join the conversation',
-        image: ''
+        image: '/image2.jpg'
     }
 ]
