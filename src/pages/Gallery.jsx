@@ -93,7 +93,7 @@ const Gallery = () => {
           </div>
           <button
             onClick={handleViewAll}
-            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group"
+            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group cursor-pointer"
           >
             <span>View all</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -124,7 +124,7 @@ const Gallery = () => {
         </div>
       </section>
 
-{/* modalopen */}
+      {/* lets open the image when clicked*/}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
@@ -149,6 +149,46 @@ const Gallery = () => {
               <p className="text-[#E6A15E] text-lg font-medium tracking-wide">
                 {selectedImage.alt}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+{/* lets show all the image */}
+      {showAllModal && (
+        <div
+          className="fixed inset-0 bg-black/95 z-50 overflow-y-auto p-4 backdrop-blur-sm"
+          onClick={() => setShowAllModal(false)}
+        >
+          <div
+            className="max-w-7xl mx-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold text-white tracking-tight">
+                All <span className="text-[#E6A15E]">Moments</span>
+              </h2>
+              <button
+                onClick={() => setShowAllModal(false)}
+                className="text-white hover:text-[#E6A15E] transition-colors bg-white/10 rounded-full p-2.5 hover:bg-white/20"
+              >
+                <X className="w-8 h-8" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {allImages.map((item) => (
+                <div
+                  key={item.src}
+                  className="aspect-square overflow-hidden rounded-lg cursor-pointer hover:scale-105 transition-transform duration-300 bg-gray-800 shadow-md hover:shadow-xl"
+                  onClick={() => openLightbox(item)}
+                >
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    className="w-full h-full object-cover hover:brightness-110 transition-all"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
