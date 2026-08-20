@@ -7,6 +7,7 @@ import Programs from './pages/Programs'
 import Events from './pages/Events'
 import Impact from './pages/Impact'
 import Stories from './pages/Stories'
+import StoryDetail from './pages/StoryDetail'
 import Gallery from './pages/Gallery'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
@@ -24,13 +25,14 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/impact" element={<Impact />} />
           <Route path="/stories" element={<Stories />} />
+          <Route path="/stories/:slug" element={<StoryDetail />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/donate" element={<Donate />} />
         </Routes>
       </main>
       <Footer />
-      <Toaster position="top-right" richColors/>
+      <Toaster richColors position="top-right" />
     </div>
   )
 }
