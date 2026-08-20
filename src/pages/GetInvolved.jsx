@@ -186,7 +186,7 @@ const GetInvolved = () => {
                 key={way.title}
                 className="flex min-h-[320px] flex-col items-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-lg"
               >
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#eb4c47]/10 text-[#eb4c47">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#eb4c47]/10 text-[#eb4c47]">
                   <Icon size={34} strokeWidth={1.8} aria-hidden="true" />
                 </div>
                 <h2 className="mb-3 text-2xl font-bold">{way.title}</h2>
@@ -253,7 +253,7 @@ const GetInvolved = () => {
 
           <form
             onSubmit={handleSubmit}
-            className={`rounded-2xl p-8 md:p-10 border-2 shadow-lg transition-all duration-300 ${currentColors.border} bg-gradient-to-br ${currentColors.formBg}`}
+            className={`rounded-2xl p-8 md:p-10 border-2 shadow-lg transition-all duration-300 ${currentColors.border} ${currentColors.bg}`}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
