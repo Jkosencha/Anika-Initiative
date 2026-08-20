@@ -33,12 +33,12 @@ const polaroid = (rotate) =>
 function Home() {
   return (
     <>
-      <section className="relative overflow-hidden bg-black text-cream">
+      <section className="relative overflow-hidden bg-charcoal text-cream">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(to right, rgba(0,0,0,0.95) 35%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.55)), url('/image11.jpg')",
+              "linear-gradient(to right, rgba(18,18,18,0.95) 35%, rgba(18,18,18,0.75) 70%, rgba(18,18,18,0.55)), url('/image11.jpg')",
             backgroundBlendMode: 'multiply',
             filter: 'grayscale(1)',
           }}
@@ -82,7 +82,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="bg-black">
+      <section className="bg-charcoal">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16 lg:px-12">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
