@@ -12,7 +12,7 @@ export default function PartnerCTA() {
         </p>
         <Link
             to='/get-involved'
-            className='inline-block bg-ink text-cream px-6 py-3 uppercase text-sm font-semibold tracking-wide transition-colors duration-200 hover:bg-coral cursor-pointer'
+            className='inline-block bg-charcoal text-cream px-6 py-3 uppercase text-sm font-semibold tracking-wide transition-colors duration-200 hover:bg-coral cursor-pointer'
         >
             Get Involved
         </Link>
