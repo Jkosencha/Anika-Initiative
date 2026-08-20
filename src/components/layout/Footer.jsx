@@ -19,8 +19,8 @@ const navigate = [
 function Footer() {
   return (
     <footer className="bg-ink text-cream">
-      <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-16">
           <div>
             <NavLink to="/" className="flex items-center gap-2">
               <img src="/anika-logo.png" alt="Anika Initiative" className="h-18 w-auto object-contain" />
