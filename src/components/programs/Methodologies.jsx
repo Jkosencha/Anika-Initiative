@@ -14,7 +14,7 @@ export default function Methodologies({ methodologies, quote}) {
                     key={m.id}
                     className={`border-t-2 pt-3 pb-4 px-4 bg-white/5 ${accentBorder[m.accentClass]}`}
                     >
-                        <h3 className='font-editorial italic font-semibold mb-2 text-lg'>
+                        <h3 className='font-display mb-2 text-lg'>
                             {m.title}
                         </h3>
                         <p className='text-sm text-cream/70'>
@@ -24,7 +24,7 @@ export default function Methodologies({ methodologies, quote}) {
             ))}
 
             <div className='bg-coral flex items-center justify-center p-4'>
-                <p className='font-display uppercase text-sm text-center text-white leading-snug'>
+                <p className='font-editorial italic uppercase text-lg text-white'>
                     {quote}
                 </p>
             </div>
