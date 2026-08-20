@@ -78,7 +78,7 @@ const Gallery = () => {
         </div>
       </section>
 
-       <section className="py-16 px-4 max-w-7xl mx-auto">
+      <section className="py-16 px-4 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
@@ -123,6 +123,36 @@ const Gallery = () => {
           ))}
         </div>
       </section>
+
+{/* modalopen */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+          onClick={closeLightbox}
+        >
+          <div
+            className="relative max-w-6xl w-full max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 text-white hover:text-[#E6A15E] transition-colors z-10 bg-black/50 rounded-full p-2.5 hover:bg-black/70"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={selectedImage.src}
+              alt={selectedImage.alt}
+              className="w-full h-auto max-h-[85vh] object-contain"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+              <p className="text-[#E6A15E] text-lg font-medium tracking-wide">
+                {selectedImage.alt}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
