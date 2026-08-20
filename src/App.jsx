@@ -11,6 +11,7 @@ import StoryDetail from './pages/StoryDetail'
 import Gallery from './pages/Gallery'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
+import {Toaster} from "sonner";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <Toaster richColors position="top-right" />
     </div>
   )
 }
