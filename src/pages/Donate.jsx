@@ -87,13 +87,13 @@ const DonationPage = () => {
   const currencyLabel = donationMethod === "mpesa" ? "KES" : "$";
 
   return (
-    <div className="font-sans bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
+    <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
       <section className="relative px-4 py-20 md:py-24 bg-black text-white overflow-hidden">
-        <div className="relative z-10 mr-80">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto">
-            Fund What<span className="text-[#E6A15E]"> Art Can Open</span>
+        <div className="relative z-10 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto font-display">
+            Fund What <span className="text-[#E6A15E]">Art Can Open</span>
           </h1>
-          <p className="text-lg md:text-xl text-gold max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-[#E6A15E] max-w-2xl mx-auto">
             Your gift keeps the rooms open, the mics on and the conversation
             going
           </p>
@@ -131,7 +131,7 @@ const DonationPage = () => {
 
             <div className="space-y-4">
               <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
-                <div className="flex-items-start gap-4">
+                <div className="flex items-start gap-4">
                   <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
                     <Gift className="w-5 h-5 text-white" />
                   </div>
@@ -140,17 +140,16 @@ const DonationPage = () => {
                       Your support makes a direct impact
                     </h4>
                     <p className="text-sm text-gray-600">
-                      100% of your donation goes to programs,venues,artist
-                      stipend and safe spaces.
+                      100% of your donation goes to programs, venues, artist
+                      stipends and safe spaces.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex irems-center justify-center text-[#8a8074] overflow-hidden">
-                {/* <span className="ml-2 font-medium">YOU IMPATIENT WAIT FOR IMAGE MEHN</span> */}
+              <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex items-center justify-center text-[#8a8074] overflow-hidden">
                 <img
-                  src="/public/image6.jpg"
+                  src="/image6.jpg"
                   alt="Spoken word"
                   className="w-full h-full object-cover"
                 />
@@ -294,10 +293,8 @@ const DonationPage = () => {
         </div>
       </section>
 
-
-      
-       {/* making of impact stories */}
-       <section className="py-16 px-4 bg-[#F4EFE9]">
+      {/* making of impact stories */}
+      <section className="py-16 px-4 bg-[#F4EFE9]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
