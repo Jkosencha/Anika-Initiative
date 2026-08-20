@@ -159,7 +159,13 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
-      <section className="bg-ink text-cream px-4 py-16 md:py-12">
+      <section className="relative overflow-hidden bg-ink text-cream px-4 py-16 md:py-12">
+        <img
+          src="/anika-flower.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+        />
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
