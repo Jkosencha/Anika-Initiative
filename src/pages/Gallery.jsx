@@ -33,7 +33,7 @@ const Gallery = () => {
 
   if (loading) {
     return (
-      <div className="font-sans bg-[#FAF7F2] text-[#1E1A18] min-h-screen flex items-center justify-center">
+      <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E6A15E] mx-auto">
             <p className="mt-4 text-gray-600 text-sm">
@@ -63,13 +63,13 @@ const Gallery = () => {
   };
 
   return (
-    <div className="font-sans bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
+    <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
       <section className="relative bg-black px-4 py-16 md:py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
             Visual Archive
           </span>
-          <h1 className="text-5xl md:text-7xl font-bold text-white font-['Anton'] tracking-wider leading-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
             GALLERY
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-light">
