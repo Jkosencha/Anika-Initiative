@@ -9,12 +9,15 @@ export default function Stories() {
   const [activePillar, setActivePillar] = useState("All");
 
   return (
-    <section className="px-6 py-20 sm:py-24">
-      <div className="mx-auto max-w-6xl">
-        <StoriesHero />
-        <PillarFilter active={activePillar} onChange={setActivePillar} />
-        <StoryGrid stories={stories} activePillar={activePillar} />
-      </div>
-    </section>
+    <>
+      <StoriesHero />
+
+      <section className="px-6 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl">
+          <PillarFilter active={activePillar} onChange={setActivePillar} />
+          <StoryGrid stories={stories} activePillar={activePillar} />
+        </div>
+      </section>
+    </>
   );
 }

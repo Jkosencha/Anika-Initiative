@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { pillarColors } from "../data/stories.js";
 
-// Static per-pillar class strings (see PillarFilter.jsx for why these can't
-// be built dynamically from the pillarColors token names).
+
 const tagClasses = {
   coral: "bg-coral/10 text-coral",
   gold: "bg-gold/10 text-gold",
@@ -42,9 +41,9 @@ const StoryCard = ({ story }) => {
 
         <Link
           to={`/stories/${story.slug}`}
-          className="mt-6 self-start font-body text-sm px-5 py-2 rounded border border-ink text-ink hover:bg-ink hover:text-cream transition-colors duration-200"
+          className="mt-6 self-start font-body text-sm text-ink hover:text-coral transition-colors duration-200"
         >
-          Read our story
+          Read our story →
         </Link>
       </div>
     </article>

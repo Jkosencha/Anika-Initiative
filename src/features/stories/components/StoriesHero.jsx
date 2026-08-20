@@ -1,29 +1,18 @@
 import { storiesContent as content } from "../data/storiesContent.js";
 
 const StoriesHero = () => {
-  const { eyebrow, headingLead, headingAccent, subheading } = content;
+  const { headingLead, headingAccent, subheading } = content;
 
   return (
-    <div className="text-center mb-12">
-      {eyebrow && (
-        <span className="font-body uppercase tracking-[0.15em] text-xs text-coral">
-          {eyebrow}
-        </span>
-      )}
+    <section className="bg-ink text-cream px-6 md:px-16 py-16">
+      <h1 className="font-display text-5xl md:text-6xl uppercase">
+        {headingLead} {headingAccent}
+      </h1>
 
-      <h2 className="font-display text-4xl sm:text-5xl mt-2 mb-4 text-ink">
-        {headingLead}{" "}
-        <span className="font-editorial italic normal-case text-coral text-[0.85em]">
-          {headingAccent}
-        </span>
-      </h2>
-
-      {subheading && (
-        <p className="font-body max-w-xl mx-auto text-ink/65 leading-relaxed">
-          {subheading}
-        </p>
-      )}
-    </div>
+      <p className="font-editorial italic text-gold mt-4 max-w-md text-lg">
+        {subheading}
+      </p>
+    </section>
   );
 };
 
