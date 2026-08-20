@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 
 const DonationPage = () => {
-  const [donationAmount, setDonationAmount] = useState("");
+  const [donationAmount, setDonationAmount] = useState(500);
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [sendWhatsApp, setSendWhatsApp] = useState(false);
@@ -251,11 +251,44 @@ const DonationPage = () => {
                     htmlFor="whatsapp"
                     className="text-sm text-gray-600 flex items-center gap-2 cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4" /> Send my receipt &
-                    updates on WhatsApp
+                    <MessageCircle className="w-4 h-4" /> Send to whatsApp
                   </label>
                 </div>
               </>
+            )}
+
+            {/* usd showing mockup */}
+            {donationMethod === "usd" && (
+              <div className="mb-6 p-4 bg-[#FDF6EE] rounded-xl border border-[#E6DED5]">
+                <p className="text-sm text-gray-700">
+                  You will be redirected to our secure payment page to complete
+                  your USD donation.
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Amount: ${donationAmount.toFixed(2)} USD
+                </p>
+              </div>
+            )}
+            <button
+              onClick={handleDonate}
+              className="w-full py-4 bg-[#1E1A18] hover:bg-[#3D3530] text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            >
+              {donationMethod === "mpesa" ? (
+                <>
+                  <Phone className="w-5 h-5" /> Donate KES{" "}
+                  {donationAmount.toLocaleString()}
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" /> Donate $
+                  {donationAmount.toFixed(2)}
+                </>
+              )}
+            </button>
+            {donationMethod === "mpesa" && (
+              <p className="text-xs text-center text-gray-400 mt-3">
+                STK push sent to your phone confirm.
+              </p>
             )}
           </div>
         </div>
