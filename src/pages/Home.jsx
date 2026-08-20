@@ -7,6 +7,14 @@ const stats = [
   { value: '24M+', label: 'Online Impressions', color: 'text-anika-blue' },
 ]
 
+const pillars = [
+  { name: 'Arts & Culture', color: 'bg-coral', description: 'Heritage, cultural exchange and collaborative artistic production across borders.' },
+  { name: 'Youth & Migration', color: 'bg-anika-green', description: 'Belonging, refugee experience and life alongside host communities.' },
+  { name: 'Expressions', color: 'bg-gold', description: 'Exploration, creative enterprise and art therapy for artists to evolve.' },
+  { name: 'Gender Equality', color: 'bg-anika-blue', description: 'Safe spaces for rights, agency, reproductive health and healing.' },
+  { name: 'Governance', color: 'bg-ink', description: 'Deepening youth engagement with rights, civic life and democracy.' },
+]
+
 const polaroid = (rotate) =>
   `bg-cream p-2 pb-6 shadow-xl ${rotate} transition-transform duration-300 ease-out hover:rotate-0`
 
@@ -101,6 +109,44 @@ function Home() {
               alt="Three ANIKA team members smiling together"
               className="aspect-4/3 w-full object-cover"
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="mx-auto max-w-6xl px-6 pb-20">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="font-body text-sm font-semibold uppercase tracking-wide text-coral">What We Do</p>
+              <h2 className="mt-3 font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
+                Five pillars.
+                <br />
+                One belief.
+              </h2>
+            </div>
+            <p className="self-center font-body text-ink/70">
+              Across every theme the work opens the same door, into deeper conversations with
+              communities, practitioners and decision-makers.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {pillars.map((pillar) => (
+              <div key={pillar.name} className="border border-ink/10 bg-cream p-6">
+                <span className={`block h-1 w-10 ${pillar.color}`} />
+                <p className="mt-4 font-body text-lg font-semibold text-ink">{pillar.name}</p>
+                <p className="mt-2 font-body text-sm text-ink/60">{pillar.description}</p>
+              </div>
+            ))}
+            <NavLink
+              to="/programs"
+              className="flex flex-col justify-center border border-dashed border-ink/20 p-6 hover:border-ink/40"
+            >
+              <p className="font-body text-lg font-semibold text-ink">See all programs &rarr;</p>
+              <p className="mt-2 font-body text-sm text-ink/60">
+                Every initiative, event and story in one place.
+              </p>
+            </NavLink>
           </div>
         </div>
       </section>
