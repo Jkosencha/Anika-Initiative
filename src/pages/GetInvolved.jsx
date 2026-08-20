@@ -35,6 +35,7 @@ const GetInvolved = () => {
         "join our forums, open-mic nights and workshops across East Africa",
       cta: "SEE CALENDAR",
       color: "red",
+      action: () => navigate("/events"),
     },
     {
       icon: Heart,
@@ -43,15 +44,7 @@ const GetInvolved = () => {
         "Give once via our donation page or become a monthly donor to support our work",
       cta: "DONATE NOW",
       color: "red",
-      action: () => navigate("/donate"), 
-    },
-    {
-      icon: Handshake,
-      title: "Partner with us",
-      description:
-        "Collaborate on research, programming and campaigns as part of the alliance.",
-      cta: "ENQUIRE NOW",
-      color: "red",
+      action: () => navigate("/donate"),
     },
   ];
 
@@ -175,7 +168,7 @@ const GetInvolved = () => {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {waysToGetInvolved.map((way) => {
             const Icon = way.icon;
             return (
