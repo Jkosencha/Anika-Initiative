@@ -34,7 +34,7 @@ const GetInvolved = () => {
       description:
         "join our forums, open-mic nights and workshops across East Africa",
       cta: "SEE CALENDAR",
-      color: "red",
+      color: "coral",
       action: () => navigate("/events"),
     },
     {
@@ -43,7 +43,7 @@ const GetInvolved = () => {
       description:
         "Give once via our donation page or become a monthly donor to support our work",
       cta: "DONATE NOW",
-      color: "red",
+      color: "coral",
       action: () => navigate("/donate"),
     },
   ];
@@ -58,13 +58,14 @@ const GetInvolved = () => {
 
   const roleColors = {
     artist: {
-      bg: "bg-red-50",
-      border: "border-red-500",
-      ring: "ring-red-500",
-      text: "text-red-700",
-      button: "bg-red-600 hover:bg-red-700",
-      icon: "text-red-600",
+      bg: "bg-[#eb4c47]/10",
+      border: "border-[#eb4c47]",
+      ring: "ring-[#eb4c47]",
+      text: "text-[#eb4c47]",
+      button: "bg-[#eb4c47] hover:bg-[#d43d3a]",
+      icon: "text-[#eb4c47]",
       formBg: "from-purple-50 to-white",
+      box: "bg-[#eb4c47]",
     },
     community: {
       bg: "bg-green-50",
@@ -74,6 +75,7 @@ const GetInvolved = () => {
       button: "bg-green-600 hover:bg-green-700",
       icon: "text-green-600",
       formBg: "from-blue-50 to-white",
+      box: "bg-green-500",
     },
     partner: {
       bg: "bg-orange-50",
@@ -83,6 +85,7 @@ const GetInvolved = () => {
       button: "bg-orange-600 hover:bg-orange-700",
       icon: "text-orange-600",
       formBg: "from-green-50 to-white",
+      box: "bg-orange-500",
     },
     donor: {
       bg: "bg-blue-50",
@@ -92,6 +95,7 @@ const GetInvolved = () => {
       button: "bg-blue-600 hover:bg-blue-700",
       icon: "text-blue-600",
       formBg: "from-yellow-50 to-white",
+      box: "bg-blue-500",
     },
     other: {
       bg: "bg-gray-50",
@@ -101,6 +105,7 @@ const GetInvolved = () => {
       button: "bg-gray-600 hover:bg-gray-700",
       icon: "text-gray-600",
       formBg: "from-gray-50 to-white",
+      box: "bg-gray-500",
     },
   };
 
@@ -125,7 +130,7 @@ const GetInvolved = () => {
 
       toast.success(
         <div>
-          <p className="font-semibold text-lg">Howdy! Message Sent </p>
+          <p className="font-semibold text-sm">Howdy! Message Sent </p>
           <p className="text-sm text-gray-600 mt-1">
             Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
@@ -135,7 +140,7 @@ const GetInvolved = () => {
         </div>,
         {
           duration: 6000,
-          icon: <CheckCircle className="w-6 h-6 text-green-500" />,
+          icon: <CheckCircle className="w-4 h-4 text-green-500" />,
         },
       );
 
@@ -175,7 +180,7 @@ const GetInvolved = () => {
                 key={way.title}
                 className="flex min-h-[320px] flex-col items-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-lg"
               >
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#eb4c47]/10 text-[#eb4c47">
                   <Icon size={34} strokeWidth={1.8} aria-hidden="true" />
                 </div>
                 <h2 className="mb-3 text-2xl font-bold">{way.title}</h2>
@@ -185,7 +190,7 @@ const GetInvolved = () => {
                 <button
                   type="button"
                   onClick={way.action}
-                  className="rounded-md bg-red-500 px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer"
+                  className="rounded-md  bg-[#eb4c47] px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#d43d3a] focus:outline-none focus:ring-2 focus:ring-[#eb4c47] focus:ring-offset-2 cursor-pointer"
                 >
                   {way.cta}
                 </button>
@@ -206,30 +211,35 @@ const GetInvolved = () => {
           </div>
 
           <div className="mb-8">
-            <p className="text-sm font-semibold text-gray-700 mb-3">
+            <p className="text-sm font-semibold text-gray-700 mb-4">
               I am joining as:
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-6 justify-center md:justify-start">
               {roles.map((role) => {
                 const Icon = role.icon;
                 const isActive = selectedRole === role.id;
                 const colors = roleColors[role.id];
 
                 return (
-                  <button
+                  <div
                     key={role.id}
                     onClick={() => setSelectedRole(role.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
-                      isActive
-                        ? `${colors.bg} ${colors.border} ${colors.text} shadow-sm`
-                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
-                    }`}
+                    className="flex flex-col items-center cursor-pointer transition-all duration-200"
                   >
-                    <Icon
-                      className={`w-4 h-4 ${isActive ? colors.icon : "text-gray-400"}`}
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? colors.icon : "text-gray-400"
+                        }`}
+                      />
+                      <span>{role.label}</span>
+                    </div>
+                    <div
+                      className={`mt-1.5 w-full h-0.5 rounded transition-colors ${
+                        isActive ? colors.box : "bg-gray-200"
+                      }`}
                     />
-                    {role.label}
-                  </button>
+                  </div>
                 );
               })}
             </div>
