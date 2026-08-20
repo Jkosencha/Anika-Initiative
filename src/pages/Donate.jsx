@@ -22,7 +22,7 @@ const DonationPage = () => {
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
-  const impactstatus = [
+  const impactStats = [
     { icon: Users, label: "Artists Supported", value: "150+" },
     { icon: Mic, label: "Events Held", value: "100+" },
     { icon: Globe, label: "African Countries", value: "14" },
@@ -91,6 +91,23 @@ const DonationPage = () => {
         <div className="relative z-10 mr-80">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mx-auto">Fund What<span className="text-[#E6A15E]"> Art Can Open</span></h1>
           <p className="text-lg md:text-xl text-gold max-w-2xl mx-auto">Your gift keeps the rooms open, the mics on and the conversation going</p>
+        </div>
+      </section>
+
+      <section className="py-12 px-4 bg-white border-y border-gray-100">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+          {impactStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="text-center">
+                <div className="flex justify-center mb-2">
+                  <Icon className="w-6 h-6 text-[#E6A15E]" />
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">{stat.value}</div>
+                <div className="text-sm text-gray-500">{stat.label}</div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
