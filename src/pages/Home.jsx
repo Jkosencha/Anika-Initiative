@@ -126,17 +126,17 @@ function Home() {
       </section>
 
       <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-6 pb-20">
+        <div className="mx-auto max-w-6xl px-6 pt-20 pb-20">
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
-              <p className="font-body text-sm font-semibold uppercase tracking-wide text-coral">What We Do</p>
-              <h2 className="mt-3 font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
+              <p className="font-body text-base font-semibold uppercase tracking-wide text-coral">What We Do</p>
+              <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
                 Five pillars.
                 <br />
                 One belief.
               </h2>
             </div>
-            <p className="self-center font-body text-ink/70">
+            <p className="self-center font-body text-lg text-ink/70">
               Across every theme the work opens the same door, into deeper conversations with
               communities, practitioners and decision-makers.
             </p>
@@ -197,8 +197,8 @@ function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <p className="font-body text-sm font-semibold uppercase tracking-wide text-coral">From the Field</p>
-        <h2 className="mt-3 font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
+        <p className="font-body text-base font-semibold uppercase tracking-wide text-coral">From the Field</p>
+        <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
           Stories with <span className="font-editorial italic normal-case text-coral">a pulse.</span>
         </h2>
 
@@ -220,6 +220,41 @@ function Home() {
               </NavLink>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-anika-blue text-cream">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 lg:grid-cols-2 lg:gap-20">
+          <div>
+            <p className="font-body text-base font-semibold uppercase tracking-wide text-gold">
+              Community Broadcast
+            </p>
+            <h2 className="mt-3 font-display text-4xl uppercase leading-tight sm:text-5xl">
+              Never miss a campaign dispatch.
+            </h2>
+            <p className="mt-4 font-body text-lg text-cream/80">
+              Join our WhatsApp channel for events, calls for artists and updates, right where
+              you already are. No spam, opt out anytime.
+            </p>
+            <a
+              href="https://whatsapp.com"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-cream px-6 py-3 font-body text-sm font-semibold uppercase tracking-wide text-anika-green hover:opacity-90"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.24 0 4.35.87 5.93 2.46a8.26 8.26 0 0 1 2.43 5.88c0 4.59-3.74 8.33-8.35 8.33a8.3 8.3 0 0 1-4.24-1.16l-.3-.18-3.12.82.83-3.04-.2-.31a8.26 8.26 0 0 1-1.27-4.42c0-4.6 3.74-8.38 8.29-8.38m-4.6 4.75c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.03 0 1.2.87 2.36.99 2.52.12.16 1.7 2.72 4.2 3.7 2.08.83 2.5.66 2.95.62.45-.04 1.46-.6 1.66-1.17.2-.58.2-1.08.14-1.18-.06-.1-.22-.16-.46-.28-.24-.12-1.46-.72-1.68-.8-.23-.08-.4-.12-.56.12-.16.24-.64.8-.79.97-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.21-.72-.65-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.44.12-.15.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.4-.42-.56-.42h-.48Z" />
+              </svg>
+              Join WhatsApp Channel
+            </a>
+          </div>
+          <div className={polaroid('-rotate-2')}>
+            <img
+              src="/listener.jpg"
+              alt="A community member listening at an ANIKA event"
+              className="aspect-4/3 w-full object-cover"
+            />
+          </div>
         </div>
       </section>
     </>
