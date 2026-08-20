@@ -15,6 +15,12 @@ const pillars = [
   { name: 'Governance', color: 'bg-ink', description: 'Deepening youth engagement with rights, civic life and democracy.' },
 ]
 
+const events = [
+  { image: '/slim.jpg', category: 'Open Mic', date: 'SAT 06 SEP', location: 'Nairobi' },
+  { image: '/PHYL.jpg', category: 'Song performance', date: 'SAT 20 SEP', location: 'Nairobi' },
+  { image: '/jaaziya.jpg', category: 'Artist Guest Speaker', date: 'SUN 05 OCT', location: 'Nairobi' },
+]
+
 const polaroid = (rotate) =>
   `bg-cream p-2 pb-6 shadow-xl ${rotate} transition-transform duration-300 ease-out hover:rotate-0`
 
@@ -147,6 +153,39 @@ function Home() {
                 Every initiative, event and story in one place.
               </p>
             </NavLink>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-coral text-cream">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="font-body text-base font-semibold uppercase tracking-wide text-cream/80">Upcoming</p>
+              <h2 className="mt-2 font-editorial text-5xl italic">Air it out.</h2>
+            </div>
+            <NavLink
+              to="/events"
+              className="rounded bg-ink px-5 py-2 font-body text-sm font-semibold uppercase tracking-wide text-cream hover:opacity-90"
+            >
+              See All Events &rarr;
+            </NavLink>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {events.map((event) => (
+              <div key={event.category}>
+                <img
+                  src={event.image}
+                  alt={event.category}
+                  className="aspect-4/3 w-full rounded object-cover"
+                />
+                <p className="mt-3 font-editorial text-2xl italic">{event.category}</p>
+                <p className="mt-1 font-body text-sm uppercase tracking-wide text-cream/70">
+                  {event.date} &middot; {event.location}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
