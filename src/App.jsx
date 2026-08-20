@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+import SplashScreen from './components/SplashScreen'
 import Home from './pages/Home'
 import About from "./pages/about";
 import Programs from './pages/Programs'
@@ -15,6 +16,7 @@ import {Toaster} from "sonner";
 function App() {
   return (
     <div className="flex min-h-screen flex-col">
+      <SplashScreen />
       <Navbar />
       <main className="flex-1">
         <Routes>

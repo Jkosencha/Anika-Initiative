@@ -1,14 +1,23 @@
-function Programs() {
+import React, { useState } from 'react'
+import { programs } from '../data/programs'
+import { methodologies, methodologyQuote } from '../data/methodologies'
+import ProgramsHeader from '../components/programs/ProgramsHeader'
+import ProgramTabs from '../components/programs/ProgramTabs'
+import ProgramCard from '../components/programs/ProgramCard'
+import Methodologies from '../components/programs/Methodologies'
+import PartnerCTA from '../components/programs/PartnerCTA'
+
+export default function Programs() {
+  const [activeId, setActiveId] = useState(programs[0].id);
+  const activeProgram = programs.find((p) => p.id === activeId);
+
   return (
-    <section className="mx-auto max-w-5xl px-6 py-24">
-      <h1 className="font-display text-3xl uppercase tracking-wide text-coral">
-        Programs
-      </h1>
-      <p className="mt-4 font-body text-ink/70">
-        Owner: Lynn — page in progress.
-      </p>
-    </section>
+    <>
+      <ProgramsHeader />
+      <ProgramTabs programs={programs} activeId={activeId} onSelect={setActiveId} />
+      <ProgramCard program={activeProgram} />
+      <Methodologies methodologies={methodologies} quote={methodologyQuote} />
+      <PartnerCTA />
+    </>
   )
 }
-
-export default Programs
