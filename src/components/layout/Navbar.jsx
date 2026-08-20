@@ -23,7 +23,7 @@ function Navbar() {
     <header className="sticky top-0 z-50 border-b border-ink/10 bg-cream/95 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <NavLink to="/" className="flex items-center gap-2">
-          <img src="/anika-logo.png" alt="Anika Initiative" className="h-8 w-8 rounded-full object-cover" />
+          <img src="/anika-logo.png" alt="Anika Initiative" className="h-15 w-auto object-contain" />
           <span className="font-display text-lg uppercase tracking-wide text-ink">Anika</span>
         </NavLink>
 
