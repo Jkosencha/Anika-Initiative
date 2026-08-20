@@ -3,8 +3,8 @@ import { accentBorder } from '../../utils/accentClasses';
 
 export default function Methodologies({ methodologies, quote}) {
   return (
-    <section className='bg-ink text-cream px-6 md:px-16 py-16'>
-        <h2 className='font-editorial italic text-3xl mb-10'>
+    <section className='bg-charcoal text-cream px-6 md:px-16 py-16'>
+        <h2 className='font-editorial italic text-5xl mb-10'>
             Methodologies
         </h2>
 
