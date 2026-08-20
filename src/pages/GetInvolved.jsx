@@ -136,7 +136,7 @@ const GetInvolved = () => {
         {
           duration: 6000,
           icon: <CheckCircle className="w-6 h-6 text-green-500" />,
-        }
+        },
       );
 
       setFormData({
@@ -154,13 +154,12 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
-
-      <section className="bg-black px-4 py-16 md:py-20">
+      <section className="bg-ink text-cream px-4 py-16 md:py-20">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E]">
+          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
             Whether you attend, give or partner, there's a place for you at
             ANIKA.
           </p>
@@ -198,7 +197,6 @@ const GetInvolved = () => {
 
       <section className="px-4 py-16 bg-[#FAF7F2]">
         <div className="mx-auto max-w-4xl">
-
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
             <p className="mt-2 text-lg text-gray-600 italic font-editorial">
@@ -224,10 +222,12 @@ const GetInvolved = () => {
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border-2 ${
                       isActive
                         ? `${colors.bg} ${colors.border} ${colors.text} shadow-sm`
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? colors.icon : 'text-gray-400'}`} />
+                    <Icon
+                      className={`w-4 h-4 ${isActive ? colors.icon : "text-gray-400"}`}
+                    />
                     {role.label}
                   </button>
                 );
@@ -240,9 +240,11 @@ const GetInvolved = () => {
             className={`rounded-2xl p-8 md:p-10 border-2 shadow-lg transition-all duration-300 ${currentColors.border} bg-gradient-to-br ${currentColors.formBg}`}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
                   YOUR NAME
                 </label>
                 <input
@@ -258,7 +260,10 @@ const GetInvolved = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
                   EMAIL
                 </label>
                 <input
@@ -274,8 +279,12 @@ const GetInvolved = () => {
               </div>
 
               <div>
-                <label htmlFor="organisation" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  ORGANISATION <span className="font-normal text-gray-400">(optional)</span>
+                <label
+                  htmlFor="organisation"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
+                  ORGANISATION{" "}
+                  <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   id="organisation"
@@ -289,7 +298,10 @@ const GetInvolved = () => {
               </div>
 
               <div>
-                <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
                   COUNTRY
                 </label>
                 <input
@@ -305,7 +317,10 @@ const GetInvolved = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="subject"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
                   SUBJECT
                 </label>
                 <select
@@ -317,7 +332,9 @@ const GetInvolved = () => {
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90 appearance-none"
                 >
                   <option value="">Select a subject</option>
-                  <option value="collaboration">Collaboration Opportunity</option>
+                  <option value="collaboration">
+                    Collaboration Opportunity
+                  </option>
                   <option value="partnership">Partnership Enquiry</option>
                   <option value="event">Event Participation</option>
                   <option value="donation">Donation / Support</option>
@@ -327,7 +344,10 @@ const GetInvolved = () => {
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-semibold text-gray-700 mb-1.5"
+                >
                   YOUR MESSAGE
                 </label>
                 <textarea
@@ -362,7 +382,8 @@ const GetInvolved = () => {
             </button>
 
             <p className="text-xs text-center text-gray-400 mt-4">
-              We'll respond within 48 hours. Your information is kept confidential.
+              We'll respond within 48 hours. Your information is kept
+              confidential.
             </p>
           </form>
         </div>
