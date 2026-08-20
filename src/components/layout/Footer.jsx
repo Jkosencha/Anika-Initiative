@@ -18,7 +18,7 @@ const navigate = [
 
 function Footer() {
   return (
-    <footer className="bg-ink text-cream">
+    <footer className="bg-charcoal text-cream">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-16">
           <div>
