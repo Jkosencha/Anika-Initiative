@@ -5,79 +5,108 @@ import {
   MapPin as MapPinIcon, 
   Users as UsersIcon, 
   ArrowRight as ArrowRightIcon, 
-  CheckCircle2 as CheckIcon 
+  CheckCircle2 as CheckIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronUp as ChevronUpIcon
 } from 'lucide-react';
 
-const MOCK_EVENTS = [
+const FEATURED_EVENT = {
+  id: 'evt-featured',
+  pillar: 'PERFORMANCE',
+  title: 'Sema-Anika Festival 2026: Voices of East Africa',
+  image: 'https://via.placeholder.com/600x600',
+  dateStr: '15-18 May 2026',
+  timeStr: '10:00 AM - 8:00 PM EAT',
+  location: 'Kenya Cultural Centre, Nairobi',
+  seats: '500+ seats',
+  description: 'Our flagship annual gathering brings together 150+ regional artists, spoken-word poets, environmentalists and human-rights activists for four days of public theatre, street installations and legislative poetry art.',
+  quote: 'When art opens the room, policy learns to listen.'
+};
+
+const OTHER_EVENTS = [
   {
     id: 'evt-1',
-    pillar: 'YOUTH & MIGRATION',
-    dateNum: '12',
-    dateMonth: 'SEPT',
-    title: 'SEMA-ANIKA COMMUNITY DIALOGUE FORUM',
-    image: 'https://via.placeholder.com/600x300',
-    dateStr: 'Saturday, 12 Sept 2026',
-    timeStr: '14:00 EAT',
-    location: 'Nairobi Cultural Centre',
-    seats: '120 seats',
-    description: "ANIKA's flagship dialogue forum — an interactive session using spoken word to explore community safety, mental health and healing.",
+    pillar: 'PERFORMANCE',
+    pillarColor: '#EB4C47',
+    badgeBg: 'bg-[#EB4C47]',
+    dateNum: '06',
+    dateMonth: 'SEP',
+    title: 'Open Mic',
+    location: 'Nairobi',
+    dateStr: 'Saturday, 06 Sept 2026',
+    timeStr: '18:00 EAT',
+    seats: '80 seats',
+    description: 'Monthly open-mic where artists air the unsaid: poetry, rap, spoken word. The only rule is to air it out.',
     quote: 'Art brings into the open what is hidden, unheard, difficult to express, or too easily ignored.'
   },
   {
     id: 'evt-2',
-    pillar: 'YOUTH & MIGRATION',
-    dateNum: '24',
-    dateMonth: 'SEPT',
-    title: 'TRY MY SHOE – YOUTH STORYTELLING LAB',
-    image: 'https://via.placeholder.com/600x300',
-    dateStr: 'Thursday, 24 Sept 2026',
-    timeStr: '10:00 EAT',
-    location: 'Kilimani Creative Space, Nairobi',
-    seats: '40 seats',
-    description: 'A hands-on residency where young storytellers craft and share lived experiences of migration, belonging and host-community relationships.',
+    pillar: 'DIALOGUE',
+    pillarColor: '#2D9CDB',
+    badgeBg: 'bg-[#219653]',
+    dateNum: '20',
+    dateMonth: 'SEP',
+    title: 'Community Dialogue Forum',
+    location: 'Nairobi',
+    dateStr: 'Sunday, 20 Sept 2026',
+    timeStr: '14:00 EAT',
+    seats: '120 seats',
+    description: "A guided conversation where lived experience meets policy, with art opening the room to what's hard to say.",
     quote: 'Every story aired is a step toward a world where no voice is left unheard.'
   },
   {
     id: 'evt-3',
-    pillar: 'EXPRESSIONS',
-    dateNum: '03',
+    pillar: 'WORKSHOP',
+    pillarColor: '#F2994A',
+    badgeBg: 'bg-[#E2A03F]',
+    dateNum: '05',
     dateMonth: 'OCT',
-    title: 'GRIPHON X ANIKA – POETRY & BEAT NIGHT',
-    image: 'https://via.placeholder.com/600x300',
-    dateStr: 'Saturday, 3 Oct 2026',
-    timeStr: '19:00 EAT',
-    location: 'The GoDown Arts Centre, Nairobi',
-    seats: '200 seats',
-    description: 'A curated night of spoken word, live beats and open-mic slots celebrating the power of the spoken word to heal and connect.',
+    title: 'Art Therapy Workshop Series',
+    location: 'Nairobi',
+    dateStr: 'Monday, 05 Oct 2026',
+    timeStr: '10:00 EAT',
+    seats: '30 seats',
+    description: 'Hands-on sessions using creative practice for healing, expression and wellbeing.',
     quote: 'The stage is a mirror. Poetry is what we do when we refuse to look away.'
   },
   {
     id: 'evt-4',
-    pillar: 'GENDER EQUALITY',
-    dateNum: '21',
+    pillar: 'PERFORMANCE',
+    pillarColor: '#EB4C47',
+    badgeBg: 'bg-[#EB4C47]',
+    dateNum: '26',
     dateMonth: 'NOV',
-    title: 'HER STORY – OPEN MIC & HEALING FORUM',
-    image: 'https://via.placeholder.com/600x300',
-    dateStr: 'Saturday, 21 Nov 2026',
-    timeStr: '16:00 EAT',
-    location: 'Kenya National Theatre, Nairobi',
-    seats: '150 seats',
-    description: 'Women and marginalised voices take the mic to share stories, assert agency and shape conversations on gender equality, SRHR and SGBV.',
+    title: 'Heritage Arts Festival',
+    location: 'Nairobi',
+    dateStr: 'Thursday, 26 Nov 2026',
+    timeStr: '11:00 EAT',
+    seats: '300 seats',
+    description: 'A celebration of African heritage through performance, visual art and cultural exchange.',
     quote: 'When she speaks, the whole room leans in. That is healing.'
   }
 ];
 
 export default function EventsList() {
-  const [activePillar, setActivePillar] = useState('ALL');
+  const [activeTab, setActiveTab] = useState('ALL');
+  const [openFormId, setOpenFormId] = useState(null);
   const [formStates, setFormStates] = useState({});
   const [loading, setLoading] = useState({});
   const [successMsg, setSuccessMsg] = useState({});
 
-  const pillars = ['ALL PILLARS', 'ARTS & CULTURE', 'YOUTH & MIGRATION', 'EXPRESSIONS', 'GENDER EQUALITY', 'GOVERNANCE'];
+  const categories = [
+    { name: 'ALL', color: '#000000' },
+    { name: 'PERFORMANCE', color: '#EB4C47' },
+    { name: 'DIALOGUE', color: '#219653' },
+    { name: 'WORKSHOP', color: '#E2A03F' }
+  ];
 
-  const filteredEvents = activePillar === 'ALL' || activePillar === 'ALL PILLARS'
-    ? MOCK_EVENTS
-    : MOCK_EVENTS.filter(evt => evt.pillar === activePillar);
+  const filteredEvents = activeTab === 'ALL'
+    ? OTHER_EVENTS
+    : OTHER_EVENTS.filter(evt => evt.pillar === activeTab);
+
+  const toggleForm = (id) => {
+    setOpenFormId(prev => (prev === id ? null : id));
+  };
 
   const handleInputChange = (eventId, field, value) => {
     setFormStates(prev => ({
@@ -93,160 +122,278 @@ export default function EventsList() {
     e.preventDefault();
     setLoading(prev => ({ ...prev, [eventId]: true }));
 
-    // Mock API delay for frontend testing
     setTimeout(() => {
-      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Confirmed! Check WhatsApp.' }));
+      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Confirmed! Registration details sent via WhatsApp.' }));
       setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', whatsappNumber: '', optIn: true } }));
       setLoading(prev => ({ ...prev, [eventId]: false }));
-    }, 800);
+    }, 700);
   };
 
   return (
-    <div className="py-10 px-4 md:px-12 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="bg-[#F8F6E9] min-h-screen text-gray-900 font-sans">
+      
+      {/* 1. HERO SECTION */}
+      <section className="bg-[#121212] text-white py-16 px-6 md:px-16 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto flex justify-between items-center relative z-10">
+          <div>
+            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tight font-serif">
+              EVENTS
+            </h1>
+            <p className="text-sm md:text-base italic text-amber-100/70 mt-2 max-w-lg font-serif">
+              Performances, forums, workshops, spaces where things that have been waiting to be said, get said.
+            </p>
+          </div>
+          <div className="hidden md:block w-28 h-28 bg-[#8B1E2B] rounded-full filter blur-sm opacity-80" />
+        </div>
+      </section>
 
-        {/* PILLAR FILTER TABS */}
-        <div className="flex flex-wrap gap-2 justify-start border-b border-gray-300 pb-4">
-          {pillars.map((pillar) => {
-            const key = pillar === 'ALL PILLARS' ? 'ALL' : pillar;
-            const isActive = activePillar === key;
-            return (
-              <button
-                key={pillar}
-                onClick={() => setActivePillar(key)}
-                className={`px-4 py-2 text-xs font-black tracking-wider uppercase border-2 border-black transition-all ${
-                  isActive ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100'
-                }`}
-              >
-                {pillar}
-              </button>
-            );
-          })}
+      {/* 2. MAIN CONTAINER */}
+      <main className="max-w-5xl mx-auto px-4 py-12 space-y-12">
+
+        {/* 2A. UPCOMING FEATURED EVENT */}
+        <section>
+          <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block mb-3">
+            UPCOMING EVENT
+          </span>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden grid grid-cols-1 md:grid-cols-12">
+            
+            {/* Poster Image */}
+            <div className="md:col-span-5 bg-black h-64 md:h-auto overflow-hidden relative">
+              <img 
+                src={FEATURED_EVENT.image} 
+                alt={FEATURED_EVENT.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Details & Action */}
+            <div className="md:col-span-7 p-6 md:p-8 flex flex-col justify-between space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 leading-snug">
+                  {FEATURED_EVENT.title}
+                </h2>
+                <p className="text-xs font-semibold text-[#EB4C47] mt-1">
+                  {FEATURED_EVENT.dateStr}
+                </p>
+                <p className="text-xs font-semibold text-[#219653] mt-0.5">
+                  {FEATURED_EVENT.location}
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed mt-3">
+                  {FEATURED_EVENT.description}
+                </p>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => toggleForm(FEATURED_EVENT.id)}
+                  className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white font-bold text-xs uppercase px-6 py-3 rounded tracking-wider transition-colors inline-flex items-center gap-2"
+                >
+                  {openFormId === FEATURED_EVENT.id ? 'CLOSE FORM' : 'REGISTER FOR FESTIVAL'}
+                  {openFormId === FEATURED_EVENT.id ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Inline Form Drawer for Featured Event */}
+          {openFormId === FEATURED_EVENT.id && (
+            <div className="bg-white border-x border-b border-gray-200 p-6 rounded-b-lg -mt-1 shadow-md">
+              {renderRegistrationForm(FEATURED_EVENT.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
+            </div>
+          )}
+        </section>
+
+
+        {/* 2B. OTHER EVENTS SECTION */}
+        <section className="space-y-6">
+          <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block">
+            OTHER EVENTS
+          </span>
+
+          {/* Filter Bar */}
+          <div className="flex items-center justify-between border-b border-gray-300/60 pb-3">
+            <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider">
+              {categories.map((cat) => {
+                const isActive = activeTab === cat.name;
+                return (
+                  <button
+                    key={cat.name}
+                    onClick={() => setActiveTab(cat.name)}
+                    className={`flex items-center gap-2 pb-1 border-b-2 transition-all ${
+                      isActive ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-black'
+                    }`}
+                  >
+                    {cat.name !== 'ALL' && (
+                      <span className="w-2.5 h-2.5 inline-block" style={{ backgroundColor: cat.color }} />
+                    )}
+                    {cat.name === 'ALL' && isActive && (
+                      <span className="w-2 h-2 bg-black inline-block" />
+                    )}
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Event List */}
+          <div className="space-y-4">
+            {filteredEvents.map((evt) => (
+              <div key={evt.id} className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
+                
+                {/* Horizontal Card Row */}
+                <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    
+                    {/* Colored Date Badge */}
+                    <div className={`${evt.badgeBg} text-white text-center py-3 px-4 rounded-md min-w-[65px] flex-shrink-0`}>
+                      <div className="text-2xl font-black leading-none">{evt.dateNum}</div>
+                      <div className="text-[10px] font-bold tracking-widest mt-0.5">{evt.dateMonth}</div>
+                    </div>
+
+                    {/* Thumbnail */}
+                    <div className="w-20 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 hidden sm:block">
+                      <img src="https://via.placeholder.com/150" alt="" className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* Meta Details */}
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider block" style={{ color: evt.pillarColor }}>
+                        {evt.pillar} • {evt.location}
+                      </span>
+                      <h3 className="text-base font-bold text-gray-900 leading-snug">
+                        {evt.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                        {evt.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Register Trigger */}
+                  <div className="flex-shrink-0 self-end md:self-center">
+                    <button
+                      onClick={() => toggleForm(evt.id)}
+                      className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white text-xs font-bold uppercase px-5 py-2.5 rounded tracking-wider transition-colors inline-flex items-center gap-1.5"
+                    >
+                      REGISTER
+                      {openFormId === evt.id ? <ChevronUpIcon className="w-3.5 h-3.5" /> : <ChevronDownIcon className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expandable Registration Drawer */}
+                {openFormId === evt.id && (
+                  <div className="bg-[#FAF9F5] border-t border-gray-200 p-5 md:p-6">
+                    
+                    {/* Rich Meta Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-700 font-medium mb-5 pb-4 border-b border-gray-200">
+                      <p className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.dateStr}</p>
+                      <p className="flex items-center gap-1.5"><ClockIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.timeStr}</p>
+                      <p className="flex items-center gap-1.5"><MapPinIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.location}</p>
+                      <p className="flex items-center gap-1.5"><UsersIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.seats}</p>
+                    </div>
+
+                    {renderRegistrationForm(evt.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
+                  </div>
+                )}
+
+              </div>
+            ))}
+          </div>
+
+        </section>
+
+      </main>
+
+      {/* 3. FOOTER */}
+      <footer className="bg-[#121212] text-gray-400 py-12 px-6 mt-20 text-xs">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h4 className="text-white font-bold uppercase tracking-wider mb-2">PROGRAMS</h4>
+            <p className="leading-relaxed">Youth & Migration, Expressions, Gender Equality, Governance.</p>
+          </div>
+          <div>
+            <h4 className="text-white font-bold uppercase tracking-wider mb-2">NAVIGATE</h4>
+            <p className="leading-relaxed">Events, About Us, Community Dialogue, Contact.</p>
+          </div>
+          <div>
+            <h4 className="text-white font-bold uppercase tracking-wider mb-2">CONTACT</h4>
+            <p className="leading-relaxed">Nairobi, Kenya • info@anika.org</p>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
+
+// Helper function rendering the form inside drawers
+function renderRegistrationForm(eventId, formStates, handleInputChange, handleRegister, loading, successMsg) {
+  const currentForm = formStates[eventId] || { fullName: '', whatsappNumber: '', optIn: true };
+
+  if (successMsg[eventId]) {
+    return (
+      <div className="bg-[#219653]/10 border border-[#219653] p-4 rounded text-center flex items-center justify-center gap-2">
+        <CheckIcon className="w-4 h-4 text-[#219653]" />
+        <p className="text-xs font-bold text-[#219653]">{successMsg[eventId]}</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={(e) => handleRegister(e, eventId)} className="max-w-xl space-y-4">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900">
+        FAST REGISTRATION VIA WHATSAPP
+      </h4>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">Full Name *</label>
+          <input
+            type="text"
+            required
+            placeholder="First and Last Name"
+            value={currentForm.fullName}
+            onChange={(e) => handleInputChange(eventId, 'fullName', e.target.value)}
+            className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-[#EB4C47]"
+          />
         </div>
 
-        {/* EVENT CARDS */}
-        {filteredEvents.map((evt) => {
-          const currentForm = formStates[evt.id] || { fullName: '', whatsappNumber: '', optIn: true };
-          
-          return (
-            <div key={evt.id} className="bg-white border-2 border-black shadow-[6px_6px_0px_#000] p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
-              {/* LEFT COLUMN: DETAILS */}
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-black text-white text-center py-1 px-3 font-black">
-                    <div className="text-xl leading-none">{evt.dateNum}</div>
-                    <div className="text-[10px] tracking-widest">{evt.dateMonth}</div>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-[#EB4C47] uppercase tracking-widest block">UPCOMING</span>
-                    <h2 className="text-xl font-black uppercase text-black leading-tight">{evt.title}</h2>
-                  </div>
-                </div>
-
-                <div className="border border-black overflow-hidden h-48 bg-gray-100">
-                  <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
-                </div>
-
-                <div className="text-xs space-y-1 font-semibold text-gray-700">
-                  <p className="flex items-center gap-2">
-                    <CalendarIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.dateStr}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <ClockIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.timeStr}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <MapPinIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.location}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <UsersIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.seats}
-                  </p>
-                </div>
-
-                <p className="text-xs text-gray-600 leading-relaxed">{evt.description}</p>
-                <blockquote className="border-l-2 border-[#EB4C47] pl-3 italic text-xs text-gray-800 font-serif">
-                  "{evt.quote}"
-                </blockquote>
-              </div>
-
-              {/* RIGHT COLUMN: INLINE FORM */}
-              <div className="lg:col-span-5 bg-[#F9F9F9] border-2 border-black p-5 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-black border-b border-black pb-2 mb-4">
-                    REGISTER TO ATTEND
-                  </h3>
-
-                  {successMsg[evt.id] ? (
-                    <div className="bg-[#389A51]/10 border border-[#389A51] p-4 text-center flex items-center justify-center gap-2">
-                      <CheckIcon className="w-4 h-4 text-[#389A51]" />
-                      <p className="text-xs font-bold text-[#389A51]">{successMsg[evt.id]}</p>
-                    </div>
-                  ) : (
-                    <form onSubmit={(e) => handleRegister(e, evt.id)} className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] font-black uppercase mb-1">FULL NAME *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="First and Last"
-                          value={currentForm.fullName}
-                          onChange={(e) => handleInputChange(evt.id, 'fullName', e.target.value)}
-                          className="w-full bg-gray-200 border-b-2 border-black p-2.5 text-xs focus:outline-none focus:bg-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-black uppercase mb-1">WHATSAPP NUMBER *</label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="+254 712 345 678"
-                          value={currentForm.whatsappNumber}
-                          onChange={(e) => handleInputChange(evt.id, 'whatsappNumber', e.target.value)}
-                          className="w-full bg-gray-200 border-b-2 border-black p-2.5 text-xs focus:outline-none focus:bg-white"
-                        />
-                      </div>
-
-                      <div className="bg-[#EAF5ED] border border-[#389A51] p-2.5 flex items-start gap-2">
-                        <input
-                          type="checkbox"
-                          id={`optIn-${evt.id}`}
-                          checked={currentForm.optIn}
-                          onChange={(e) => handleInputChange(evt.id, 'optIn', e.target.checked)}
-                          className="mt-0.5 accent-[#389A51]"
-                        />
-                        <label htmlFor={`optIn-${evt.id}`} className="text-[10px] text-gray-700 leading-tight">
-                          Receive instant registration updates, event reminders, and follow-ups via WhatsApp.
-                        </label>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={loading[evt.id]}
-                        className="w-full bg-[#EB4C47] text-white font-black py-3 text-xs uppercase tracking-widest border-2 border-black shadow-[3px_3px_0px_#000] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
-                      >
-                        {loading[evt.id] ? (
-                          'SUBMITTING...'
-                        ) : (
-                          <>
-                            CONFIRM REGISTRATION
-                            <ArrowRightIcon className="w-3.5 h-3.5" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  )}
-                </div>
-
-                <div className="mt-4 pt-2 border-t border-gray-300 text-[9px] font-bold text-gray-500 uppercase tracking-widest text-center">
-                  ETHICAL RULE: <span className="text-[#EB4C47]">OPEN, NEVER EXPOSE.</span>
-                </div>
-              </div>
-
-            </div>
-          );
-        })}
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">WhatsApp Number *</label>
+          <input
+            type="tel"
+            required
+            placeholder="+254 712 345 678"
+            value={currentForm.whatsappNumber}
+            onChange={(e) => handleInputChange(eventId, 'whatsappNumber', e.target.value)}
+            className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-[#EB4C47]"
+          />
+        </div>
       </div>
-    </div>
+
+      <div className="flex items-start gap-2 bg-white border border-gray-200 p-2.5 rounded">
+        <input
+          type="checkbox"
+          id={`optIn-${eventId}`}
+          checked={currentForm.optIn}
+          onChange={(e) => handleInputChange(eventId, 'optIn', e.target.checked)}
+          className="mt-0.5 accent-[#219653]"
+        />
+        <label htmlFor={`optIn-${eventId}`} className="text-[10px] text-gray-600 leading-tight">
+          Receive instant registration updates and event reminders directly on WhatsApp.
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading[eventId]}
+        className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white font-bold py-2.5 px-6 rounded text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+      >
+        {loading[eventId] ? 'CONFIRMING...' : 'CONFIRM SEAT'}
+        <ArrowRightIcon className="w-3.5 h-3.5" />
+      </button>
+    </form>
   );
 }
