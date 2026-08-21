@@ -4,7 +4,7 @@ export default function ReportBanner() {
     const hasReport = false; //change to true once report PDF is sent
     const reportUrl = '/documents/annual-impact-report.pdf'; //report link placeholder
   return (
-    <section className='bg-anika-blue text-white px-6 md:px-16 py-10'>
+    <section className='bg-anika-blue text-white px-6 md:px-16 py-10 pb-16'>
         <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-6'>
             <div>
                 <h3 className='font-display text-2xl md:text-3xl mb-2'>
