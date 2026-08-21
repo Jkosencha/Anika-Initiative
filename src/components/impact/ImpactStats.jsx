@@ -1,19 +1,16 @@
-import React from 'react'
-import { accentText } from '../../utils/accentClasses'
+import { accentText, accentBg } from '../../utils/accentClasses';
 
 export default function ImpactStats({ stats }) {
   return (
-    <section className='bg-cream py-16'>
-      <div className='mx-auto grid max-w-6xl grid-cols-2 border-l border-t border-ink/20 px-6 md:grid-cols-4'>
+    <section className="mx-auto max-w-6xl px-6 pt-16 pb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
         {stats.map((stat, i) => (
-          <div
-            key={i}
-            className='border-r border-b border-ink/20 px-6 py-10'
-          >
-            <p className={`font-display text-4xl md:text-5xl mb-2 ${accentText[stat.accentClass]}`}>
+          <div key={i}>
+            <p className={`font-display text-4xl md:text-5xl mb-3 ${accentText[stat.accentClass]}`}>
               {stat.value}
             </p>
-            <p className='text-xs uppercase tracking-wide text-ink/70'>
+            <div className={`w-10 h-1 mb-3 ${accentBg[stat.accentClass]}`} />
+            <p className="text-xs uppercase tracking-wide text-ink/70">
               {stat.label}
             </p>
           </div>

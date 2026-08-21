@@ -2,12 +2,11 @@ import React from 'react'
 
 export default function CaseStudies({ caseStudies}) {
   return (
-        <section className='bg-cream py-8 pb-24'>
-            <div className='mx-auto max-w-6xl px-6'>
-                <p className='mb-3 text-coral text-xs uppercase tracking-wide font-semibold'>
+    <section className='mx-auto max-w-6xl px-6 pt-8 pb-20'>
+        <p className='text-coral text-xs uppercase tracking-wide font-semibold mb-4'>
             Case Studies
         </p>
-        <h2 className='font-display text-4xl md:text-5xl text-ink mb-10'>
+        <h2 className='font-display text-4xl md:text-5xl text-ink mb-8'>
             WHERE THE CHANGE LIVES.
         </h2>
 
@@ -17,9 +16,9 @@ export default function CaseStudies({ caseStudies}) {
                     <img 
                         src={study.image} 
                         alt={study.title}
-                        className='w-full h-56 object-cover mb-4' 
+                        className='w-full h-56 object-cover mb-5' 
                     />
-                    <h3 className='font-display text-lg text-ink mb-2'>
+                    <h3 className='font-display text-lg text-ink mb-3'>
                         {study.title}
                     </h3>
                     <p className='text-sm text-ink/70'>

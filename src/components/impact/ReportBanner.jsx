@@ -3,9 +3,10 @@ import React from 'react'
 export default function ReportBanner() {
     const hasReport = false; //change to true once report PDF is sent
     const reportUrl = '/documents/annual-impact-report.pdf'; //report link placeholder
+
   return (
-    <section className='bg-anika-blue text-white px-6 md:px-16 py-10 pb-16'>
-        <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-6'>
+    <section className='bg-anika-blue text-white py-16'>
+        <div className='mx-auto max-w-6xl px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6'>
             <div>
                 <h3 className='font-display text-2xl md:text-3xl mb-2'>
                     Annual Impact Report 2025
@@ -27,7 +28,7 @@ export default function ReportBanner() {
                 <button
                     disabled
                     title='Report coming soon'
-                    className='inline-block border-2 border-white/40 text-white/40 px-6 py-3 uppercase text-sm font-semibold tracking-wide cursor-not-allowed whitespace-nowrap'
+                    className='inline-block border-2 border-white/50 text-white/40 px-6 py-3 uppercase text-sm font-semibold tracking-wide cursor-not-allowed whitespace-nowrap'
                 >
                     Download PDF
                 </button>
