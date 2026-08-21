@@ -4,7 +4,7 @@ export default function HistoryTimeline() {
   return (
     <section className="bg-cream py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+        <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
           {history.eyebrow}
         </p>
         <h2 className="mt-3 max-w-2xl font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
@@ -13,7 +13,7 @@ export default function HistoryTimeline() {
 
         <div className="mt-6 max-w-2xl space-y-4">
           {history.body.map((paragraph, i) => (
-            <p key={i} className="font-body text-base leading-relaxed text-ink/80">
+            <p key={i} className="font-body text-lg leading-relaxed text-ink/80">
               {paragraph}
             </p>
           ))}
