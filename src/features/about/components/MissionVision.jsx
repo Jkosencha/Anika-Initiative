@@ -4,8 +4,8 @@ export default function MissionVision() {
   const { mission, vision } = missionVision
 
   return (
-    <section className="bg-cream px-6 py-16 sm:py-20">
-      <div className="mx-auto max-w-5xl">
+    <section className="bg-cream py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-6">
         <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-anika-blue">
           {missionVision.eyebrow}
         </p>

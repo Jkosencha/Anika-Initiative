@@ -15,10 +15,12 @@ const StoryGrid = ({ stories, activePillar }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-      {filtered.map((story) => (
-        <StoryCard key={story.id} story={story} />
-      ))}
+    <div className="mx-auto max-w-6xl px-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        {filtered.map((story) => (
+          <StoryCard key={story.id} story={story} />
+        ))}
+      </div>
     </div>
   );
 };

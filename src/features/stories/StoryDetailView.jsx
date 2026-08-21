@@ -14,7 +14,7 @@ export default function StoryDetailView() {
         </p>
         <Link
           to="/stories"
-          className="font-body text-sm px-6 py-2.5 rounded border border-ink text-ink hover:bg-ink hover:text-cream transition-colors duration-200"
+          className="font-body text-sm px-7 py-2.5 rounded border border-ink text-ink hover:bg-ink hover:text-cream transition-colors duration-200"
         >
           Back to stories
         </Link>
