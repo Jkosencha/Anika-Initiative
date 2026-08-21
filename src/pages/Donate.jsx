@@ -177,7 +177,7 @@ const DonationPage = () => {
                 onClick={() => setDonationMethod("mpesa")}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
                   donationMethod === "mpesa"
-                    ? "bg-[#fc3003] text-[#1E1A18] shadow-sm"
+                    ? "bg-[#39ba25] text-[#1E1A18] shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
