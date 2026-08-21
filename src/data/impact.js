@@ -20,7 +20,7 @@ export const caseStudies = [
     id: 'gaining-grip',
     title: 'Gaining Grip Experience',
     description: 'Five editions of programming creating safe spaces for conversations on gender equality, rights and healing.',
-    image: '/image7.jpg'
+    image: '/slim.jpg'
     },
   {
     id: 'refupoet',
