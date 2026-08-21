@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function CaseStudies({ caseStudies}) {
   return (
-    <section className='bg-cream px-6 md:px-16 py-16'>
+    <section className='bg-cream px-6 md:px-16 pt-8 pb-24'>
         <p className='text-coral text-xs uppercase tracking-wide font-semibold mb-3'>
             Case Studies
         </p>

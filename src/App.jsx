@@ -13,11 +13,13 @@ import Gallery from './pages/Gallery'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
 import {Toaster} from "sonner";
+import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   return (
     <div className="flex min-h-screen flex-col">
       <SplashScreen />
+      <ScrollToTop />
       <Navbar />
       <main className="flex-1">
         <Routes>
