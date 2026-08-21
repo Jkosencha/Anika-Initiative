@@ -3,10 +3,16 @@ import { poem } from '../data/poem'
 
 export default function PoemSpotlight() {
   return (
-    <section className="bg-ink px-6 py-20 sm:py-28">
-      <div className="mx-auto max-w-3xl">
-        {/* Pull-quote — the line that earns the section its place */}
-        <blockquote className="border-l-4 border-coral pl-6 font-editorial text-3xl italic leading-snug text-cream sm:text-4xl">
+    <section className="relative overflow-hidden bg-charcoal px-6 py-20 text-cream sm:py-28">
+      <div className="pointer-events-none absolute -right-20 top-12 h-64 w-64 rounded-full border border-gold/20" />
+      <div className="relative mx-auto max-w-4xl">
+        <div className="mb-12 flex items-center gap-4">
+          <span className="h-px w-12 bg-coral" />
+          <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
+            The origin poem
+          </p>
+        </div>
+        <blockquote className="max-w-3xl border-l-4 border-coral pl-6 font-editorial text-3xl italic leading-snug text-cream sm:text-5xl">
           &ldquo;{poem.pullQuote}&rdquo;
         </blockquote>
 
@@ -20,7 +26,7 @@ export default function PoemSpotlight() {
         </div>
 
         {/* Full poem */}
-        <div className="mt-16 space-y-8 font-editorial text-xl leading-relaxed text-cream/90 sm:text-2xl">
+        <div className="mt-16 grid gap-x-12 gap-y-10 font-editorial text-xl leading-relaxed text-cream/85 sm:grid-cols-2 sm:text-2xl">
           {poem.stanzas.map((stanza, i) => (
             <p key={i}>
               {stanza.map((line, j) => (

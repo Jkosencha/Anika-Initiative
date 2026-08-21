@@ -10,7 +10,7 @@ export default function CaseStudies({ caseStudies}) {
             WHERE THE CHANGE LIVES.
         </h2>
 
-        <div className='grid md:grid-cols-3 gap-8'>
+        <div className='grid gap-8 md:grid-cols-3'>
             {caseStudies.map((study) => (
                 <div key={study.id}>
                     <img 
@@ -26,7 +26,8 @@ export default function CaseStudies({ caseStudies}) {
                     </p>
                 </div>
             ))}
-        </div>
+                </div>
+            </div>
     </section>
   )
 }

@@ -49,7 +49,7 @@ function Home() {
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90 "
         />
-        <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-10 lg:px-24 xl:px-34">
+        <div className="relative mx-auto max-w-6xl px-6 py-16">
           <div className="max-w-5xl text-left">
             <span className="-rotate-3 inline-flex items-center gap-2 rounded-full bg-gold px-4 py-1 font-body text-sm font-semibold uppercase tracking-wide text-ink">
               A Pan-African art-based initiative
@@ -83,7 +83,7 @@ function Home() {
       </section>
 
       <section className="bg-charcoal">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16 lg:px-12">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
               <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>{stat.value}</p>

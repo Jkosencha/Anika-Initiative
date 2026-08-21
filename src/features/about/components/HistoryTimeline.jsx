@@ -1,10 +1,11 @@
+// src/features/about/components/HistoryTimeline.jsx
 import { history } from '../data/aboutContent'
 
 export default function HistoryTimeline() {
   return (
-    <section className="bg-cream py-16 sm:py-20">
+    <section className="bg-cream px-6 py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+        <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
           {history.eyebrow}
         </p>
         <h2 className="mt-3 max-w-2xl font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
@@ -38,7 +39,7 @@ export default function HistoryTimeline() {
               <h3 className="mt-2 font-body text-base font-semibold uppercase tracking-wide text-ink">
                 {milestone.title}
               </h3>
-              <p className="mt-2 font-body text-sm leading-relaxed text-ink/70">
+              <p className="mt-2 font-body text-base leading-relaxed text-ink/70">
                 {milestone.description}
               </p>
             </li>

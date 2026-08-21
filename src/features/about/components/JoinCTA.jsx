@@ -6,7 +6,7 @@ export default function JoinCTA() {
   return (
     <section className="bg-coral px-6 py-20 sm:py-24">
       <div className="mx-auto max-w-3xl text-center">
-        <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-cream/80">
+        <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-cream/80">
           {joinCta.eyebrow}
         </p>
 
@@ -18,7 +18,7 @@ export default function JoinCTA() {
           ))}
         </h2>
 
-        <p className="mt-6 font-body text-base leading-relaxed text-cream/90 sm:text-lg">
+        <p className="mt-6 font-body text-lg leading-relaxed text-cream/90">
           {joinCta.body}
         </p>
 

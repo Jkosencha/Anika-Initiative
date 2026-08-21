@@ -12,6 +12,7 @@ import StoryDetail from './pages/StoryDetail'
 import Gallery from './pages/Gallery'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
+import AlliancePage from './pages/AlliancePage'
 import {Toaster} from "sonner";
 import ScrollToTop from './components/ScrollToTop'
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/donate" element={<Donate />} />
+          <Route path="/alliance" element={<AlliancePage />} />
         </Routes>
       </main>
       <Footer />
