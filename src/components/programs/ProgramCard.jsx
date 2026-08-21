@@ -5,7 +5,7 @@ export default function ProgramCard({ program }) {
   return (
     <div className='grid md:grid-cols-2 gap-10 bg-cream px-6 md:px-16 py-12'>
       
-      <div>
+      <div className='mx-auto max-w-6xl px-6'>
 
         <div className='flex items-center gap-4 mb-4'>
 
@@ -44,9 +44,9 @@ export default function ProgramCard({ program }) {
 
       </div>
 
-      <div>
+      <div className='mx-auto max-w-6xl pl-6'>
         <img src={program.image} alt={program.title} className='w-full h-80 object-cover' />
-        <p className='font-editorial italic bg-ink text-cream text-lg text-center py-3'>
+        <p className='font-editorial italic bg-charcoal text-cream text-lg text-center py-3'>
             "{program.quote}"
         </p>
       </div>

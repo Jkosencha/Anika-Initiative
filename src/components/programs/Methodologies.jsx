@@ -4,11 +4,11 @@ import { accentBorder } from '../../utils/accentClasses';
 export default function Methodologies({ methodologies, quote}) {
   return (
     <section className='bg-charcoal text-cream px-6 md:px-16 py-16'>
-        <h2 className='font-editorial italic text-5xl mb-10'>
+        <h2 className='font-editorial italic text-5xl mb-10 mx-auto max-w-6xl px-6'>
             Methodologies
         </h2>
 
-        <div className='grid md:grid-cols-3 gap-4'>
+        <div className='grid md:grid-cols-3 gap-4 mx-auto max-w-6xl px-6'>
             {methodologies.map((m) => (
                 <div
                     key={m.id}
