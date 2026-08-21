@@ -55,9 +55,9 @@ function Home() {
               A Pan-African art-based initiative
             </span>
             <h1 className="mt-6 font-display text-5xl uppercase leading-tight sm:text-8xl">
-              Change the world,
+              Silence kills,
               <br />
-              <span className="text-coral">art at a time.</span>
+              <span className="text-coral">art airs.</span>
             </h1>
             <p className="mt-6 max-w-xl font-body text-lg text-cream/80">
               Over nine years of art-based work turning spoken word, theatre and visual art into
@@ -168,7 +168,7 @@ function Home() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-body text-base font-semibold uppercase tracking-wide text-cream/80">Upcoming</p>
-              <h2 className="mt-2 font-editorial text-5xl italic">Air it out.</h2>
+              <h2 className="mt-2 font-display text-4xl uppercase leading-tight sm:text-5xl">Air it out.</h2>
             </div>
             <NavLink
               to="/events"
