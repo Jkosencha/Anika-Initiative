@@ -8,7 +8,7 @@ const links = [
   { to: '/impact', label: 'Impact Hub' },
   { to: '/gallery', label: 'Gallery' },
   { to: '/stories', label: 'Stories' },
-  { to: '/alliance', label: 'Alliance' },
+  // { to: '/alliance', label: 'Alliance' },
   { to: '/about', label: 'About' },
 ]
 
