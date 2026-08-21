@@ -35,7 +35,7 @@ const StoryCard = ({ story }) => {
           {story.title}
         </h3>
 
-        <p className="font-body text-sm text-ink/65 leading-relaxed flex-1">
+        <p className="font-body text-base text-ink/65 leading-relaxed flex-1">
           {story.excerpt}
         </p>
 
