@@ -1,36 +1,27 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import Registration from '../../pages/Registration'
 
 const links = [
   { to: '/', label: 'Home' },
   { to: '/programs', label: 'Programs' },
   { to: '/events', label: 'Events' },
   { to: '/impact', label: 'Impact Hub' },
-  { to: '/get-involved', label: 'Get Involved' },
-  { to: '/donate', label: 'Donate' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/stories', label: 'Stories' },
   { to: '/alliance', label: 'Alliance' },
   { to: '/about', label: 'About' },
 ]
 
 function Navbar() {
   const [open, setOpen] = useState(false)
-  const [showModal, setShowModal] = useState(false)
 
   const linkClass = ({ isActive }) =>
     `font-body text-sm uppercase tracking-wide transition-colors hover:text-coral ${
       isActive ? 'text-coral' : 'text-ink'
     }`
 
-  const handleOpenModal = (e) => {
-    e?.preventDefault()
-    setShowModal(true)
-    setOpen(false)
-  }
-
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-ink/10 bg-cream/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-ink/10 bg-cream/95 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-12">
           <NavLink to="/" className="flex items-center gap-2">
             <img src="/anika-logo.png" alt="Anika Initiative" className="h-15 w-auto object-contain" />
@@ -50,13 +41,18 @@ function Navbar() {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden items-center gap-3 md:flex">
-            <button
-              onClick={handleOpenModal}
-              type="button"
+            <NavLink
+              to="/get-involved"
+              className="rounded border border-ink px-4 py-2 font-body text-sm font-semibold uppercase tracking-wide text-ink transition-colors hover:bg-ink hover:text-cream"
+            >
+              Get Involved
+            </NavLink>
+            <NavLink
+              to="/donate"
               className="rounded bg-coral px-5 py-2 font-body text-sm font-semibold uppercase tracking-wide text-cream transition-colors hover:bg-coral/90"
             >
-              Air It Out
-            </button>
+              Donate
+            </NavLink>
           </div>
 
           {/* Mobile Menu Hamburger */}
@@ -88,22 +84,9 @@ function Navbar() {
                 </NavLink>
               </li>
             ))}
-            <li>
-              <button
-                onClick={handleOpenModal}
-                type="button"
-                className="w-full text-left font-body text-sm font-semibold uppercase tracking-wide text-ink hover:text-coral"
-              >
-                Air It Out
-              </button>
-            </li>
           </ul>
         )}
       </header>
-
-      {/* Pop-up Modal Container */}
-      <Registration isOpen={showModal} onClose={() => setShowModal(false)} />
-    </>
   )
 }
 

@@ -8,7 +8,7 @@ export default function PoemSpotlight() {
       <div className="relative mx-auto max-w-4xl">
         <div className="mb-12 flex items-center gap-4">
           <span className="h-px w-12 bg-coral" />
-          <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-gold">
+          <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
             The origin poem
           </p>
         </div>

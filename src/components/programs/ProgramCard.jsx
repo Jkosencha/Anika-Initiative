@@ -3,7 +3,7 @@ import { accentBg } from '../../utils/accentClasses'
 
 export default function ProgramCard({ program }) {
   return (
-    <div className='grid md:grid-cols-2 gap-10 bg-cream px-6 md:px-16 py-12'>
+    <div className='mx-auto grid max-w-6xl gap-10 bg-cream px-6 py-12 md:grid-cols-2'>
       
       <div className='mx-auto max-w-6xl px-6'>
 
