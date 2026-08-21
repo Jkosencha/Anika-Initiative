@@ -88,43 +88,46 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative px-4 py-20 md:py-12 bg-ink text-cream text-white overflow-hidden">
-          <img
+      <section className="relative overflow-hidden bg-ink text-cream px-6 md:px-16 py-16">
+        <img
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
-        <div className="relative z-10 text-center mr-185">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 max-w-3xl mr-20 font-display">
+        <div className="relative z-10 mx-auto max-w-6xl px-6">
+          <h1 className="text-5xl md:text-6xl font-display">
             SUPPORT OUR WORK
           </h1>
-          <p className="mt-4 max-w-3xl text-lg text-[#E6A15E] font-editorial italic mr-20">
-            Your gift keeps the rooms open, the mics on and the conversation going
+          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
+            Your gift keeps the rooms open, the mics on and the conversation
+            going
           </p>
         </div>
       </section>
 
-      <section className="py-12 px-4 bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-          {impactStats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Icon className="w-6 h-6 text-[#E6A15E]" />
+      <section className="py-12 bg-white border-y border-gray-100">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {impactStats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="text-center">
+                  <div className="flex justify-center mb-2">
+                    <Icon className="w-6 h-6 text-[#E6A15E]" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
                 </div>
-                <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-500">{stat.label}</div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="py-16 px-4 max-w-7xl mx-auto">
+      <section className="py-16 mx-auto max-w-6xl px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
@@ -299,13 +302,15 @@ const DonationPage = () => {
       </section>
 
       {/* making of impact stories */}
-      <section className="py-16 px-4 bg-[#F4EFE9]">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-16 bg-[#F4EFE9]">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
               Impact Stories
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2">
+              Where your support goes
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -315,7 +320,8 @@ const DonationPage = () => {
               </div>
               <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
               <p className="text-sm text-gray-600">
-                Monthly events where artists air the unsaid. Your support keeps the stage open.
+                Monthly events where artists air the unsaid. Your support keeps
+                the stage open.
               </p>
             </div>
 
@@ -325,7 +331,8 @@ const DonationPage = () => {
               </div>
               <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
               <p className="text-sm text-gray-600">
-                Cross-border collaborations that bring African artists together to create.
+                Cross-border collaborations that bring African artists together
+                to create.
               </p>
             </div>
 
@@ -335,7 +342,8 @@ const DonationPage = () => {
               </div>
               <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
               <p className="text-sm text-gray-600">
-                Therapy workshops and forums where hard conversations finally happen.
+                Therapy workshops and forums where hard conversations finally
+                happen.
               </p>
             </div>
           </div>
