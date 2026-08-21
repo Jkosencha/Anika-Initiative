@@ -137,22 +137,27 @@ export default function EventsList() {
     <div className="bg-[#F8F6E9] min-h-screen text-gray-900 font-sans">
       
       {/* 1. HERO SECTION */}
-      <section className="bg-[#121212] text-white py-16 px-6 md:px-16 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto flex justify-between items-center relative z-10">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
+        <img
+          src="/anika-blue-blob.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 object-contain opacity-80 md:h-80 md:w-80"
+        />
+        <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6">
           <div>
-            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tight font-serif">
+            <h1 className="font-display text-5xl uppercase md:text-6xl">
               EVENTS
             </h1>
-            <p className="text-sm md:text-base italic text-amber-100/70 mt-2 max-w-lg font-serif">
+            <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
               Performances, forums, workshops, spaces where things that have been waiting to be said, get said.
             </p>
           </div>
-          <div className="hidden md:block w-28 h-28 bg-[#8B1E2B] rounded-full filter blur-sm opacity-80" />
         </div>
       </section>
 
       {/* 2. MAIN CONTAINER */}
-      <main className="max-w-5xl mx-auto px-4 py-12 space-y-12">
+      <main className="mx-auto max-w-6xl space-y-12 px-6 py-12">
 
         {/* 2A. UPCOMING FEATURED EVENT */}
         <section>
@@ -182,7 +187,7 @@ export default function EventsList() {
                 <p className="text-xs font-semibold text-[#219653] mt-0.5">
                   {FEATURED_EVENT.location}
                 </p>
-                <p className="text-xs text-gray-600 leading-relaxed mt-3">
+                <p className="mt-3 text-base leading-relaxed text-gray-600">
                   {FEATURED_EVENT.description}
                 </p>
               </div>
@@ -268,7 +273,7 @@ export default function EventsList() {
                       <h3 className="text-base font-bold text-gray-900 leading-snug">
                         {evt.title}
                       </h3>
-                      <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                      <p className="mt-0.5 line-clamp-1 text-base text-gray-500">
                         {evt.description}
                       </p>
                     </div>
@@ -312,7 +317,7 @@ export default function EventsList() {
 
       {/* 3. FOOTER */}
       <footer className="bg-[#121212] text-gray-400 py-12 px-6 mt-20 text-xs">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 md:grid-cols-3">
           <div>
             <h4 className="text-white font-bold uppercase tracking-wider mb-2">PROGRAMS</h4>
             <p className="leading-relaxed">Youth & Migration, Expressions, Gender Equality, Governance.</p>
