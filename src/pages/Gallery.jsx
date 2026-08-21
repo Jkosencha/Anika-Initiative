@@ -64,27 +64,24 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative bg-ink text-cream px-4 py-16 md:py-12 overflow-hidden">
+      <section className="relative bg-ink text-cream py-16 md:px-16 overflow-hidden px-6">
         <img
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
-            Visual Archive
-          </span>
-          <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
+        <div className="max-w-6xl mx-auto p-6 relative z-10">
+          <h1 className="text-5xl md:text-6xl font-display tracking-wider leading-tight">
             GALLERY
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
+          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
             The rooms, the mics, the faces. Art airing in real time.
           </p>
         </div>
       </section>
 
-      <section className="py-16 px-4 max-w-7xl mx-auto">
+      <section className="py-16 px-6 max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
