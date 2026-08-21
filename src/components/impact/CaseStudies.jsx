@@ -26,8 +26,8 @@ export default function CaseStudies({ caseStudies}) {
                     </p>
                 </div>
             ))}
-                </div>
-            </div>
+        </div>
+            
     </section>
   )
 }
