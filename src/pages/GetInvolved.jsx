@@ -131,7 +131,7 @@ const GetInvolved = () => {
       toast.success(
         <div>
           <p className="font-semibold text-sm">Howdy! Message Sent </p>
-          <p className="text-sm text-gray-600 mt-1">
+            <p className="mt-1 text-base text-gray-600">
             Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
           <p className="text-xs text-gray-500 mt-1">
@@ -159,14 +159,14 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
-      <section className="relative overflow-hidden bg-ink text-cream px-4 py-16 md:py-12">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-12">
         <img
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-6xl px-6">
           <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
           </h1>
@@ -177,7 +177,7 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12">
+      <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {waysToGetInvolved.map((way) => {
             const Icon = way.icon;
@@ -210,7 +210,7 @@ const GetInvolved = () => {
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
-            <p className="mt-2 text-lg text-gray-600 italic font-editorial">
+            <p className="mt-2 font-editorial text-lg italic text-gray-600">
               We begin with the voice, not the institution. Tell us who you are
               and what you need to say.
             </p>

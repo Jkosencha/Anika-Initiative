@@ -3,12 +3,13 @@ import { accentBorder } from '../../utils/accentClasses';
 
 export default function Methodologies({ methodologies, quote}) {
   return (
-    <section className='bg-charcoal text-cream px-6 md:px-16 py-16'>
-        <h2 className='font-editorial italic text-5xl mb-10'>
+    <section className='bg-charcoal py-16 text-cream'>
+      <div className='mx-auto max-w-6xl px-6'>
+        <h2 className='mb-10 font-editorial text-5xl italic'>
             Methodologies
         </h2>
 
-        <div className='grid md:grid-cols-3 gap-4'>
+        <div className='grid gap-4 md:grid-cols-3'>
             {methodologies.map((m) => (
                 <div
                     key={m.id}
@@ -17,7 +18,7 @@ export default function Methodologies({ methodologies, quote}) {
                         <h3 className='font-display mb-2 text-lg'>
                             {m.title}
                         </h3>
-                        <p className='text-sm text-cream/70'>
+                        <p className='text-base text-cream/70'>
                             {m.description}
                         </p>
                 </div>
@@ -28,7 +29,8 @@ export default function Methodologies({ methodologies, quote}) {
                     {quote}
                 </p>
             </div>
-        </div>
+                </div>
+            </div>
     </section>
   );
 }

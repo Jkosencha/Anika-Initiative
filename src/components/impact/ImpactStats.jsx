@@ -3,8 +3,8 @@ import { accentText } from '../../utils/accentClasses'
 
 export default function ImpactStats({ stats }) {
   return (
-    <section className='bg-cream px-6 md:px-16 py-16'>
-      <div className='grid grid-cols-2 md:grid-cols-4 border-t border-l border-ink/20'>
+    <section className='bg-cream py-16'>
+      <div className='mx-auto grid max-w-6xl grid-cols-2 border-l border-t border-ink/20 px-6 md:grid-cols-4'>
         {stats.map((stat, i) => (
           <div
             key={i}

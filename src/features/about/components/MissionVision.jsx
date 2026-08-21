@@ -5,8 +5,8 @@ export default function MissionVision() {
 
   return (
     <section className="bg-cream px-6 py-16 sm:py-20">
-      <div className="mx-auto max-w-5xl">
-        <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-anika-blue">
+      <div className="mx-auto max-w-6xl px-6">
+        <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
           {missionVision.eyebrow}
         </p>
         <h2 className="mt-3 font-display text-3xl uppercase text-ink sm:text-4xl">

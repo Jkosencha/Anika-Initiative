@@ -3,10 +3,11 @@ import { accentBorder } from '../../utils/accentClasses';
 
 export default function ProgramTabs({ programs, activeId, onSelect }) {
   return (
-    <div className='flex gap-6 overflow-x-auto border-b border-ink/10 bg-cream px-6 md:px-16 pt-10'>
-      {programs.map((program) => {
-        const isActive = program.id === activeId;
-        return (
+    <div className='border-b border-ink/10 bg-cream px-6 pt-10'>
+      <div className='mx-auto flex max-w-6xl gap-6 overflow-x-auto'>
+        {programs.map((program) => {
+          const isActive = program.id === activeId;
+          return (
             <button
                 key={program.id}
                 onClick={() => onSelect(program.id)}
@@ -18,8 +19,9 @@ export default function ProgramTabs({ programs, activeId, onSelect }) {
             >
                 {program.title}
             </button>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }

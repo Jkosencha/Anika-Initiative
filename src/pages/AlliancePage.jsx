@@ -29,9 +29,15 @@ export default function AlliancePage() {
 
   return (
     <main className="min-h-screen bg-cream">
-      <section className="bg-ink px-6 py-16 text-cream md:px-16 md:py-24">
-        <div className="mx-auto max-w-7xl">
-          <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-anika-blue">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-24">
+        <img
+          src="/abstract-green.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 object-contain opacity-80 md:h-80 md:w-80"
+        />
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
             Pan-African Arts Alliance
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
@@ -45,9 +51,9 @@ export default function AlliancePage() {
       </section>
 
       <section className="bg-white px-6 py-20 md:px-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-start">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 lg:grid-cols-[1fr_0.9fr] lg:items-start">
           <div>
-            <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-anika-blue">
+            <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
               Member benefits
             </p>
             <h2 className="mt-3 max-w-lg font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
@@ -62,25 +68,25 @@ export default function AlliancePage() {
                 <div key={b.title} className="border border-ink/15 bg-cream p-5">
                   <div className={`h-1.5 w-10 ${accentBar[b.accent]}`} />
                   <h3 className="mt-4 font-display text-lg uppercase tracking-wide text-ink">{b.title}</h3>
-                  <p className="mt-2 font-body text-sm leading-6 text-ink/70">{b.text}</p>
+                  <p className="mt-2 font-body text-base leading-6 text-ink/70">{b.text}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="border border-ink/15 bg-cream p-6 sm:p-8">
-            <p className="font-body text-sm font-semibold uppercase tracking-[0.25em] text-coral">Membership application</p>
+            <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-coral">Membership application</p>
             <h2 className="mt-3 font-display text-3xl uppercase tracking-wide text-ink">
               Apply in under 2 minutes
             </h2>
-            <p className="mt-3 font-body text-sm leading-6 text-ink/70">
+            <p className="mt-3 font-body text-base leading-6 text-ink/70">
               Share a few details and the ANIKA team will follow up via WhatsApp.
             </p>
 
             {status === 'done' ? (
               <div className="mt-6 border border-anika-green bg-anika-green p-5 text-white">
                 <p className="font-display text-xl uppercase tracking-wide">Application received.</p>
-                <p className="mt-2 font-body text-sm leading-6">
+                <p className="mt-2 font-body text-base leading-6">
                   Thank you, {form.name || 'friend'}. We’ll be in touch on WhatsApp shortly.
                 </p>
               </div>
