@@ -6,7 +6,7 @@ export default function ReportBanner() {
 
   return (
     <section className='bg-anika-blue text-white py-16'>
-        <div className='mx-auto max-w-6xl px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6'>
+        <div className='mx-auto max-w-6xl px-6 flex flex-col md:flex-row md:items-center md:justify-center gap-40'>
             <div>
                 <h3 className='font-display text-2xl md:text-3xl mb-2'>
                     Annual Impact Report 2025
