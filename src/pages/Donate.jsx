@@ -131,7 +131,7 @@ const DonationPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
-              Why Give
+              Why Give?
             </span>
             <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
               Some realities can't be understood through reports alone.
