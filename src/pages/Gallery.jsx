@@ -36,7 +36,7 @@ const Gallery = () => {
       <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E6A15E] mx-auto">
-            <p className="mt-4 text-gray-600 text-sm">
+            <p className="mt-4 text-gray-600 text-base">
               Loading gallery....Dilettante
             </p>
           </div>
@@ -64,15 +64,18 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative bg-ink text-cream py-16 md:px-16 overflow-hidden px-6">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-12">
         <img
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
-        <div className="max-w-6xl mx-auto p-6 relative z-10">
-          <h1 className="text-5xl md:text-6xl font-display tracking-wider leading-tight">
+        <div className="relative z-10 mx-auto max-w-6xl px-6">
+          <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
+            Visual Archive
+          </span>
+          <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
             GALLERY
           </h1>
           <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
@@ -81,7 +84,7 @@ const Gallery = () => {
         </div>
       </section>
 
-      <section className="py-16 px-6 max-w-6xl mx-auto">
+      <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
@@ -90,7 +93,7 @@ const Gallery = () => {
             <h2 className="text-3xl md:text-4xl font-bold mt-2 text-[#1E1A18]">
               The rooms, the mics, the faces.
             </h2>
-            <p className="text-gray-600 max-w-2xl mt-2 text-sm md:text-base">
+            <p className="mt-2 max-w-2xl text-base text-gray-600">
               Art airing in real time. Moments where something shifts.
             </p>
           </div>
@@ -164,7 +167,7 @@ const Gallery = () => {
           onClick={() => setShowAllModal(false)}
         >
           <div
-            className="max-w-7xl mx-auto"
+            className="mx-auto max-w-6xl px-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-8">

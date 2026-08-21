@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function ProgramsHeader() {
   return (
-    <section className='relative bg-charcoal text-cream px-6 md:px-16 py-14 overflow-hidden'>
+    <section className='relative overflow-hidden bg-charcoal py-16 text-cream'>
         <img 
           src="/anika-gold-blob.png"
           className='pr-6 absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'

@@ -131,7 +131,7 @@ const GetInvolved = () => {
       toast.success(
         <div>
           <p className="font-semibold text-sm">Howdy! Message Sent </p>
-          <p className="text-sm text-gray-600 mt-1">
+            <p className="mt-1 text-base text-gray-600">
             Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
           <p className="text-xs text-gray-500 mt-1">
@@ -158,8 +158,8 @@ const GetInvolved = () => {
   const currentColors = roleColors[selectedRole] || roleColors.artist;
 
   return (
-    <main className="min-h-screen text-[#1E1A18] font-body">
-      <section className="relative overflow-hidden bg-ink text-cream px-6 md:px-16 py-16">
+    <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-12">
         <img
           src="/anika-flower.png"
           alt=""
@@ -167,7 +167,7 @@ const GetInvolved = () => {
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
         <div className="mx-auto max-w-6xl px-6">
-          <h1 className="text-5xl md:text-6xl font-bold font-display">
+          <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
           </h1>
           <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
@@ -210,7 +210,7 @@ const GetInvolved = () => {
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
-            <p className="mt-2 text-lg text-gray-600 italic font-editorial">
+            <p className="mt-2 font-editorial text-lg italic text-gray-600">
               We begin with the voice, not the institution. Tell us who you are
               and what you need to say.
             </p>
