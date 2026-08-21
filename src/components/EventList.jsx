@@ -14,7 +14,7 @@ const FEATURED_EVENT = {
   id: 'evt-featured',
   pillar: 'PERFORMANCE',
   title: 'Sema-Anika Festival 2026: Voices of East Africa',
-  image: 'https://via.placeholder.com/600x600',
+  image: '/SEMA%20ANIKA%20POSTER.jpg',
   dateStr: '15-18 May 2026',
   timeStr: '10:00 AM - 8:00 PM EAT',
   location: 'Kenya Cultural Centre, Nairobi',
@@ -32,6 +32,7 @@ const OTHER_EVENTS = [
     dateNum: '06',
     dateMonth: 'SEP',
     title: 'Open Mic',
+    image: '/slim.jpg',
     location: 'Nairobi',
     dateStr: 'Saturday, 06 Sept 2026',
     timeStr: '18:00 EAT',
@@ -47,6 +48,7 @@ const OTHER_EVENTS = [
     dateNum: '20',
     dateMonth: 'SEP',
     title: 'Community Dialogue Forum',
+    image: '/listener.jpg',
     location: 'Nairobi',
     dateStr: 'Sunday, 20 Sept 2026',
     timeStr: '14:00 EAT',
@@ -62,6 +64,7 @@ const OTHER_EVENTS = [
     dateNum: '05',
     dateMonth: 'OCT',
     title: 'Art Therapy Workshop Series',
+    image: '/image6.jpg',
     location: 'Nairobi',
     dateStr: 'Monday, 05 Oct 2026',
     timeStr: '10:00 EAT',
@@ -77,6 +80,7 @@ const OTHER_EVENTS = [
     dateNum: '26',
     dateMonth: 'NOV',
     title: 'Heritage Arts Festival',
+    image: '/KWAJ.jpg',
     location: 'Nairobi',
     dateStr: 'Thursday, 26 Nov 2026',
     timeStr: '11:00 EAT',
@@ -155,10 +159,10 @@ export default function EventsList() {
           <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block mb-3">
             UPCOMING EVENT
           </span>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden grid grid-cols-1 md:grid-cols-12">
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md grid grid-cols-1 md:grid-cols-12">
             
             {/* Poster Image */}
-            <div className="md:col-span-5 bg-black h-64 md:h-auto overflow-hidden relative">
+            <div className="relative h-80 overflow-hidden bg-black md:col-span-5 md:h-[26rem]">
               <img 
                 src={FEATURED_EVENT.image} 
                 alt={FEATURED_EVENT.title} 
@@ -167,7 +171,7 @@ export default function EventsList() {
             </div>
 
             {/* Details & Action */}
-            <div className="md:col-span-7 p-6 md:p-8 flex flex-col justify-between space-y-4">
+            <div className="flex flex-col justify-between space-y-5 p-6 md:col-span-7 md:p-10">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 leading-snug">
                   {FEATURED_EVENT.title}
@@ -197,7 +201,7 @@ export default function EventsList() {
 
           {/* Inline Form Drawer for Featured Event */}
           {openFormId === FEATURED_EVENT.id && (
-            <div className="bg-white border-x border-b border-gray-200 p-6 rounded-b-lg -mt-1 shadow-md">
+            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-[#FAF9F5] p-6 shadow-md md:p-8">
               {renderRegistrationForm(FEATURED_EVENT.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
             </div>
           )}
@@ -239,10 +243,10 @@ export default function EventsList() {
           {/* Event List */}
           <div className="space-y-4">
             {filteredEvents.map((evt) => (
-              <div key={evt.id} className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
+              <div key={evt.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
                 
                 {/* Horizontal Card Row */}
-                <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col justify-between gap-5 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
                   <div className="flex items-center gap-4">
                     
                     {/* Colored Date Badge */}
@@ -252,8 +256,8 @@ export default function EventsList() {
                     </div>
 
                     {/* Thumbnail */}
-                    <div className="w-20 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 hidden sm:block">
-                      <img src="https://via.placeholder.com/150" alt="" className="w-full h-full object-cover" />
+                    <div className="hidden h-24 w-32 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-200 sm:block">
+                      <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
                     </div>
 
                     {/* Meta Details */}
@@ -284,7 +288,7 @@ export default function EventsList() {
 
                 {/* Expandable Registration Drawer */}
                 {openFormId === evt.id && (
-                  <div className="bg-[#FAF9F5] border-t border-gray-200 p-5 md:p-6">
+                  <div className="border-t border-gray-200 bg-[#FAF9F5] p-5 md:p-8">
                     
                     {/* Rich Meta Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-700 font-medium mb-5 pb-4 border-b border-gray-200">
@@ -342,8 +346,8 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
   }
 
   return (
-    <form onSubmit={(e) => handleRegister(e, eventId)} className="max-w-xl space-y-4">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900">
+    <form onSubmit={(e) => handleRegister(e, eventId)} className="max-w-2xl space-y-5 rounded-md border border-gray-200 bg-white p-5 shadow-sm md:p-6">
+      <h4 className="text-sm font-bold uppercase tracking-wider text-gray-900">
         FAST REGISTRATION VIA WHATSAPP
       </h4>
 
@@ -356,7 +360,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
             placeholder="First and Last Name"
             value={currentForm.fullName}
             onChange={(e) => handleInputChange(eventId, 'fullName', e.target.value)}
-            className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-[#EB4C47]"
+            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-[#EB4C47] focus:outline-none focus:ring-2 focus:ring-[#EB4C47]/20"
           />
         </div>
 
@@ -368,12 +372,12 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
             placeholder="+254 712 345 678"
             value={currentForm.whatsappNumber}
             onChange={(e) => handleInputChange(eventId, 'whatsappNumber', e.target.value)}
-            className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-[#EB4C47]"
+            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-[#EB4C47] focus:outline-none focus:ring-2 focus:ring-[#EB4C47]/20"
           />
         </div>
       </div>
 
-      <div className="flex items-start gap-2 bg-white border border-gray-200 p-2.5 rounded">
+      <div className="flex items-start gap-3 rounded border border-gray-200 bg-[#F8F6E9] p-3">
         <input
           type="checkbox"
           id={`optIn-${eventId}`}
@@ -381,7 +385,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
           onChange={(e) => handleInputChange(eventId, 'optIn', e.target.checked)}
           className="mt-0.5 accent-[#219653]"
         />
-        <label htmlFor={`optIn-${eventId}`} className="text-[10px] text-gray-600 leading-tight">
+        <label htmlFor={`optIn-${eventId}`} className="text-xs leading-relaxed text-gray-600">
           Receive instant registration updates and event reminders directly on WhatsApp.
         </label>
       </div>
@@ -389,7 +393,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
       <button
         type="submit"
         disabled={loading[eventId]}
-        className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white font-bold py-2.5 px-6 rounded text-xs uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+        className="inline-flex items-center gap-2 rounded bg-[#EB4C47] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#d43f3a]"
       >
         {loading[eventId] ? 'CONFIRMING...' : 'CONFIRM SEAT'}
         <ArrowRightIcon className="w-3.5 h-3.5" />
