@@ -1,4 +1,3 @@
-// src/features/about/components/HistoryTimeline.jsx
 import { history } from '../data/aboutContent'
 
 export default function HistoryTimeline() {
@@ -14,7 +13,7 @@ export default function HistoryTimeline() {
 
         <div className="mt-6 max-w-2xl space-y-4">
           {history.body.map((paragraph, i) => (
-            <p key={i} className="font-body text-base leading-relaxed text-ink/80">
+            <p key={i} className="font-body text-lg leading-relaxed text-ink/80">
               {paragraph}
             </p>
           ))}

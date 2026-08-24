@@ -18,7 +18,7 @@ export default function JoinCTA() {
           ))}
         </h2>
 
-        <p className="mt-6 font-body text-base leading-relaxed text-cream/90 sm:text-lg">
+        <p className="mt-6 font-body text-lg leading-relaxed text-cream/90">
           {joinCta.body}
         </p>
 

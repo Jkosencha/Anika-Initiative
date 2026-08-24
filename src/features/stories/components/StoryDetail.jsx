@@ -40,7 +40,7 @@ const StoryDetail = ({ story }) => {
           />
         </div>
 
-        <div className="font-editorial text-lg sm:text-xl text-ink/80 leading-relaxed space-y-6">
+        <div className="font-editorial text-base text-ink/80 leading-relaxed space-y-6">
           {story.body.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
           ))}
