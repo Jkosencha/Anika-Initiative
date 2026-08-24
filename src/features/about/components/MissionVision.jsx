@@ -18,7 +18,7 @@ export default function MissionVision() {
             <h3 className="font-display text-2xl uppercase text-coral">
               {mission.label}
             </h3>
-            <p className="mt-3 font-editorial text-xl italic leading-snug text-ink">
+            <p className="mt-3 font-editorial text-lg italic leading-snug text-ink">
               {mission.tagline}
             </p>
             <p className="mt-4 font-body text-base leading-relaxed text-ink/80">
@@ -30,7 +30,7 @@ export default function MissionVision() {
             <h3 className="font-display text-2xl uppercase text-anika-green">
               {vision.label}
             </h3>
-            <p className="mt-3 font-editorial text-xl italic leading-snug text-ink">
+            <p className="mt-3 font-editorial text-lg italic leading-snug text-ink">
               {vision.tagline}
             </p>
             <p className="mt-4 font-body text-base leading-relaxed text-ink/80">

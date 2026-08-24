@@ -174,7 +174,7 @@ const DonationPage = () => {
                 onClick={() => setDonationMethod("mpesa")}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
                   donationMethod === "mpesa"
-                    ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
+                    ? "bg-[#39ba25] text-[#1E1A18] shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -305,7 +305,9 @@ const DonationPage = () => {
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
               Impact Stories
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2">
+              Where your support goes
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
