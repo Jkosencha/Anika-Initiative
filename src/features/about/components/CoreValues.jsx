@@ -1,4 +1,3 @@
-// src/features/about/components/CoreValues.jsx
 import { values, valuesIntro } from '../data/values'
 
 const swatches = ['text-coral', 'text-anika-green', 'text-anika-blue', 'text-gold', 'text-coral']
@@ -10,7 +9,7 @@ export default function CoreValues() {
         <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
           {valuesIntro.eyebrow}
         </p>
-        <h2 className="mt-3 font-display text-3xl uppercase text-cream sm:text-4xl">
+        <h2 className="mt-3 text-3xl font-bold text-cream sm:text-4xl">
           {valuesIntro.heading}
         </h2>
         <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-cream/70">

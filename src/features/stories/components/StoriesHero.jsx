@@ -4,7 +4,7 @@ const StoriesHero = () => {
   const { headingLead, headingAccent, subheading } = content;
 
   return (
-    <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
+    <section className="relative overflow-hidden bg-ink py-16 text-cream">
       <img
         src="/abstract-coral.png"
         alt=""

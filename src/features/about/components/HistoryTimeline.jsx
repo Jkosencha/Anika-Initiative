@@ -1,4 +1,3 @@
-// src/features/about/components/HistoryTimeline.jsx
 import { history } from '../data/aboutContent'
 
 export default function HistoryTimeline() {
@@ -8,7 +7,7 @@ export default function HistoryTimeline() {
         <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-gold">
           {history.eyebrow}
         </p>
-        <h2 className="mt-3 max-w-2xl font-display text-3xl uppercase leading-tight text-ink sm:text-4xl">
+        <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight text-ink sm:text-4xl">
           {history.heading}
         </h2>
 
