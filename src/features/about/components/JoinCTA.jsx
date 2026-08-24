@@ -1,4 +1,3 @@
-// src/features/about/components/JoinCTA.jsx
 import { Link } from 'react-router-dom'
 import { joinCta } from '../data/aboutContent'
 
@@ -10,7 +9,7 @@ export default function JoinCTA() {
           {joinCta.eyebrow}
         </p>
 
-        <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-cream sm:text-6xl">
+        <h2 className="mt-4 text-4xl font-bold leading-[0.95] text-cream sm:text-6xl">
           {joinCta.headingLines.map((line) => (
             <span key={line} className="block">
               {line}

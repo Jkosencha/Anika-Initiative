@@ -31,7 +31,7 @@ const StoryCard = ({ story }) => {
           {story.pillar}
         </span>
 
-        <h3 className="font-display text-xl mt-4 mb-2 text-ink leading-snug">
+        <h3 className="font-bold text-xl mt-4 mb-2 text-ink leading-snug">
           {story.title}
         </h3>
 
