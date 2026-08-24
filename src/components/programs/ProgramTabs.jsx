@@ -11,7 +11,7 @@ export default function ProgramTabs({ programs, activeId, onSelect }) {
             <button
                 key={program.id}
                 onClick={() => onSelect(program.id)}
-                className={`whitespace-nowrap pb-3 text-sm font-semibold tracking-wide uppeercase border-b-2 transition-colors cursor-pointer ${
+                className={`pb-3 text-sm font-semibold tracking-wide uppercase border-b-2 transition-colors cursor-pointer ${
                     isActive
                         ? `text-ink ${accentBorder[program.accentClass]}`
                         : 'text-ink/40 border-transparent'
@@ -23,5 +23,6 @@ export default function ProgramTabs({ programs, activeId, onSelect }) {
         })}
       </div>
     </div>
+    
   )
 }
