@@ -88,43 +88,46 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-12">
-          <img
+      <section className="relative overflow-hidden bg-ink text-cream px-6 md:px-16 py-16">
+        <img
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
         <div className="relative z-10 mx-auto max-w-6xl px-6">
-          <h1 className="mb-6 max-w-3xl font-display text-5xl leading-tight md:text-6xl">
+          <h1 className="text-5xl md:text-6xl font-display">
             SUPPORT OUR WORK
           </h1>
-          <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
-            Your gift keeps the rooms open, the mics on and the conversation going
+          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
+            Your gift keeps the rooms open, the mics on and the conversation
+            going
           </p>
         </div>
       </section>
 
-      <section className="py-12 px-4 bg-white border-y border-gray-100">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 md:grid-cols-4">
-          {impactStats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Icon className="w-6 h-6 text-[#E6A15E]" />
+      <section className="py-12 bg-white border-y border-gray-100">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {impactStats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="text-center">
+                  <div className="flex justify-center mb-2">
+                    <Icon className="w-6 h-6 text-[#E6A15E]" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-500">{stat.label}</div>
                 </div>
-                <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-gray-500">{stat.label}</div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16">
+      <section className="py-16 mx-auto max-w-6xl px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <div>
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
@@ -144,7 +147,7 @@ const DonationPage = () => {
                     <h4 className="font-bold">
                       Your support makes a direct impact
                     </h4>
-                    <p className="text-base text-gray-600">
+                    <p className="text-sm text-gray-600">
                       100% of your donation goes to programs, venues, artist
                       stipends and safe spaces.
                     </p>
@@ -164,7 +167,7 @@ const DonationPage = () => {
 
           <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
             <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
-            <p className="mb-6 text-base text-gray-500">
+            <p className="text-sm text-gray-500 mb-6">
               Choose your amount and preferred method.
             </p>
 
@@ -174,7 +177,7 @@ const DonationPage = () => {
                 onClick={() => setDonationMethod("mpesa")}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
                   donationMethod === "mpesa"
-                    ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
+                    ? "bg-[#39ba25] text-[#1E1A18] shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -243,7 +246,7 @@ const DonationPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 mb-8">
+                {/* <div className="flex items-center gap-3 mb-8">
                   <input
                     type="checkbox"
                     id="whatsapp"
@@ -257,7 +260,7 @@ const DonationPage = () => {
                   >
                     <MessageCircle className="w-4 h-4" /> Send to whatsApp
                   </label>
-                </div>
+                </div> */}
               </>
             )}
 
@@ -299,13 +302,15 @@ const DonationPage = () => {
       </section>
 
       {/* making of impact stories */}
-      <section className="py-16 px-4 bg-[#F4EFE9]">
+      <section className="py-16 bg-[#F4EFE9]">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
             <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
               Impact Stories
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mt-2">
+              Where your support goes
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -314,8 +319,9 @@ const DonationPage = () => {
                 <Mic className="w-6 h-6 text-[#E6A15E]" />
               </div>
               <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
-              <p className="text-base text-gray-600">
-                Monthly events where artists air the unsaid. Your support keeps the stage open.
+              <p className="text-sm text-gray-600">
+                Monthly events where artists air the unsaid. Your support keeps
+                the stage open.
               </p>
             </div>
 
@@ -324,8 +330,9 @@ const DonationPage = () => {
                 <Users className="w-6 h-6 text-[#E6A15E]" />
               </div>
               <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
-              <p className="text-base text-gray-600">
-                Cross-border collaborations that bring African artists together to create.
+              <p className="text-sm text-gray-600">
+                Cross-border collaborations that bring African artists together
+                to create.
               </p>
             </div>
 
@@ -334,8 +341,9 @@ const DonationPage = () => {
                 <Heart className="w-6 h-6 text-[#E6A15E]" />
               </div>
               <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
-              <p className="text-base text-gray-600">
-                Therapy workshops and forums where hard conversations finally happen.
+              <p className="text-sm text-gray-600">
+                Therapy workshops and forums where hard conversations finally
+                happen.
               </p>
             </div>
           </div>
