@@ -78,7 +78,7 @@ const Gallery = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
             GALLERY
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
+          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
             The rooms, the mics, the faces. Art airing in real time.
           </p>
         </div>

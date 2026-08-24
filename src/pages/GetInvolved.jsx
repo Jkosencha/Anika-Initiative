@@ -170,7 +170,7 @@ const GetInvolved = () => {
           <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
             GET INVOLVED
           </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
+          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
             Whether you attend, give or partner, there's a place for you at
             ANIKA.
           </p>
@@ -206,8 +206,8 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      <section className="px-4 py-16 bg-[#FAF7F2]">
-        <div className="mx-auto max-w-4xl">
+      <section className="px-6 py-16 bg-[#FAF7F2]">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
             <p className="mt-2 font-editorial text-lg italic text-gray-600">

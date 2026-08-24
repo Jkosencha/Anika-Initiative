@@ -13,7 +13,7 @@ export default function CoreValues() {
         <h2 className="mt-3 font-display text-3xl uppercase text-cream sm:text-4xl">
           {valuesIntro.heading}
         </h2>
-        <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-cream/70">
+        <p className="mt-4 max-w-xl font-body text-lg leading-relaxed text-cream/70">
           {valuesIntro.body}
         </p>
 
