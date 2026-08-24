@@ -64,7 +64,7 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-12">
+      <section className="relative overflow-hidden bg-ink text-cream py-16 text-cream md:py-12">
         <img
           src="/anika-flower.png"
           alt=""
@@ -72,9 +72,6 @@ const Gallery = () => {
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
         <div className="relative z-10 mx-auto max-w-6xl px-6">
-          <span className="inline-block text-[#E6A15E] font-semibold text-sm tracking-[0.3em] uppercase mb-2">
-            Visual Archive
-          </span>
           <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
             GALLERY
           </h1>
