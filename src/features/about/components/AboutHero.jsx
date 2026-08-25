@@ -2,7 +2,7 @@ import { hero } from '../data/aboutContent'
 
 export default function AboutHero() {
   return (
-    <section className="relative overflow-hidden bg-ink py-16 text-cream">
+    <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
       <img
         src="/anika-gold-blob.png"
         alt=""
