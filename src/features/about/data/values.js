@@ -5,7 +5,7 @@
 export const valuesIntro = {
   eyebrow: 'A.N.I.K.A.',
   heading: 'Who we are while doing the work',
-  body: 'Five values guide ANIKA regardless of the project, audience or funding environment.',
+
 }
 
 export const values = [

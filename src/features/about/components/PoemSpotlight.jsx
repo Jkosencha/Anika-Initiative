@@ -26,7 +26,7 @@ export default function PoemSpotlight() {
         </div>
 
         {/* Full poem */}
-        <div className="mt-16 grid gap-x-12 gap-y-10 font-editorial text-xl leading-relaxed text-cream/85 sm:grid-cols-2 sm:text-2xl">
+        <div className="mt-16 max-w-3xl space-y-10 font-editorial text-xl leading-relaxed text-cream/85 sm:text-2xl">
           {poem.stanzas.map((stanza, i) => (
             <p key={i}>
               {stanza.map((line, j) => (

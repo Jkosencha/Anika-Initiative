@@ -11,12 +11,22 @@ export default function HistoryTimeline() {
           {history.heading}
         </h2>
 
-        <div className="mt-6 max-w-2xl space-y-4">
-          {history.body.map((paragraph, i) => (
-            <p key={i} className="font-body text-base leading-relaxed text-ink/80">
-              {paragraph}
-            </p>
-          ))}
+        <div className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-12">
+          <figure className="flex flex-col sm:h-full">
+            <img
+              src="/image9.jpg"
+              alt="Artists and community members gathered at an early ANIKA Initiative session"
+              className="aspect-[4/3] w-full rounded-2xl object-cover sm:aspect-auto sm:flex-1"
+            />
+          </figure>
+
+          <div className="max-w-2xl space-y-4">
+            {history.body.map((paragraph, i) => (
+              <p key={i} className="font-body text-base leading-relaxed text-ink/80">
+                {paragraph}
+              </p>
+            ))}
+          </div>
         </div>
 
         <ol className="mt-14 grid gap-10 border-t border-ink/10 pt-10 sm:grid-cols-3 sm:gap-6">
