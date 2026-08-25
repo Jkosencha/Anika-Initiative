@@ -6,6 +6,7 @@ import PoemSpotlight from './components/PoemSpotlight'
 import MissionVision from './components/MissionVision'
 import HistoryTimeline from './components/HistoryTimeline'
 import CoreValues from './components/CoreValues'
+import Partners from './components/Partners'
 import JoinCTA from './components/JoinCTA'
 
 export default function AboutSection() {
@@ -33,6 +34,7 @@ export default function AboutSection() {
       <MissionVision />
       <HistoryTimeline />
       <CoreValues />
+      <Partners />
       <JoinCTA />
     </>
   )
@@ -46,5 +48,6 @@ export {
   MissionVision,
   HistoryTimeline,
   CoreValues,
+  Partners,
   JoinCTA,
 }
