@@ -3,7 +3,7 @@ import { poem } from '../data/poem'
 
 export default function PoemSpotlight() {
   return (
-    <section className="relative overflow-hidden bg-ink px-6 py-20 text-cream sm:py-28">
+    <section className="relative overflow-hidden bg-charcoal px-6 py-20 text-cream sm:py-28">
       <div className="pointer-events-none absolute -right-20 top-12 h-64 w-64 rounded-full border border-gold/20" />
       <div className="relative mx-auto max-w-4xl">
         <div className="mb-12 flex items-center gap-4">

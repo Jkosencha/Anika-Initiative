@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { pillarColors } from "../data/stories.js";
 
-
+// Original pillar pill — unchanged
 const tagClasses = {
   coral: "bg-coral/10 text-coral",
   gold: "bg-gold/10 text-gold",
@@ -10,8 +10,58 @@ const tagClasses = {
   ink: "bg-ink/10 text-ink",
 };
 
+// Solid ribbon badge colors
+const badgeClasses = {
+  coral: "bg-coral text-cream",
+  gold: "bg-gold text-ink",
+  "anika-blue": "bg-anika-blue text-cream",
+  "anika-green": "bg-anika-green text-cream",
+  ink: "bg-ink text-cream",
+};
+
+const foldClasses = {
+  coral: "border-t-coral",
+  gold: "border-t-gold",
+  "anika-blue": "border-t-anika-blue",
+  "anika-green": "border-t-anika-green",
+  ink: "border-t-ink",
+};
+
+const formatDate = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value; // already a display string
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Stable placeholder dates for stories that don't have a real `date` field
+// yet — add `date: "2026-02-25"` (or similar) to a story in data/stories.js
+// to override this with a real one.
+const SAMPLE_DATES = [
+  "Feb 25, 2026",
+  "Feb 4, 2026",
+  "Jan 18, 2026",
+  "Dec 12, 2025",
+  "Nov 3, 2025",
+  "Sep 4, 2025",
+];
+
+const fallbackDate = (key) => {
+  const str = String(key ?? "story");
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) % SAMPLE_DATES.length;
+  }
+  return SAMPLE_DATES[hash];
+};
+
 const StoryCard = ({ story }) => {
   const colorToken = pillarColors[story.pillar] ?? "ink";
+  const date = formatDate(story.date) ?? fallbackDate(story.id ?? story.slug ?? story.title);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg bg-white/40 shadow-sm">
@@ -25,6 +75,20 @@ const StoryCard = ({ story }) => {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
+        {/* Date ribbon — pulled up to overlap the image's bottom edge */}
+        <div className="-mt-9 mb-4 flex items-start">
+          <span className="relative inline-block">
+            <span
+              className={`inline-block rounded-sm px-3 py-1.5 font-body text-xs font-semibold shadow-sm ${badgeClasses[colorToken]}`}
+            >
+              {date}
+            </span>
+            <span
+              className={`absolute -bottom-1.5 left-0 h-0 w-0 border-l-[6px] border-l-transparent border-t-[6px] brightness-75 ${foldClasses[colorToken]}`}
+            />
+          </span>
+        </div>
+
         <span
           className={`self-start rounded-full px-3 py-1 font-body text-xs uppercase tracking-wide ${tagClasses[colorToken]}`}
         >
@@ -41,9 +105,9 @@ const StoryCard = ({ story }) => {
 
         <Link
           to={`/stories/${story.slug}`}
-          className="mt-6 self-start font-body text-sm text-ink hover:text-coral transition-colors duration-200"
+          className="mt-6 self-start font-body text-sm font-semibold text-anika-blue hover:text-coral transition-colors duration-200"
         >
-          Read our story →
+          Read More
         </Link>
       </div>
     </article>
