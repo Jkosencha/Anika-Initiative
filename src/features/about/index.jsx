@@ -4,7 +4,9 @@ import AboutHero from './components/AboutHero'
 import OriginStory from './components/OriginStory'
 import PoemSpotlight from './components/PoemSpotlight'
 import MissionVision from './components/MissionVision'
+import Objectives from './components/Objectives'
 import HistoryTimeline from './components/HistoryTimeline'
+import Governance from './components/Governance'
 import CoreValues from './components/CoreValues'
 import Partners from './components/Partners'
 import JoinCTA from './components/JoinCTA'
@@ -32,6 +34,8 @@ export default function AboutSection() {
       <OriginStory />
       <PoemSpotlight />
       <MissionVision />
+      <Objectives />
+      <Governance />
       <HistoryTimeline />
       <CoreValues />
       <Partners />
@@ -46,7 +50,9 @@ export {
   OriginStory,
   PoemSpotlight,
   MissionVision,
+  Objectives,
   HistoryTimeline,
+  Governance,
   CoreValues,
   Partners,
   JoinCTA,

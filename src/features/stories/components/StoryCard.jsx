@@ -105,7 +105,7 @@ const StoryCard = ({ story }) => {
 
         <Link
           to={`/stories/${story.slug}`}
-          className="mt-6 self-start font-body text-sm font-semibold text-anika-blue hover:text-coral transition-colors duration-200"
+          className="mt-6 inline-flex self-start items-center gap-2 rounded-full bg-anika-blue px-5 py-2 font-body text-sm font-semibold text-cream transition-colors duration-200 hover:bg-coral"
         >
           Read More
         </Link>
