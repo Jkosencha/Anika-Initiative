@@ -20,6 +20,7 @@ export const stories = [
     id: "sema-anika-forum",
     slug: "sema-anika-forum",
     pillar: "Arts & Culture",
+    date: "2026-02-25",
     title: "When a room becomes a stage for honest conversation",
     excerpt:
       "Inside the Sema-Anika Forum, spoken word turns silence into shared testimony, and a packed room learns to listen differently.",
@@ -34,6 +35,7 @@ export const stories = [
     id: "refupoet-belonging",
     slug: "refupoet-belonging",
     pillar: "Youth & Migration",
+    date: "2026-01-18",
     title: "A generation building belonging across borders",
     excerpt:
       "Through Refupoet, young refugees and host-community artists trade verses instead of assumptions and start writing a shared future.",
@@ -48,6 +50,7 @@ export const stories = [
     id: "air-it-out",
     slug: "air-it-out",
     pillar: "Gender & Development",
+    date: "2025-11-03",
     title: "Naming what silence protects",
     excerpt:
       "The Air It Out campaign gives survivors and allies a stage to say what community whispers usually bury, because #SilenceKills.",
