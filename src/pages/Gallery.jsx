@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, X } from "lucide-react";
+import Reveal from '../components/Reveal';
 
 const Gallery = () => {
   const [allImages, setAllImages] = useState([]);
@@ -64,70 +65,74 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
-        <img
-          src="/anika-flower.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
-        />
-        <div className="relative z-10 mx-auto max-w-6xl px-6">
-          <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
-            GALLERY
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
-            The rooms, the mics, the faces. Art airing in real time.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
-          <div>
-            <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
-              Moments
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2 text-[#1E1A18]">
-              The rooms, the mics, the faces.
-            </h2>
-            <p className="mt-2 max-w-2xl text-base text-gray-600">
-              Art airing in real time. Moments where something shifts.
+      {/* Hero Section */}
+      <Reveal>
+        <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
+          <img
+            src="/anika-flower.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+          />
+          <div className="relative z-10 mx-auto max-w-6xl px-6">
+            <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
+              GALLERY
+            </h1>
+            <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
+              The rooms, the mics, the faces. Art airing in real time.
             </p>
           </div>
-          <button
-            onClick={handleViewAll}
-            className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group cursor-pointer"
-          >
-            <span>View all</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
+        </section>
+      </Reveal>
 
-        {/* redesigning ain grid showing 6 images only */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {galleryItems.map((item) => (
-            <div
-              key={item.src}
-              className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 bg-gray-200 aspect-[4/3] cursor-pointer"
-              onClick={() => openLightbox(item)}
-            >
-              <img
-                src={item.src}
-                alt={item.alt}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-              />
-              {/* desgining alt text*/}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
-                <span className="text-[#E6A15E] font-medium text-sm tracking-wide bg-[#1E1A18]/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#E6A15E]/30 shadow-lg">
-                  {item.alt}
-                </span>
-              </div>
+      {/* Gallery Grid Section */}
+      <Reveal>
+        <section className="mx-auto max-w-6xl px-6 py-16">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+            <div>
+              <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
+                Moments
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2 text-[#1E1A18]">
+                The rooms, the mics, the faces.
+              </h2>
+              <p className="mt-2 max-w-2xl text-base text-gray-600">
+                Art airing in real time. Moments where something shifts.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
+            <button
+              onClick={handleViewAll}
+              className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group cursor-pointer"
+            >
+              <span>View all</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
 
-      {/* lets open the image when clicked*/}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {galleryItems.map((item) => (
+              <div
+                key={item.src}
+                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 bg-gray-200 aspect-[4/3] cursor-pointer"
+                onClick={() => openLightbox(item)}
+              >
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
+                  <span className="text-[#E6A15E] font-medium text-sm tracking-wide bg-[#1E1A18]/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#E6A15E]/30 shadow-lg">
+                    {item.alt}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </Reveal>
+
+      {/* Lightbox */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
@@ -157,7 +162,7 @@ const Gallery = () => {
         </div>
       )}
 
-      {/* lets show all the image */}
+      {/* View All Modal */}
       {showAllModal && (
         <div
           className="fixed inset-0 bg-black/95 z-50 overflow-y-auto p-4 backdrop-blur-sm"
@@ -199,4 +204,5 @@ const Gallery = () => {
     </div>
   );
 };
+
 export default Gallery;
