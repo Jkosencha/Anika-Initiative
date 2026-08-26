@@ -1,32 +1,30 @@
-import { pillars } from "../data/stories.js";
+import { PILLARS } from "../../../data/pillars";
+import { accentText } from "../../../utils/accentClasses"
 
-const activeClasses = {
-  All: "text-ink",
-  "Arts & Culture": "text-coral",
-  "Youth & Migration": "text-gold",
-  "Gender & Development": "text-anika-blue",
-  "Climate Action": "text-anika-green",
-  Governance: "text-ink",
-};
+const ALL_OPTION = { slug: "all", name: "All"};
 
 const PillarFilter = ({ active, onChange }) => {
+  const options = [ALL_OPTION, ...PILLARS];
+
   return (
     <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-10">
-      {pillars.map((pillar) => {
-        const isActive = pillar === active;
+      {options.map((pillar) => {
+        const isActive = pillar.slug === active;
+        const colorClass = pillar.slug === "all" ? "text-ink" : accentText[pillar.accentClass];
+
         return (
           <button
-            key={pillar}
+            key={pillar.slug}
             type="button"
-            onClick={() => onChange(pillar)}
+            onClick={() => onChange(pillar.slug)}
             aria-pressed={isActive}
             className={`text-sm font-semibold uppercase tracking-wide pb-1 border-b-2 transition-colors duration-200 ${
               isActive
-                ? `${activeClasses[pillar]} border-current`
+                ? `${colorClass} border-current`
                 : "text-ink/50 border-transparent hover:text-ink"
             }`}
           >
-            {pillar}
+            {pillar.name}
           </button>
         );
       })}

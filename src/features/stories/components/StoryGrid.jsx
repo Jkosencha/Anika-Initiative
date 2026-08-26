@@ -2,7 +2,7 @@ import StoryCard from "./StoryCard.jsx";
 
 const StoryGrid = ({ stories, activePillar }) => {
   const filtered =
-    activePillar === "All"
+    activePillar === "all"
       ? stories
       : stories.filter((story) => story.pillar === activePillar);
 

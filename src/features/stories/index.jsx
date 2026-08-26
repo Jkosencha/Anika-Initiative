@@ -1,13 +1,24 @@
 // src/features/stories/index.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StoriesHero from "./components/StoriesHero.jsx";
 import PillarFilter from "./components/PillarFilter.jsx";
 import StoryGrid from "./components/StoryGrid.jsx";
 import { stories } from "./data/stories.js";
+import { useSearchParams } from "react-router-dom";
 
 export default function Stories() {
-  const [activePillar, setActivePillar] = useState("All");
+  const [searchParams] = useSearchParams();
+  const pillarParam = searchParams.get("pillar");
 
+  const [activePillar, setActivePillar] = useState(pillarParam ?? "all");
+
+
+  useEffect(() => {
+    if (pillarParam) {
+      setActivePillar(pillarParam);
+    }
+  }, [pillarParam]);
+  
   return (
     <>
       <StoriesHero />
