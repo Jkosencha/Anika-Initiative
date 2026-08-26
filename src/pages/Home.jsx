@@ -74,7 +74,7 @@ function Home() {
                 Explore Our Work
               </NavLink>
               <NavLink
-                to="/get-involved"
+                to="/donate"
                 className="rounded-full border border-cream/40 px-6 py-3 font-body text-sm font-semibold uppercase tracking-wide text-cream hover:border-cream"
               >
                 Support Us
