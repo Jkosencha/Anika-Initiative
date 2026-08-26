@@ -207,7 +207,7 @@ const GetInvolved = () => {
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
         />
         <div className="mx-auto max-w-6xl px-6">
-          <h1 className="text-4xl md:text-6xl font-bold text-white font-display tracking-wider">
+          <h1 className="text-4xl md:text-6xl font-bold font-display tracking-wider">
             GET INVOLVED
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
