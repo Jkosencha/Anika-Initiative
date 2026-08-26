@@ -1,5 +1,7 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 import { accentBg } from '../../utils/accentClasses'
+import { ArrowRight } from 'lucide-react';
 
 export default function ProgramCard({ program }) {
   return (
@@ -24,23 +26,31 @@ export default function ProgramCard({ program }) {
 
         </div>
 
-        <p className='text-ink/80 mb-6'>
+        <p className='text-ink/80 mb-6 text-base'>
             {program.description}
         </p>
 
-        <h3 className='font-display text-s uppercase tracking-wide text-ink/70 mb-2'>
+        <h3 className='font-display uppercase tracking-wide text-ink/70 mb-2'>
             How We Work
         </h3>
 
         <ul className='space-y-1'>
             {program.howWeWork.map((item, i) => (
                 <li key={i}
-                    className='flex items-center gap-2 text-sm text-ink'>
+                    className='flex items-center gap-2 text-base text-ink/80'>
                         <span className={`w-2 h-2 inline-block ${accentBg[program.accentClass]}`} />
                         {item}
                 </li>
             ))}
         </ul>
+
+        <Link
+            to={`/stories?pillar=${program.id}`}
+            className= {`inline-flex items-center gap-2 mt-4 text-sm font-semibold uppercase tracking-wide text-white px-5 py-2.5 transition-opacity duration-200 hover:opacity-90 ${accentBg[program.accentClass]}`}
+        >
+            Read {program.title} Stories
+            <ArrowRight size={14}/>
+        </Link>
 
       </div>
 
