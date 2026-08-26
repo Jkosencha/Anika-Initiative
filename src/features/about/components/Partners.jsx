@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { partnersIntro, partners } from '../data/partners'
 
-const CARDS_PER_PAGE = 4
-const AUTOPLAY_MS = 4000
+const CARDS_PER_PAGE_DESKTOP = 4
+const AUTOPLAY_MS = 3000
+const MOBILE_QUERY = '(max-width: 639px)'
+const MARQUEE_SECONDS = 20
 
 function chunk(list, size) {
   const pages = []
@@ -12,19 +14,23 @@ function chunk(list, size) {
   return pages
 }
 
-function PartnerCard({ partner }) {
+function PartnerCard({ partner, compact = false }) {
   return (
-    <div className="group flex h-32 items-center justify-center rounded-lg border border-ink/10 bg-white/40 px-6">
+    <div
+      className={`group flex items-center justify-center rounded-lg border border-ink/10 bg-white/40 px-4 ${
+        compact ? 'h-24 w-28 shrink-0' : 'h-32 w-full'
+      }`}
+    >
       {partner.logo ? (
         <img
           src={partner.logo}
           alt={partner.name}
-          className="max-h-10 w-auto object-contain grayscale opacity-70 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100"
+          className="max-h-8 w-auto object-contain grayscale opacity-70 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100"
         />
       ) : (
         // Neutral text logotype fallback — matches brand guide guidance to keep
         // multi-partner strips plain rather than placing marks over paint/photography.
-        <span className="font-display text-lg uppercase tracking-wide text-ink/60 transition duration-200 group-hover:text-ink">
+        <span className="font-display text-sm uppercase tracking-wide text-ink/60 transition duration-200 group-hover:text-ink">
           {partner.name}
         </span>
       )}
@@ -33,9 +39,21 @@ function PartnerCard({ partner }) {
 }
 
 export default function Partners() {
-  const pages = chunk(partners, CARDS_PER_PAGE)
-  const [index, setIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
+  )
   const [isPaused, setIsPaused] = useState(false)
+
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_QUERY)
+    const handleChange = (e) => setIsMobile(e.matches)
+    mql.addEventListener('change', handleChange)
+    return () => mql.removeEventListener('change', handleChange)
+  }, [])
+
+  
+  const pages = chunk(partners, CARDS_PER_PAGE_DESKTOP)
+  const [index, setIndex] = useState(0)
   const timerRef = useRef(null)
 
   const goTo = (i) => setIndex((i + pages.length) % pages.length)
@@ -43,11 +61,16 @@ export default function Partners() {
   const prev = () => goTo(index - 1)
 
   useEffect(() => {
-    if (pages.length <= 1 || isPaused) return
+    if (isMobile || pages.length <= 1 || isPaused) return
     timerRef.current = setInterval(next, AUTOPLAY_MS)
     return () => clearInterval(timerRef.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, isPaused, pages.length])
+  }, [index, isPaused, pages.length, isMobile])
+
+  // Mobile:every partner shown at once in a continuous, looping marquee.
+  // The list is duplicated so translateX(-50%) lines up seamlessly with the
+  // start of the first copy, giving an endless scroll with no visible reset.
+  const marqueeItems = [...partners, ...partners]
 
   return (
     <section className="bg-cream px-6 py-16 sm:py-20">
@@ -67,59 +90,83 @@ export default function Partners() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="relative overflow-hidden">
-            <div
-              className="flex transition-transform duration-700 ease-in-out"
-              style={{ transform: `translateX(-${index * 100}%)` }}
-            >
-              {pages.map((page, pageIndex) => (
-                <div
-                  key={pageIndex}
-                  className="grid w-full shrink-0 grid-cols-2 gap-6 sm:grid-cols-4"
-                >
-                  {page.map((partner) => (
-                    <PartnerCard key={partner.name} partner={partner} />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {pages.length > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-6">
-              <button
-                type="button"
-                onClick={prev}
-                aria-label="Previous partners"
-                className="font-body text-sm text-ink/50 transition-colors hover:text-ink"
+          {isMobile ? (
+            <div className="-mx-6 overflow-hidden px-6">
+              <div
+                className="flex w-max gap-4"
+                style={{
+                  animation: `partners-marquee ${MARQUEE_SECONDS}s linear infinite`,
+                  animationPlayState: isPaused ? 'paused' : 'running',
+                }}
               >
-                ←
-              </button>
-
-              <div className="flex items-center gap-2">
-                {pages.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => goTo(i)}
-                    aria-label={`Show partner set ${i + 1}`}
-                    aria-current={i === index}
-                    className={`h-2 w-2 rounded-full transition-colors ${
-                      i === index ? 'bg-coral' : 'bg-ink/15 hover:bg-ink/30'
-                    }`}
-                  />
+                {marqueeItems.map((partner, i) => (
+                  <PartnerCard key={`${partner.name}-${i}`} partner={partner} compact />
                 ))}
               </div>
-
-              <button
-                type="button"
-                onClick={next}
-                aria-label="Next partners"
-                className="font-body text-sm text-ink/50 transition-colors hover:text-ink"
-              >
-                →
-              </button>
+              <style>{`
+                @keyframes partners-marquee {
+                  from { transform: translateX(0); }
+                  to { transform: translateX(-50%); }
+                }
+              `}</style>
             </div>
+          ) : (
+            <>
+              <div className="relative overflow-hidden">
+                <div
+                  className="flex transition-transform duration-700 ease-in-out"
+                  style={{ transform: `translateX(-${index * 100}%)` }}
+                >
+                  {pages.map((page, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      className="grid w-full shrink-0 grid-cols-4 gap-6"
+                    >
+                      {page.map((partner) => (
+                        <PartnerCard key={partner.name} partner={partner} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {pages.length > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-6">
+                  <button
+                    type="button"
+                    onClick={prev}
+                    aria-label="Previous partners"
+                    className="font-body text-sm text-ink/50 transition-colors hover:text-ink"
+                  >
+                    ←
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {pages.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => goTo(i)}
+                        aria-label={`Show partner set ${i + 1}`}
+                        aria-current={i === index}
+                        className={`h-2 w-2 rounded-full transition-colors ${
+                          i === index ? 'bg-coral' : 'bg-ink/15 hover:bg-ink/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={next}
+                    aria-label="Next partners"
+                    className="font-body text-sm text-ink/50 transition-colors hover:text-ink"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

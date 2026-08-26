@@ -9,7 +9,7 @@ export default function StoryDetailView() {
   if (!story) {
     return (
       <div className="px-6 py-24 text-center">
-        <p className="font-body text-ink/55 mb-4">
+        <p className="font-body text-base text-ink/55 mb-4">
           We couldn't find that story.
         </p>
         <Link

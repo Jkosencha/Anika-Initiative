@@ -20,7 +20,7 @@ const PillarFilter = ({ active, onChange }) => {
             type="button"
             onClick={() => onChange(pillar)}
             aria-pressed={isActive}
-            className={`font-body text-base uppercase tracking-wide pb-1 border-b-2 transition-colors duration-200 ${
+            className={`text-sm font-semibold uppercase tracking-wide pb-1 border-b-2 transition-colors duration-200 ${
               isActive
                 ? `${activeClasses[pillar]} border-current`
                 : "text-ink/50 border-transparent hover:text-ink"
