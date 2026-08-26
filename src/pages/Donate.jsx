@@ -27,28 +27,28 @@ const DonationPage = () => {
   const impactStats = [
     {
       icon: Users,
-      label: "Artists Supported",
+      label: "ARTISTS SUPPORTED",
       value: 150,
       suffix: "+",
       color: "text-[#eb4c47]",
     },
     {
       icon: Mic,
-      label: "Events Held",
+      label: "EVENTS HELD",
       value: 100,
       suffix: "+",
       color: "text-[#389a51]",
     },
     {
       icon: Globe,
-      label: "African Countries",
+      label: "AFRICAN COUNTRIES",
       value: 14,
       suffix: "",
       color: "text-[#e8a850]",
     },
     {
       icon: Heart,
-      label: "Lives Impacted",
+      label: "LIVES IMPACTED",
       value: 2500,
       suffix: "+",
       color: "text-[#3a7599]",
@@ -146,7 +146,7 @@ const DonationPage = () => {
                     <div className="flex justify-center mb-2">
                       <Icon className={`w-6 h-6 ${stat.color}`} />
                     </div>
-                    <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>
+                    <div className={`text-2xl md:text-3xl font-display ${stat.color}`}>
                       <Counter
                         from={0}
                         to={stat.value}
@@ -154,7 +154,7 @@ const DonationPage = () => {
                         suffix={stat.suffix}
                       />
                     </div>
-                    <div className={`text-sm ${stat.color}`}>
+                    <div className={`mt-1 font-body text-xs text-cream/60`}>
                       {stat.label}
                     </div>
                   </div>
