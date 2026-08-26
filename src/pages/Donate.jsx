@@ -22,11 +22,12 @@ const DonationPage = () => {
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
+  // ✅ Updated impactStats with correct text color classes
   const impactStats = [
-    { icon: Users, label: "Artists Supported", value: "150+" },
-    { icon: Mic, label: "Events Held", value: "100+" },
-    { icon: Globe, label: "African Countries", value: "14" },
-    { icon: Heart, label: "Lives Impacted", value: "2500+" },
+    { icon: Users, label: "Artists Supported", value: "150+", color: "text-[#eb4c47]" },
+    { icon: Mic, label: "Events Held", value: "100+", color: "text-[#389a51]" },
+    { icon: Globe, label: "African Countries", value: "14", color: "text-[#e8a850]" },
+    { icon: Heart, label: "Lives Impacted", value: "2500+", color: "text-[#3a7599]" },
   ];
 
   const handleAmountSelect = (amount) => {
@@ -93,7 +94,7 @@ const DonationPage = () => {
           src="/anika-flower.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+          className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
         />
         <div className="relative z-10 mx-auto max-w-6xl px-6">
           <h1 className="text-5xl md:text-6xl font-display">
@@ -106,7 +107,7 @@ const DonationPage = () => {
         </div>
       </section>
 
-      <section className="py-12 bg-white border-y border-gray-100">
+      <section className="py-12 bg-charcoal">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {impactStats.map((stat, index) => {
@@ -114,12 +115,14 @@ const DonationPage = () => {
               return (
                 <div key={index} className="text-center">
                   <div className="flex justify-center mb-2">
-                    <Icon className="w-6 h-6 text-[#E6A15E]" />
+                    <Icon className={`w-6 h-6 ${stat.color}`} />
                   </div>
-                  <div className="text-2xl md:text-3xl font-bold text-[#1E1A18]">
+                  <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-500">{stat.label}</div>
+                  <div className={`text-sm ${stat.color}`}>
+                    {stat.label}
+                  </div>
                 </div>
               );
             })}
@@ -171,7 +174,6 @@ const DonationPage = () => {
               Choose your amount and preferred method.
             </p>
 
-            {/* //toggling donatoin method */}
             <div className="flex gap-2 mb-6 bg-gray-50 p-1 rounded-xl">
               <button
                 onClick={() => setDonationMethod("mpesa")}
@@ -195,7 +197,6 @@ const DonationPage = () => {
               </button>
             </div>
 
-            {/* //amountselections after toggling between hiyo ya kes and usd*/}
             <div className="grid grid-cols-2 gap-3 mb-4">
               {presetAmounts.map((amount) => (
                 <button
@@ -213,7 +214,6 @@ const DonationPage = () => {
               ))}
             </div>
 
-            {/* //custom amount keyiing */}
             <div className="relative mb-6">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
                 {currencySymbol}
@@ -227,7 +227,6 @@ const DonationPage = () => {
               />
             </div>
 
-            {/* //mpesa fields if toggled mpesa       */}
             {donationMethod === "mpesa" && (
               <>
                 <div className="mb-6">
@@ -245,26 +244,9 @@ const DonationPage = () => {
                     />
                   </div>
                 </div>
-
-                {/* <div className="flex items-center gap-3 mb-8">
-                  <input
-                    type="checkbox"
-                    id="whatsapp"
-                    checked={sendWhatsApp}
-                    onChange={() => setSendWhatsApp(!sendWhatsApp)}
-                    className="w-5 h-5 accent-[#E6A15E]"
-                  />
-                  <label
-                    htmlFor="whatsapp"
-                    className="text-sm text-gray-600 flex items-center gap-2 cursor-pointer"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Send to whatsApp
-                  </label>
-                </div> */}
               </>
             )}
 
-            {/* usd showing mockup */}
             {donationMethod === "usd" && (
               <div className="mb-6 p-4 bg-[#FDF6EE] rounded-xl border border-[#E6DED5]">
                 <p className="text-sm text-gray-700">
@@ -301,7 +283,6 @@ const DonationPage = () => {
         </div>
       </section>
 
-      {/* making of impact stories */}
       <section className="py-16 bg-[#F4EFE9]">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-12">
@@ -352,4 +333,5 @@ const DonationPage = () => {
     </div>
   );
 };
+
 export default DonationPage;
