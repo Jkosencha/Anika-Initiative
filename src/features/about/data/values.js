@@ -1,6 +1,4 @@
-// src/features/about/data/values.js
-// The A.N.I.K.A. acronym — five values that guide the work regardless
-// of project, audience or funding environment.
+
 
 export const valuesIntro = {
   eyebrow: 'A.N.I.K.A.',
