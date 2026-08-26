@@ -8,6 +8,7 @@ const links = [
   { to: '/impact', label: 'Impact' },
   { to: '/stories', label: 'Stories' },
   { to: '/gallery', label: 'Gallery' },
+  { to: '/alliance', label: 'Alliance' },
   { to: '/about', label: 'About' },
 ]
 
