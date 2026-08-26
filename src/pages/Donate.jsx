@@ -22,7 +22,6 @@ const DonationPage = () => {
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
-  // ✅ Updated impactStats with correct text color classes
   const impactStats = [
     { icon: Users, label: "Artists Supported", value: "150+", color: "text-[#eb4c47]" },
     { icon: Mic, label: "Events Held", value: "100+", color: "text-[#389a51]" },
@@ -44,7 +43,7 @@ const DonationPage = () => {
   const handleDonate = () => {
     if (donationMethod === "mpesa") {
       if (!phoneNumber || phoneNumber.length < 9) {
-        toast.error("Hey! Please enter a valid M-Pesa phone number.");
+        toast.error("Howdy! Please enter a valid M-Pesa phone number.");
         return;
       }
       const loadingToastId = toast.loading(
@@ -109,7 +108,7 @@ const DonationPage = () => {
 
       <section className="py-12 bg-charcoal">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 ">
             {impactStats.map((stat, index) => {
               const Icon = stat.icon;
               return (
