@@ -87,7 +87,7 @@ const DonationPage = () => {
             <p className="text-xs mt-1">Receipt sent to your phone.</p>
           </div>,
           {
-            duration: 5000,
+            duration: 3000,
             icon: <CheckCircle className="w-5 h-5 text-green-500" />,
           }
         );
@@ -100,7 +100,7 @@ const DonationPage = () => {
           <p className="text-xs mt-1">Amount: ${donationAmount.toFixed(2)}</p>
         </div>,
         {
-          duration: 5000,
+          duration: 3000,
           icon: <CreditCard className="w-5 h-5 text-[#E6A15E]" />,
         }
       );
@@ -114,7 +114,6 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      {/* Hero Section */}
       <Reveal>
         <section className="relative overflow-hidden bg-charcoal text-cream px-6 md:px-16 py-16">
           <img
@@ -135,10 +134,10 @@ const DonationPage = () => {
         </section>
       </Reveal>
 
-      {/* Impact Stats */}
+    
       <section className="py-12 bg-charcoal">
         <div className="mx-auto max-w-6xl px-6">
-          <Reveal>
+          <Reveal className="max-w-5xl text-left">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {impactStats.map((stat, index) => {
                 const Icon = stat.icon;
@@ -166,7 +165,6 @@ const DonationPage = () => {
         </div>
       </section>
 
-      {/* Why Give & Donation Form */}
       <Reveal>
         <section className="py-16 mx-auto max-w-6xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -322,7 +320,6 @@ const DonationPage = () => {
         </section>
       </Reveal>
 
-      {/* Impact Stories */}
       <Reveal>
         <section className="py-16 bg-[#F4EFE9]">
           <div className="mx-auto max-w-6xl px-6">
