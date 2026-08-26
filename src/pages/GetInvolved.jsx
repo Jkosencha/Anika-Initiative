@@ -197,7 +197,6 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
-      {/* Hero Section */}
       <Reveal>
         <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
           <img
@@ -206,7 +205,7 @@ const GetInvolved = () => {
             aria-hidden="true"
             className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
           />
-          <div className="mx-auto max-w-6xl px-6">
+          <div className="relative z-10 mx-auto max-w-6xl px-6">
             <h1 className="text-4xl md:text-6xl font-bold font-display tracking-wider">
               GET INVOLVED
             </h1>
@@ -219,7 +218,6 @@ const GetInvolved = () => {
         </section>
       </Reveal>
 
-      {/* Ways to get involved */}
       <Reveal>
         <section className="mx-auto max-w-6xl px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -251,7 +249,6 @@ const GetInvolved = () => {
         </section>
       </Reveal>
 
-      {/* Form Section */}
       <Reveal>
         <section className="px-4 py-16 bg-[#FAF7F2]" id="get-involved-form">
           <div className="mx-auto max-w-4xl">
