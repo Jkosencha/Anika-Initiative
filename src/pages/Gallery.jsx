@@ -64,7 +64,7 @@ const Gallery = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative overflow-hidden bg-ink text-cream py-16 text-cream md:py-12">
+      <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
         <img
           src="/anika-flower.png"
           alt=""
