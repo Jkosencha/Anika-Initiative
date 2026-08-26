@@ -49,10 +49,15 @@ export default function AlliancePage() {
 
       <section className="border-b border-ink/10 bg-cream px-6 py-16 md:px-16 md:py-20">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-16">
-          <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
-            About the Alliance
-          </p>
+          <img
+            src="/RAYA1.jpg"
+            alt="Artists and cultural partners gathered together"
+            className="h-full min-h-72 w-full object-cover"
+          />
           <div>
+            <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
+              About the Alliance
+            </p>
             <h2 className="max-w-3xl font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
               Pan-African Arts Alliance
             </h2>
