@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router-dom'
+import Reveal from '../components/Reveal'
+import Counter from '../components/Counter'
 
 const stats = [
-  { value: '100+', label: 'Events Held', color: 'text-coral' },
-  { value: '2,500+', label: 'Forum Participants', color: 'text-anika-green' },
-  { value: '150', label: 'Artists Engaged', color: 'text-gold' },
-  { value: '24M+', label: 'Online Impressions', color: 'text-anika-blue' },
+  { target: 100, suffix: '+', label: 'Events Held', color: 'text-coral' },
+  { target: 2500, suffix: '+', label: 'Forum Participants', color: 'text-anika-green' },
+  { target: 150, suffix: '', label: 'Artists Engaged', color: 'text-gold' },
+  { target: 24, suffix: 'M+', label: 'Online Impressions', color: 'text-anika-blue' },
 ]
 
 const pillars = [
@@ -50,7 +52,7 @@ function Home() {
           className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90 "
         />
         <div className="relative mx-auto max-w-6xl px-6 py-16">
-          <div className="max-w-5xl text-left">
+          <Reveal className="max-w-5xl text-left">
             <span className="-rotate-3 inline-flex items-center gap-2 rounded-full bg-gold px-4 py-1 font-body text-sm font-semibold uppercase tracking-wide text-ink">
               A Pan-African art-based initiative
             </span>
@@ -78,24 +80,26 @@ function Home() {
                 Support Us
               </NavLink>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="bg-charcoal">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>{stat.value}</p>
+          {stats.map((stat, i) => (
+            <Reveal key={stat.label} delay={i * 100} className="text-center">
+              <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>
+                <Counter to={stat.target} suffix={stat.suffix} />
+              </p>
               <p className="mt-1 font-body text-xs uppercase tracking-wide text-cream/60">{stat.label}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
-          <div>
+          <Reveal>
             <p className="font-body text-base font-semibold uppercase tracking-wide text-anika-green">About Anika</p>
             <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
               Art brings into the open what is hidden.
@@ -114,29 +118,31 @@ function Home() {
             >
               Read Our Story
             </NavLink>
-          </div>
-          <div className={polaroid('rotate-2')}>
-            <img
-              src="/anika%20team.jpg"
-              alt="Three ANIKA team members smiling together"
-              className="aspect-4/3 w-full object-cover"
-            />
-          </div>
+          </Reveal>
+          <Reveal delay={150}>
+            <div className={polaroid('rotate-2')}>
+              <img
+                src="/anika%20team.jpg"
+                alt="Three ANIKA team members smiling together"
+                className="aspect-4/3 w-full object-cover"
+              />
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="bg-white">
         <div className="mx-auto max-w-6xl px-6 pt-20 pb-20">
           <div className="grid gap-6 sm:grid-cols-2">
-            <div>
+            <Reveal>
               <p className="font-body text-base font-semibold uppercase tracking-wide text-coral">What We Do</p>
               <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
                 Five pillars.
                 <br />
                 One belief.
               </h2>
-            </div>
-            <div>
+            </Reveal>
+            <Reveal delay={100}>
               <p className="font-body text-lg text-ink/70">
                 Across every theme the work opens the same door, into deeper conversations with
                 communities, practitioners and decision-makers.
@@ -147,16 +153,16 @@ function Home() {
               >
                 See All Programs
               </NavLink>
-            </div>
+            </Reveal>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {pillars.map((pillar) => (
-              <div key={pillar.name} className="border border-ink/10 bg-cream p-6">
+            {pillars.map((pillar, i) => (
+              <Reveal key={pillar.name} delay={i * 100} className="border border-ink/10 bg-cream p-6">
                 <span className={`block h-1 w-10 ${pillar.color}`} />
                 <p className="mt-4 font-body text-lg font-semibold text-ink">{pillar.name}</p>
                 <p className="mt-2 font-body text-sm text-ink/60">{pillar.description}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -164,7 +170,7 @@ function Home() {
 
       <section className="bg-coral text-cream">
         <div className="mx-auto max-w-6xl px-6 py-16">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <Reveal className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-body text-base font-semibold uppercase tracking-wide text-cream/80">Upcoming</p>
               <h2 className="mt-2 font-display text-4xl uppercase leading-tight sm:text-5xl">Air it out.</h2>
@@ -175,11 +181,11 @@ function Home() {
             >
               See All Events
             </NavLink>
-          </div>
+          </Reveal>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            {events.map((event) => (
-              <div key={event.category}>
+            {events.map((event, i) => (
+              <Reveal key={event.category} delay={i * 100}>
                 <img
                   src={event.image}
                   alt={event.category}
@@ -189,21 +195,23 @@ function Home() {
                 <p className="mt-1 font-body text-sm uppercase tracking-wide text-cream/70">
                   {event.date} &middot; {event.location}
                 </p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <p className="font-body text-base font-semibold uppercase tracking-wide text-coral">From the Field</p>
-        <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
-          Stories with <span className="font-editorial italic normal-case text-coral">a pulse.</span>
-        </h2>
+        <Reveal>
+          <p className="font-body text-base font-semibold uppercase tracking-wide text-coral">From the Field</p>
+          <h2 className="mt-3 font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
+            Stories with <span className="font-editorial italic normal-case text-coral">a pulse.</span>
+          </h2>
+        </Reveal>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
-          {stories.map((story) => (
-            <div key={story.slug}>
+          {stories.map((story, i) => (
+            <Reveal key={story.slug} delay={i * 100}>
               <img
                 src={story.image}
                 alt={story.title}
@@ -217,14 +225,14 @@ function Home() {
               >
                 Read Our Story
               </NavLink>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="bg-anika-blue text-cream">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 lg:grid-cols-2 lg:gap-20">
-          <div>
+          <Reveal>
             <p className="font-body text-base font-semibold uppercase tracking-wide text-gold">
               Community Broadcast
             </p>
@@ -246,14 +254,16 @@ function Home() {
               </svg>
               Join WhatsApp Channel
             </a>
-          </div>
-          <div className={polaroid('-rotate-2')}>
-            <img
-              src="/listener.jpg"
-              alt="A community member listening at an ANIKA event"
-              className="aspect-4/3 w-full object-cover"
-            />
-          </div>
+          </Reveal>
+          <Reveal delay={150}>
+            <div className={polaroid('-rotate-2')}>
+              <img
+                src="/listener.jpg"
+                alt="A community member listening at an ANIKA event"
+                className="aspect-4/3 w-full object-cover"
+              />
+            </div>
+          </Reveal>
         </div>
       </section>
     </>
