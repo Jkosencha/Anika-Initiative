@@ -356,7 +356,7 @@ const GetInvolved = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="+254 7XX XXX XXX"
+                      placeholder="+254 712345678"
                       required
                       className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
                     />
