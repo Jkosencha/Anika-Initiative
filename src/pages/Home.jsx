@@ -22,9 +22,9 @@ const events = [
 ]
 
 const stories = [
-  { image: '/image7.jpg', theme: 'Arts & Culture', title: 'When a room becomes a stage for honest conversation' },
-  { image: '/image8.jpg', theme: 'Youth & Migration', title: 'A generation building belonging across borders' },
-  { image: '/image4.jpg', theme: 'Governance', title: 'The voice that keeps finding its way forward' },
+  { slug: 'sema-anika-forum', image: '/image7.jpg', theme: 'Arts & Culture', title: 'When a room becomes a stage for honest conversation' },
+  { slug: 'refupoet-belonging', image: '/image8.jpg', theme: 'Youth & Migration', title: 'A generation building belonging across borders' },
+  { slug: 'air-it-out', image: '/image4.jpg', theme: 'Gender & Development', title: 'Naming what silence protects' },
 ]
 
 const polaroid = (rotate) =>
@@ -136,10 +136,18 @@ function Home() {
                 One belief.
               </h2>
             </div>
-            <p className="self-center font-body text-lg text-ink/70">
-              Across every theme the work opens the same door, into deeper conversations with
-              communities, practitioners and decision-makers.
-            </p>
+            <div>
+              <p className="font-body text-lg text-ink/70">
+                Across every theme the work opens the same door, into deeper conversations with
+                communities, practitioners and decision-makers.
+              </p>
+              <NavLink
+                to="/programs"
+                className="mt-4 flex w-fit ml-auto items-center justify-center rounded bg-ink px-5 py-2 font-body text-sm font-semibold uppercase tracking-wide text-cream hover:opacity-90"
+              >
+                See All Programs
+              </NavLink>
+            </div>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -150,15 +158,6 @@ function Home() {
                 <p className="mt-2 font-body text-sm text-ink/60">{pillar.description}</p>
               </div>
             ))}
-            <NavLink
-              to="/programs"
-              className="flex flex-col justify-center border border-dashed border-ink/20 p-6 hover:border-ink/40"
-            >
-              <p className="font-body text-lg font-semibold text-ink">See all programs &rarr;</p>
-              <p className="mt-2 font-body text-sm text-ink/60">
-                Every initiative, event and story in one place.
-              </p>
-            </NavLink>
           </div>
         </div>
       </section>
@@ -174,7 +173,7 @@ function Home() {
               to="/events"
               className="rounded bg-ink px-5 py-2 font-body text-sm font-semibold uppercase tracking-wide text-cream hover:opacity-90"
             >
-              See All Events &rarr;
+              See All Events
             </NavLink>
           </div>
 
@@ -204,7 +203,7 @@ function Home() {
 
         <div className="mt-10 grid gap-6 sm:grid-cols-3">
           {stories.map((story) => (
-            <div key={story.title}>
+            <div key={story.slug}>
               <img
                 src={story.image}
                 alt={story.title}
@@ -213,7 +212,7 @@ function Home() {
               <p className="mt-3 font-body text-xs font-semibold uppercase tracking-wide text-coral">{story.theme}</p>
               <p className="mt-1 font-body font-semibold text-ink">{story.title}</p>
               <NavLink
-                to="/stories"
+                to={`/stories/${story.slug}`}
                 className="mt-3 inline-block rounded bg-ink px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-cream hover:opacity-90"
               >
                 Read Our Story
