@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { markSplashDone } from '../lib/splash'
 
 function SplashScreen() {
   const [visible, setVisible] = useState(true)
@@ -6,7 +7,10 @@ function SplashScreen() {
 
   useEffect(() => {
     const fadeTimer = setTimeout(() => setFading(true), 2400)
-    const hideTimer = setTimeout(() => setVisible(false), 2800)
+    const hideTimer = setTimeout(() => {
+      setVisible(false)
+      markSplashDone()
+    }, 2800)
     return () => {
       clearTimeout(fadeTimer)
       clearTimeout(hideTimer)
