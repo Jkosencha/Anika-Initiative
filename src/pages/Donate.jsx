@@ -11,6 +11,8 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
+import Reveal from '../components/Reveal';
+import Counter from '../components/Counter';
 
 const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState(500);
@@ -23,10 +25,34 @@ const DonationPage = () => {
   const presetMethodsUSD = [5, 10, 25, 50];
 
   const impactStats = [
-    { icon: Users, label: "Artists Supported", value: "150+", color: "text-[#eb4c47]" },
-    { icon: Mic, label: "Events Held", value: "100+", color: "text-[#389a51]" },
-    { icon: Globe, label: "African Countries", value: "14", color: "text-[#e8a850]" },
-    { icon: Heart, label: "Lives Impacted", value: "2500+", color: "text-[#3a7599]" },
+    {
+      icon: Users,
+      label: "Artists Supported",
+      value: 150,
+      suffix: "+",
+      color: "text-[#eb4c47]",
+    },
+    {
+      icon: Mic,
+      label: "Events Held",
+      value: 100,
+      suffix: "+",
+      color: "text-[#389a51]",
+    },
+    {
+      icon: Globe,
+      label: "African Countries",
+      value: 14,
+      suffix: "",
+      color: "text-[#e8a850]",
+    },
+    {
+      icon: Heart,
+      label: "Lives Impacted",
+      value: 2500,
+      suffix: "+",
+      color: "text-[#3a7599]",
+    },
   ];
 
   const handleAmountSelect = (amount) => {
@@ -47,7 +73,7 @@ const DonationPage = () => {
         return;
       }
       const loadingToastId = toast.loading(
-        "Processing your M-Pesa donation...",
+        "Processing your M-Pesa donation..."
       );
       setTimeout(() => {
         toast.dismiss(loadingToastId);
@@ -63,7 +89,7 @@ const DonationPage = () => {
           {
             duration: 5000,
             icon: <CheckCircle className="w-5 h-5 text-green-500" />,
-          },
+          }
         );
       }, 2000);
     } else {
@@ -76,7 +102,7 @@ const DonationPage = () => {
         {
           duration: 5000,
           icon: <CreditCard className="w-5 h-5 text-[#E6A15E]" />,
-        },
+        }
       );
     }
   };
@@ -88,247 +114,264 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <section className="relative overflow-hidden bg-charcoal text-cream px-6 md:px-16 py-16">
-        <img
-          src="/anika-flower.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
-        />
-        <div className="relative z-10 mx-auto max-w-6xl px-6">
-          <h1 className="text-5xl md:text-6xl font-display">
-            SUPPORT OUR WORK
-          </h1>
-          <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
-            Your gift keeps the rooms open, the mics on and the conversation
-            going
-          </p>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <Reveal>
+        <section className="relative overflow-hidden bg-charcoal text-cream px-6 md:px-16 py-16">
+          <img
+            src="/anika-flower.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
+          />
+          <div className="relative z-10 mx-auto max-w-6xl px-6">
+            <h1 className="text-5xl md:text-6xl font-display">
+              SUPPORT OUR WORK
+            </h1>
+            <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
+              Your gift keeps the rooms open, the mics on and the conversation
+              going
+            </p>
+          </div>
+        </section>
+      </Reveal>
 
+      {/* Impact Stats */}
       <section className="py-12 bg-charcoal">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 ">
-            {impactStats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div key={index} className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
+          <Reveal>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {impactStats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={index} className="text-center">
+                    <div className="flex justify-center mb-2">
+                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>
+                      <Counter
+                        from={0}
+                        to={stat.value}
+                        duration={2}
+                        suffix={stat.suffix}
+                      />
+                    </div>
+                    <div className={`text-sm ${stat.color}`}>
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className={`text-2xl md:text-3xl font-bold ${stat.color}`}>
-                    {stat.value}
-                  </div>
-                  <div className={`text-sm ${stat.color}`}>
-                    {stat.label}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="py-16 mx-auto max-w-6xl px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          <div>
-            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
-              Why Give?
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
-              Some realities can't be understood through reports alone.
-            </h2>
+      {/* Why Give & Donation Form */}
+      <Reveal>
+        <section className="py-16 mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <div>
+              <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
+                Why Give?
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
+                Some realities can't be understood through reports alone.
+              </h2>
 
-            <div className="space-y-4">
-              <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
-                <div className="flex items-start gap-4">
-                  <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
-                    <Gift className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold">
-                      Your support makes a direct impact
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      100% of your donation goes to programs, venues, artist
-                      stipends and safe spaces.
-                    </p>
+              <div className="space-y-4">
+                <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
+                      <Gift className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">
+                        Your support makes a direct impact
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        100% of your donation goes to programs, venues, artist
+                        stipends and safe spaces.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex items-center justify-center text-[#8a8074] overflow-hidden">
-                <img
-                  src="/image6.jpg"
-                  alt="Spoken word"
-                  className="w-full h-full object-cover"
-                />
+                <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex items-center justify-center text-[#8a8074] overflow-hidden">
+                  <img
+                    src="/image6.jpg"
+                    alt="Spoken word"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-            <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Choose your amount and preferred method.
-            </p>
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+              <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Choose your amount and preferred method.
+              </p>
 
-            <div className="flex gap-2 mb-6 bg-gray-50 p-1 rounded-xl">
-              <button
-                onClick={() => setDonationMethod("mpesa")}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                  donationMethod === "mpesa"
-                    ? "bg-[#39ba25] text-[#1E1A18] shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                M-Pesa
-              </button>
-              <button
-                onClick={() => setDonationMethod("usd")}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                  donationMethod === "usd"
-                    ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                USD (Card / PayPal)
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {presetAmounts.map((amount) => (
+              <div className="flex gap-2 mb-6 bg-gray-50 p-1 rounded-xl">
                 <button
-                  key={amount}
-                  onClick={() => handleAmountSelect(amount)}
-                  className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
-                    donationAmount === amount && !customAmount
-                      ? "border-[#E6A15E] bg-[#FDF6EE] text-[#1E1A18]"
-                      : "border-gray-200 hover:border-gray-300 text-gray-600 hover:bg-gray-50"
+                  onClick={() => setDonationMethod("mpesa")}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                    donationMethod === "mpesa"
+                      ? "bg-[#39ba25] text-[#1E1A18] shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {currencySymbol}
-                  {amount.toLocaleString()}
+                  M-Pesa
                 </button>
-              ))}
-            </div>
-
-            <div className="relative mb-6">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
-                {currencySymbol}
-              </span>
-              <input
-                type="number"
-                value={customAmount}
-                onChange={handleCustomAmount}
-                placeholder={`Enter custom amount (${currencyLabel})`}
-                className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 outline-none transition-all bg-cream/95"
-              />
-            </div>
-
-            {donationMethod === "mpesa" && (
-              <>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    M-PESA Phone Number
-                  </label>
-                  <div className="flex items-center border-2 border-gray-200 rounded-xl focus-within:border-[#E6A15E] focus-within:ring-2 focus-within:ring-[#E6A15E]/20 transition-all">
-                    <span className="pl-4 text-gray-500 font-medium">+254</span>
-                    <input
-                      type="tel"
-                      placeholder="712345678"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full p-3 pl-2 outline-none bg-cream/95"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {donationMethod === "usd" && (
-              <div className="mb-6 p-4 bg-[#FDF6EE] rounded-xl border border-[#E6DED5]">
-                <p className="text-sm text-gray-700">
-                  You will be redirected to our secure payment page to complete
-                  your USD donation.
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Amount: ${donationAmount.toFixed(2)} USD
-                </p>
+                <button
+                  onClick={() => setDonationMethod("usd")}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                    donationMethod === "usd"
+                      ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  USD (Card / PayPal)
+                </button>
               </div>
-            )}
-            <button
-              onClick={handleDonate}
-              className="w-full py-4 bg-[#1E1A18] hover:bg-[#3D3530] text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-            >
-              {donationMethod === "mpesa" ? (
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {presetAmounts.map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => handleAmountSelect(amount)}
+                    className={`py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                      donationAmount === amount && !customAmount
+                        ? "border-[#E6A15E] bg-[#FDF6EE] text-[#1E1A18]"
+                        : "border-gray-200 hover:border-gray-300 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {currencySymbol}
+                    {amount.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative mb-6">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
+                  {currencySymbol}
+                </span>
+                <input
+                  type="number"
+                  value={customAmount}
+                  onChange={handleCustomAmount}
+                  placeholder={`Enter custom amount (${currencyLabel})`}
+                  className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 outline-none transition-all bg-cream/95"
+                />
+              </div>
+
+              {donationMethod === "mpesa" && (
                 <>
-                  <Phone className="w-5 h-5" /> Donate KES{" "}
-                  {donationAmount.toLocaleString()}
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5" /> Donate $
-                  {donationAmount.toFixed(2)}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      M-PESA Phone Number
+                    </label>
+                    <div className="flex items-center border-2 border-gray-200 rounded-xl focus-within:border-[#E6A15E] focus-within:ring-2 focus-within:ring-[#E6A15E]/20 transition-all">
+                      <span className="pl-4 text-gray-500 font-medium">+254</span>
+                      <input
+                        type="tel"
+                        placeholder="712345678"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full p-3 pl-2 outline-none bg-cream/95"
+                      />
+                    </div>
+                  </div>
                 </>
               )}
-            </button>
-            {donationMethod === "mpesa" && (
-              <p className="text-xs text-center text-gray-400 mt-3">
-                STK push sent to your phone confirm.
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
 
-      <section className="py-16 bg-[#F4EFE9]">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="text-center mb-12">
-            <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
-              Impact Stories
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2">
-              Where your support goes
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <Mic className="w-6 h-6 text-[#E6A15E]" />
-              </div>
-              <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
-              <p className="text-sm text-gray-600">
-                Monthly events where artists air the unsaid. Your support keeps
-                the stage open.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-[#E6A15E]" />
-              </div>
-              <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
-              <p className="text-sm text-gray-600">
-                Cross-border collaborations that bring African artists together
-                to create.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-md">
-              <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                <Heart className="w-6 h-6 text-[#E6A15E]" />
-              </div>
-              <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
-              <p className="text-sm text-gray-600">
-                Therapy workshops and forums where hard conversations finally
-                happen.
-              </p>
+              {donationMethod === "usd" && (
+                <div className="mb-6 p-4 bg-[#FDF6EE] rounded-xl border border-[#E6DED5]">
+                  <p className="text-sm text-gray-700">
+                    You will be redirected to our secure payment page to complete
+                    your USD donation.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Amount: ${donationAmount.toFixed(2)} USD
+                  </p>
+                </div>
+              )}
+              <button
+                onClick={handleDonate}
+                className="w-full py-4 bg-[#1E1A18] hover:bg-[#3D3530] text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                {donationMethod === "mpesa" ? (
+                  <>
+                    <Phone className="w-5 h-5" /> Donate KES{" "}
+                    {donationAmount.toLocaleString()}
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" /> Donate $
+                    {donationAmount.toFixed(2)}
+                  </>
+                )}
+              </button>
+              {donationMethod === "mpesa" && (
+                <p className="text-xs text-center text-gray-400 mt-3">
+                  STK push sent to your phone confirm.
+                </p>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Reveal>
+
+      {/* Impact Stories */}
+      <Reveal>
+        <section className="py-16 bg-[#F4EFE9]">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="text-center mb-12">
+              <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
+                Impact Stories
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2">
+                Where your support goes
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl shadow-md">
+                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                  <Mic className="w-6 h-6 text-[#E6A15E]" />
+                </div>
+                <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
+                <p className="text-sm text-gray-600">
+                  Monthly events where artists air the unsaid. Your support keeps
+                  the stage open.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl shadow-md">
+                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-[#E6A15E]" />
+                </div>
+                <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
+                <p className="text-sm text-gray-600">
+                  Cross-border collaborations that bring African artists together
+                  to create.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl shadow-md">
+                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                  <Heart className="w-6 h-6 text-[#E6A15E]" />
+                </div>
+                <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
+                <p className="text-sm text-gray-600">
+                  Therapy workshops and forums where hard conversations finally
+                  happen.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Reveal>
     </div>
   );
 };
