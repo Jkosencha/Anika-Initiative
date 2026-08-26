@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { pillarColors } from "../data/stories.js";
+import { pillarColors, getPillarBySlug } from "../../../data/pillars";
 
-// Original pillar pill — unchanged
+// Original pillar pill
 const tagClasses = {
   coral: "bg-coral/10 text-coral",
   gold: "bg-gold/10 text-gold",
@@ -61,11 +61,12 @@ const fallbackDate = (key) => {
 
 const StoryCard = ({ story }) => {
   const colorToken = pillarColors[story.pillar] ?? "ink";
+  const pillarName = getPillarBySlug(story.pillar)?.name ?? story.pillar;
   const date = formatDate(story.date) ?? fallbackDate(story.id ?? story.slug ?? story.title);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg bg-white/40 shadow-sm">
-      <div className="aspect-[4/3] overflow-hidden bg-ink/10">
+      <div className="aspect-4/3 overflow-hidden bg-ink/10">
         <img
           src={story.image}
           alt=""
@@ -92,7 +93,7 @@ const StoryCard = ({ story }) => {
         <span
           className={`self-start rounded-full px-3 py-1 font-body text-xs uppercase tracking-wide ${tagClasses[colorToken]}`}
         >
-          {story.pillar}
+          {pillarName}
         </span>
 
         <h3 className="font-bold text-xl mt-4 mb-2 text-ink leading-snug">

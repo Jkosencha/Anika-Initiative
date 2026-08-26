@@ -1,25 +1,16 @@
-export const pillars = [
-  "All",
-  "Arts & Culture",
-  "Youth & Migration",
-  "Gender & Development",
-  "Climate Action",
-  "Governance",
-];
+import { PILLARS, pillarColors } from "../../../data/pillars";
 
-export const pillarColors = {
-  "Arts & Culture": "coral",
-  "Youth & Migration": "gold",
-  "Gender & Development": "anika-blue",
-  "Climate Action": "anika-green",
-  Governance: "ink",
-};
+// For Filter Bar
+export const pillars = [...PILLARS.map((p) => p.name)];
+
+//Color lookup
+export { pillarColors };
 
 export const stories = [
   {
     id: "sema-anika-forum",
     slug: "sema-anika-forum",
-    pillar: "Arts & Culture",
+    pillar: "arts-and-culture",
     date: "2026-02-25",
     title: "When a room becomes a stage for honest conversation",
     excerpt:
@@ -34,7 +25,7 @@ export const stories = [
   {
     id: "refupoet-belonging",
     slug: "refupoet-belonging",
-    pillar: "Youth & Migration",
+    pillar: "youth-and-migration",
     date: "2026-01-18",
     title: "A generation building belonging across borders",
     excerpt:
@@ -49,7 +40,7 @@ export const stories = [
   {
     id: "air-it-out",
     slug: "air-it-out",
-    pillar: "Gender & Development",
+    pillar: "gender-equality",
     date: "2025-11-03",
     title: "Naming what silence protects",
     excerpt:
