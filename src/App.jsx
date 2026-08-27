@@ -21,7 +21,9 @@ import AdminDashboard from './admin/pages/Dashboard'
 import AdminTeam from './admin/pages/Team'
 import AdminRolesAccess from './admin/pages/RolesAccess'
 import AdminComingSoon from './admin/pages/ComingSoon'
-import AdminStories from './admin/pages/stories/Stories'
+import Contacts from './admin/pages/Contacts';
+import Application from './admin/pages/Application'
+import Donations from './admin/pages/Donations'
 
 function SiteLayout() {
   return (
@@ -56,17 +58,17 @@ function App() {
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="contacts" element={<AdminComingSoon title="Contacts" />} />
+          <Route path="contacts" element={<Contacts/>} />
           <Route path="partners" element={<AdminComingSoon title="Partners" />} />
           <Route path="events" element={<AdminComingSoon title="Events" />} />
           <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
-          <Route path="applications" element={<AdminComingSoon title="Applications" />} />
-          <Route path="stories" element={<AdminStories />} />
+          <Route path="applications" element={<Application />} />
+          <Route path="stories" element={<AdminComingSoon title="Stories" />} />
           <Route path="gallery" element={<AdminComingSoon title="Gallery" />} />
           <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
           <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
           <Route path="messages" element={<AdminComingSoon title="Messages" />} />
-          <Route path="donations" element={<AdminComingSoon title="Contributions" />} />
+          <Route path="donations" element={<Donations />} />
           <Route path="impact" element={<AdminComingSoon title="Impact" />} />
           <Route path="reports" element={<AdminComingSoon title="Reports" />} />
           <Route path="team" element={<AdminTeam />} />
