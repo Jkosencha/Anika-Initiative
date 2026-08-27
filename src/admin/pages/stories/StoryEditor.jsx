@@ -1,5 +1,6 @@
-// src/features/admin/stories/StoryEditor.jsx
+// admin/pages/stories/StoryEditor.jsx
 import { useMemo, useState, useEffect } from 'react'
+import { useOutletContext } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -17,10 +18,36 @@ import {
   Link as LinkIcon,
   ImagePlus,
   ArrowLeft,
-  X,
 } from 'lucide-react'
 import { PILLARS, STATUS_LABELS } from './data/pillars'
 import { storiesStore } from '../../../data/storiesStore'
+
+// Same light/dark palette as Partners.jsx
+const lightColors = {
+  bg: "#fafaf8",
+  border: "#e8e5df",
+  text: "#1c1a17",
+  muted: "#8c8579",
+  panel: "#ffffff",
+  panelAlt: "#faf8f2",
+  buttonBg: "#1c1a17",
+  buttonText: "#ffffff",
+  inputBg: "#ffffff",
+  inputPlaceholder: "#8c8579",
+};
+
+const darkColors = {
+  bg: "#1a1a1a",
+  border: "#3a3a3a",
+  text: "#f0f0f0",
+  muted: "#aaaaaa",
+  panel: "#2a2a2a",
+  panelAlt: "#242424",
+  buttonBg: "#f0f0f0",
+  buttonText: "#1a1a1a",
+  inputBg: "#2a2a2a",
+  inputPlaceholder: "#aaaaaa",
+};
 
 const AVOID_PHRASES = [
   'the voiceless',
@@ -122,6 +149,10 @@ function Toolbar({ editor }) {
 }
 
 function StoryEditor({ story, onCancel, onSave }) {
+  // Get theme from outlet context
+  const { theme } = useOutletContext();
+  const COLORS = theme === 'dark' ? darkColors : lightColors;
+
   const isNew = !story
   const [title, setTitle] = useState(story?.title || '')
   const [pillarSlug, setPillarSlug] = useState(() => {
@@ -234,18 +265,30 @@ function StoryEditor({ story, onCancel, onSave }) {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] space-y-4">
+    <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
+      <style>{`
+        .story-editor-input::placeholder {
+          color: ${COLORS.inputPlaceholder};
+          opacity: 1;
+        }
+      `}</style>
+
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-ink/10 pb-4 dark:border-white/10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-6" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 rounded-lg border border-ink/10 px-3 py-2 text-sm font-medium text-ink/70 transition-colors hover:bg-ink/5 hover:text-ink dark:border-white/10 dark:text-cream/70 dark:hover:bg-white/5 dark:hover:text-cream self-start"
+          style={{ 
+            border: `1px solid ${COLORS.border}`,
+            background: COLORS.panel,
+            color: COLORS.text
+          }}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-black/5 self-start"
         >
           <ArrowLeft size={16} />
           Stories
         </button>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-ink/40 dark:text-cream/40">{saveState}</span>
+          <span className="text-xs font-medium" style={{ color: COLORS.muted }}>{saveState}</span>
           {story?.status === 'published' && story?.slug && (
             <a
               href={`/stories/${story.slug}`}
@@ -258,13 +301,19 @@ function StoryEditor({ story, onCancel, onSave }) {
           )}
           <button
             onClick={handleSaveDraft}
-            className="rounded-lg border border-ink/10 px-3 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5 dark:border-white/10 dark:text-cream/70 dark:hover:bg-white/5"
+            style={{ 
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.panel,
+              color: COLORS.text
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-lg hover:bg-black/5"
           >
             Save draft
           </button>
           <button
             onClick={handlePublish}
-            className="rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:bg-coral/90"
+            style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
           >
             {story?.status === 'published' ? 'Update' : 'Publish'}
           </button>
@@ -273,17 +322,21 @@ function StoryEditor({ story, onCancel, onSave }) {
 
       {/* Errors */}
       {(errors.pillar || errors.thumbnail) && (
-        <div className="rounded-xl border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-coral">
+        <div className="rounded-xl border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-coral mb-6">
           Can't save yet — {[errors.pillar, errors.thumbnail].filter(Boolean).join(' ')}
         </div>
       )}
 
-      {/* Main Editor Area - Mobile Responsive */}
-      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-6 min-h-0">
+      {/* Main Editor Area */}
+      <div className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-6">
         {/* Left Column - Editor */}
-        <div className="flex flex-col min-h-0">
+        <div className="flex flex-col">
           {/* Title Input */}
-          <div className="border border-b-0 border-ink/10 rounded-t-2xl bg-white dark:bg-white/5 p-4 pb-0 dark:border-white/10">
+          <div style={{ 
+            border: `1px solid ${COLORS.border}`,
+            borderBottom: 'none',
+            background: COLORS.panel,
+          }} className="rounded-t-xl p-4 pb-0">
             <input
               value={title}
               onChange={(e) => {
@@ -291,7 +344,8 @@ function StoryEditor({ story, onCancel, onSave }) {
                 setSaveState('Unsaved changes')
               }}
               placeholder="Story title"
-              className="font-display w-full bg-transparent text-xl sm:text-2xl uppercase tracking-wide text-ink placeholder:text-ink/30 focus:outline-none dark:text-cream dark:placeholder:text-cream/30"
+              className="story-editor-input w-full bg-transparent text-xl sm:text-2xl font-bold outline-none"
+              style={{ color: COLORS.text }}
             />
           </div>
           
@@ -299,7 +353,10 @@ function StoryEditor({ story, onCancel, onSave }) {
           <Toolbar editor={editor} />
           
           {/* Editor Content */}
-          <div className="flex-1 overflow-y-auto rounded-b-2xl border border-ink/10 bg-white p-4 sm:p-6 dark:border-white/10 dark:bg-white/5 min-h-[300px]">
+          <div style={{ 
+            border: `1px solid ${COLORS.border}`,
+            background: COLORS.panel,
+          }} className="flex-1 rounded-b-xl p-4 sm:p-6 min-h-[300px]">
             <EditorContent
               editor={editor}
               className="prose prose-sm max-w-none h-full font-body focus:outline-none dark:prose-invert
@@ -318,18 +375,17 @@ function StoryEditor({ story, onCancel, onSave }) {
           </div>
         </div>
 
-        {/* Right Column - Sidebar (Mobile: moves to bottom) */}
-        <aside className="flex flex-col gap-5 min-h-0 overflow-y-auto lg:max-h-full">
+        {/* Right Column - Sidebar */}
+        <aside className="flex flex-col gap-5">
           {/* Cover Image */}
-          <div
-            className={`rounded-2xl border bg-white p-4 dark:bg-white/5 ${
-              errors.thumbnail ? 'border-coral' : 'border-ink/10 dark:border-white/10'
-            }`}
-          >
-            <h3 className="font-display text-xs uppercase tracking-wider text-ink/50 dark:text-cream/50">
+          <div style={{ 
+            background: COLORS.panel, 
+            border: `1px solid ${errors.thumbnail ? '#b23b3b' : COLORS.border}` 
+          }} className="rounded-xl p-4">
+            <h3 className="text-xs font-bold tracking-wide" style={{ color: COLORS.muted }}>
               Cover image <span className="text-coral">*</span>
             </h3>
-            <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-ink/5 dark:bg-white/5">
+            <div className="mt-3 aspect-video overflow-hidden rounded-lg" style={{ background: COLORS.panelAlt }}>
               {thumbnail ? (
                 <img 
                   src={storiesStore.getImageUrl(thumbnail)} 
@@ -337,7 +393,7 @@ function StoryEditor({ story, onCancel, onSave }) {
                   className="h-full w-full object-cover" 
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-ink/30 dark:text-cream/30">
+                <div className="flex h-full items-center justify-center" style={{ color: COLORS.muted }}>
                   <ImagePlus size={28} />
                 </div>
               )}
@@ -352,9 +408,14 @@ function StoryEditor({ story, onCancel, onSave }) {
                   className="hidden"
                   disabled={isUploading}
                 />
-                <div className={`cursor-pointer rounded-lg border border-ink/10 px-3 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5 dark:border-white/10 dark:text-cream/70 dark:hover:bg-white/5 text-center ${
-                  isUploading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}>
+                <div 
+                  className={`cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-center ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{ 
+                    border: `1px solid ${COLORS.border}`,
+                    background: COLORS.panel,
+                    color: COLORS.text
+                  }}
+                >
                   {isUploading ? 'Uploading...' : 'Upload image'}
                 </div>
               </label>
@@ -366,7 +427,12 @@ function StoryEditor({ story, onCancel, onSave }) {
                     handleGallerySelect(url);
                   }
                 }}
-                className="w-full rounded-lg border border-ink/10 px-3 py-2 text-sm font-medium text-ink/70 hover:bg-ink/5 dark:border-white/10 dark:text-cream/70 dark:hover:bg-white/5"
+                className="w-full rounded-lg px-3 py-2 text-sm font-medium"
+                style={{ 
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.panel,
+                  color: COLORS.text
+                }}
               >
                 Or enter image URL
               </button>
@@ -374,19 +440,18 @@ function StoryEditor({ story, onCancel, onSave }) {
             
             {errors.thumbnail && <p className="mt-2 text-xs text-coral">{errors.thumbnail}</p>}
             {thumbnail && storiesStore.getImageUrl(thumbnail).startsWith('data:image/') && (
-              <p className="mt-1 text-xs text-ink/40 dark:text-cream/40">
+              <p className="mt-1 text-xs" style={{ color: COLORS.muted }}>
                 ✓ Image saved in localStorage
               </p>
             )}
           </div>
 
           {/* Pillar Selection */}
-          <div
-            className={`rounded-2xl border bg-white p-4 dark:bg-white/5 ${
-              errors.pillar ? 'border-coral' : 'border-ink/10 dark:border-white/10'
-            }`}
-          >
-            <h3 className="font-display text-xs uppercase tracking-wider text-ink/50 dark:text-cream/50">
+          <div style={{ 
+            background: COLORS.panel, 
+            border: `1px solid ${errors.pillar ? '#b23b3b' : COLORS.border}` 
+          }} className="rounded-xl p-4">
+            <h3 className="text-xs font-bold tracking-wide" style={{ color: COLORS.muted }}>
               Pillar <span className="text-coral">*</span>
             </h3>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -397,10 +462,13 @@ function StoryEditor({ story, onCancel, onSave }) {
                     setPillarSlug(p.slug)
                     setErrors((prev) => ({ ...prev, pillar: undefined }))
                   }}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                    pillarSlug === p.slug
-                      ? `${p.chipClass} border-transparent ring-1 ${p.ringClass}`
-                      : 'border-ink/10 text-ink/50 hover:text-ink dark:border-white/10 dark:text-cream/50 dark:hover:text-cream'
+                  style={{
+                    border: `1px solid ${pillarSlug === p.slug ? 'transparent' : COLORS.border}`,
+                    background: pillarSlug === p.slug ? COLORS.text : COLORS.panel,
+                    color: pillarSlug === p.slug ? COLORS.panel : COLORS.text,
+                  }}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    pillarSlug === p.slug ? p.ringClass : ''
                   }`}
                 >
                   {p.label}
@@ -408,21 +476,24 @@ function StoryEditor({ story, onCancel, onSave }) {
               ))}
             </div>
             {activePillar ? (
-              <p className="mt-3 text-xs leading-relaxed text-ink/50 dark:text-cream/50">{activePillar.description}</p>
+              <p className="mt-3 text-xs leading-relaxed" style={{ color: COLORS.muted }}>{activePillar.description}</p>
             ) : (
-              <p className="mt-3 text-xs leading-relaxed text-ink/40 dark:text-cream/40">No pillar selected yet.</p>
+              <p className="mt-3 text-xs leading-relaxed" style={{ color: COLORS.muted }}>No pillar selected yet.</p>
             )}
             {errors.pillar && <p className="mt-2 text-xs text-coral">{errors.pillar}</p>}
           </div>
 
-          {/* Publication Info - Hidden on small mobile */}
-          <div className="hidden sm:block rounded-2xl border border-ink/10 bg-white p-4 dark:border-white/10 dark:bg-white/5">
-            <h3 className="font-display text-xs uppercase tracking-wider text-ink/50 dark:text-cream/50">
+          {/* Publication Info */}
+          <div style={{ 
+            background: COLORS.panel, 
+            border: `1px solid ${COLORS.border}` 
+          }} className="hidden sm:block rounded-xl p-4">
+            <h3 className="text-xs font-bold tracking-wide" style={{ color: COLORS.muted }}>
               Publication Info
             </h3>
             <div className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between border-b border-ink/5 pb-2 dark:border-white/5">
-                <span className="text-ink/60 dark:text-cream/60">Status</span>
+              <div className="flex justify-between pb-2" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <span style={{ color: COLORS.muted }}>Status</span>
                 <span className={`font-medium ${
                   story?.status === 'published' 
                     ? 'text-anika-green' 
@@ -433,15 +504,15 @@ function StoryEditor({ story, onCancel, onSave }) {
                   {story?.status ? STATUS_LABELS[story.status] || story.status : 'Draft'}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-ink/5 pb-2 dark:border-white/5">
-                <span className="text-ink/60 dark:text-cream/60">Published Date</span>
-                <span className="font-medium text-ink dark:text-cream">
+              <div className="flex justify-between pb-2" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+                <span style={{ color: COLORS.muted }}>Published Date</span>
+                <span className="font-medium" style={{ color: COLORS.text }}>
                   {story?.date ? new Date(story.date).toLocaleDateString() : 'Not published yet'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-ink/60 dark:text-cream/60">Last Updated</span>
-                <span className="font-medium text-ink/70 dark:text-cream/70">
+                <span style={{ color: COLORS.muted }}>Last Updated</span>
+                <span className="font-medium" style={{ color: COLORS.muted }}>
                   {story?.updated ? new Date(story.updated).toLocaleString() : 'Just now'}
                 </span>
               </div>
@@ -462,16 +533,23 @@ function StoryEditor({ story, onCancel, onSave }) {
             </div>
           </div>
 
-          {/* Brand Voice Check - Hidden on small mobile */}
-          <div className="hidden sm:block rounded-2xl border border-ink/10 bg-white p-4 dark:border-white/10 dark:bg-white/5">
-            <h3 className="font-display text-xs uppercase tracking-wider text-ink/50 dark:text-cream/50">
+          {/* Brand Voice Check */}
+          <div style={{ 
+            background: COLORS.panel, 
+            border: `1px solid ${COLORS.border}` 
+          }} className="hidden sm:block rounded-xl p-4">
+            <h3 className="text-xs font-bold tracking-wide" style={{ color: COLORS.muted }}>
               Brand voice check
             </h3>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {['Bold', 'Human', 'Expressive', 'Provocative', 'Hopeful'].map((word) => (
                 <span
                   key={word}
-                  className="rounded-full bg-ink/5 px-2.5 py-1 text-xs font-medium text-ink/60 dark:bg-white/10 dark:text-cream/60"
+                  className="rounded-full px-2.5 py-1 text-xs font-medium"
+                  style={{ 
+                    background: COLORS.panelAlt,
+                    color: COLORS.muted
+                  }}
                 >
                   {word}
                 </span>
@@ -479,17 +557,17 @@ function StoryEditor({ story, onCancel, onSave }) {
             </div>
 
             <div className="mt-3 space-y-2 text-xs leading-relaxed">
-              <p className="text-ink/60 dark:text-cream/60">
+              <p style={{ color: COLORS.muted }}>
                 <span className="mr-1.5 rounded bg-anika-green/15 px-1.5 py-0.5 font-semibold uppercase text-anika-green">Do</span>
                 Centre the storyteller's own words and agency. People before programmes.
               </p>
-              <p className="text-ink/60 dark:text-cream/60">
+              <p style={{ color: COLORS.muted }}>
                 <span className="mr-1.5 rounded bg-coral/15 px-1.5 py-0.5 font-semibold uppercase text-coral">Avoid</span>
                 Pity or saviour language — say <em>participant / survivor</em>, not <em>beneficiary / victim</em>.
               </p>
             </div>
 
-            <p className="mt-3 border-t border-ink/10 pt-3 font-serif text-sm italic text-coral dark:border-white/10">
+            <p className="mt-3 pt-3 font-serif text-sm italic text-coral" style={{ borderTop: `1px solid ${COLORS.border}` }}>
               "Silence Kills. Art Airs."
             </p>
           </div>

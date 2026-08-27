@@ -1,9 +1,37 @@
-// src/features/admin/stories/Stories.jsx
-import { useMemo, useState, useEffect } from 'react'
+// admin/pages/stories/Stories.jsx
+import React, { useMemo, useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Eye, ChevronDown, ChevronUp } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { PILLARS, getPillar, STATUS_STYLES, STATUS_LABELS } from './data/pillars'
 import StoryEditor from './StoryEditor'
 import { storiesStore } from '../../../data/storiesStore'
+
+// Same light/dark palette shape as Partners.jsx
+const lightColors = {
+  bg: "#fafaf8",
+  border: "#e8e5df",
+  text: "#1c1a17",
+  muted: "#8c8579",
+  panel: "#ffffff",
+  panelAlt: "#faf8f2",
+  buttonBg: "#1c1a17",
+  buttonText: "#ffffff",
+  inputBg: "#ffffff",
+  inputPlaceholder: "#8c8579",
+};
+
+const darkColors = {
+  bg: "#1a1a1a",
+  border: "#3a3a3a",
+  text: "#f0f0f0",
+  muted: "#aaaaaa",
+  panel: "#2a2a2a",
+  panelAlt: "#242424",
+  buttonBg: "#f0f0f0",
+  buttonText: "#1a1a1a",
+  inputBg: "#2a2a2a",
+  inputPlaceholder: "#aaaaaa",
+};
 
 const FILTERS = [
   { key: 'all', label: 'All' },
@@ -13,6 +41,10 @@ const FILTERS = [
 ]
 
 function Stories() {
+  // Pull theme from AdminLayout via Outlet context
+  const { theme } = useOutletContext();
+  const COLORS = theme === 'dark' ? darkColors : lightColors;
+
   const [stories, setStories] = useState([])
   const [filter, setFilter] = useState('all')
   const [view, setView] = useState('list')
@@ -72,137 +104,165 @@ function Stories() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-12" style={{ color: COLORS.text }}>
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-coral border-t-transparent"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
+      <style>{`
+        .stories-input::placeholder {
+          color: ${COLORS.inputPlaceholder};
+          opacity: 1;
+        }
+      `}</style>
+
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="font-display text-2xl tracking-wide">Stories</h1>
-          <p className="mt-1 text-sm text-ink/60 dark:text-cream/60">
+          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+            Stories
+          </h1>
+          <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
             Publish and manage stories, on brand voice.
           </p>
         </div>
         <button
           onClick={openNewStory}
-          className="flex items-center justify-center gap-2 rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:bg-coral/90 w-full sm:w-auto"
+          style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
+          className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
         >
-          <Plus size={16} />
-          New story
+          <Plus size={14} /> NEW STORY
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-              filter === f.key
-                ? 'bg-ink text-cream dark:bg-cream dark:text-ink'
-                : 'text-ink/50 hover:text-ink dark:text-cream/50 dark:hover:text-cream'
-            }`}
-          >
-            {f.label} ({f.key === 'all' ? stories.length : stories.filter(s => s.status === f.key).length})
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-1 mb-5">
+        {FILTERS.map((f) => {
+          const count = f.key === 'all' ? stories.length : stories.filter(s => s.status === f.key).length;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              style={{
+                background: filter === f.key ? COLORS.text : COLORS.panel,
+                color: filter === f.key ? COLORS.panel : COLORS.text,
+                border: `1px solid ${filter === f.key ? COLORS.text : COLORS.border}`,
+              }}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors"
+            >
+              {f.label} ({count})
+            </button>
+          );
+        })}
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto rounded-2xl border border-ink/10 bg-white dark:border-white/10 dark:bg-white/5">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-ink/10 text-xs uppercase tracking-wider text-ink/40 dark:border-white/10 dark:text-cream/40">
-              <th className="px-5 py-3 font-medium">Title</th>
-              <th className="px-5 py-3 font-medium">Pillar</th>
-              <th className="px-5 py-3 font-medium">Author</th>
-              <th className="px-5 py-3 font-medium">Status</th>
-              <th className="px-5 py-3 font-medium">Published Date</th>
-              <th className="px-5 py-3 font-medium">Updated</th>
-              <th className="px-5 py-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-ink/10 dark:divide-white/10">
-            {filteredStories.map((story) => {
-              const pillar = getPillar(story.pillar)
-              const isPublished = story.status === 'published'
-              return (
-                <tr key={story.id} className="hover:bg-ink/5 dark:hover:bg-white/5">
-                  <td className="flex items-center gap-3 px-5 py-3 font-medium">
-                    <div className="h-9 w-14 shrink-0 overflow-hidden rounded-md bg-ink/10 dark:bg-white/10">
-                      {story.thumbnail && (
-                        <img src={story.thumbnail} alt="" className="h-full w-full object-cover" />
-                      )}
-                    </div>
-                    <span className="line-clamp-1">{story.title}</span>
-                  </td>
-                  <td className="px-5 py-3">
-                    {pillar && (
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${pillar.chipClass}`}>
-                        {pillar.label}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-ink/70 dark:text-cream/70">{story.author}</td>
-                  <td className="px-5 py-3">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[story.status]}`}>
-                      {STATUS_LABELS[story.status] || story.status}
-                    </span>
-                    {isPublished && (
-                      <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-anika-green animate-pulse"></span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-ink/70 dark:text-cream/70">
-                    {story.date ? new Date(story.date).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-5 py-3 text-ink/50 dark:text-cream/50">
-                    {new Date(story.updated).toLocaleDateString()}
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex justify-end gap-2">
-                      {isPublished && (
-                        <a
-                          href={`/stories/${story.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg p-1.5 text-ink/40 hover:bg-ink/5 hover:text-ink dark:text-cream/40 dark:hover:bg-white/5 dark:hover:text-cream"
-                          title="View on website"
-                        >
-                          <Eye size={16} />
-                        </a>
-                      )}
-                      <button
-                        onClick={() => openEditStory(story)}
-                        className="rounded-lg p-1.5 text-anika-blue/70 hover:bg-anika-blue/10 hover:text-anika-blue"
-                        title="Edit story"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(story.id)}
-                        className="rounded-lg p-1.5 text-coral/70 hover:bg-coral/10 hover:text-coral"
-                        title="Delete story"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-            {filteredStories.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-5 py-8 text-center text-sm text-ink/40 dark:text-cream/40">
-                  No stories in this view yet. Click "New story" to create one.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="hidden md:block overflow-x-auto rounded-xl" style={{ 
+        background: COLORS.panel, 
+        border: `1px solid ${COLORS.border}` 
+      }}>
+        <div
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          style={{
+            color: COLORS.muted,
+            borderColor: COLORS.border,
+            gridTemplateColumns: "2fr 1.2fr 1fr 1fr 1.2fr 1fr 0.8fr",
+          }}
+        >
+          <div>TITLE</div>
+          <div>PILLAR</div>
+          <div>AUTHOR</div>
+          <div>STATUS</div>
+          <div>PUBLISHED DATE</div>
+          <div>UPDATED</div>
+          <div></div>
+        </div>
+
+        {filteredStories.length === 0 && (
+          <div className="px-5 py-10 text-center text-sm" style={{ color: COLORS.muted }}>
+            No stories in this view yet. Click "New story" to create one.
+          </div>
+        )}
+
+        {filteredStories.map((story) => {
+          const pillar = getPillar(story.pillar)
+          const isPublished = story.status === 'published'
+          const statusStyle = STATUS_STYLES[story.status] || STATUS_STYLES.draft
+          
+          return (
+            <div
+              key={story.id}
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              style={{
+                borderColor: COLORS.border,
+                gridTemplateColumns: "2fr 1.2fr 1fr 1fr 1.2fr 1fr 0.8fr",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-14 shrink-0 overflow-hidden rounded-md" style={{ background: COLORS.panelAlt }}>
+                  {story.thumbnail && (
+                    <img src={story.thumbnail} alt="" className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                  {story.title}
+                </span>
+              </div>
+              <div>
+                {pillar && (
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${pillar.chipClass}`}>
+                    {pillar.label}
+                  </span>
+                )}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.muted }}>
+                {story.author}
+              </div>
+              <div>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusStyle}`}>
+                  {STATUS_LABELS[story.status] || story.status}
+                </span>
+                {isPublished && (
+                  <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-anika-green animate-pulse"></span>
+                )}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.muted }}>
+                {story.date ? new Date(story.date).toLocaleDateString() : '—'}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.muted }}>
+                {new Date(story.updated).toLocaleDateString()}
+              </div>
+              <div className="flex justify-end gap-2">
+                {isPublished && (
+                  <a
+                    href={`/stories/${story.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg hover:bg-black/5"
+                    title="View on website"
+                  >
+                    <Eye size={16} style={{ color: COLORS.muted }} />
+                  </a>
+                )}
+                <button
+                  onClick={() => openEditStory(story)}
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  title="Edit story"
+                >
+                  <Edit size={16} style={{ color: COLORS.muted }} />
+                </button>
+                <button
+                  onClick={() => handleDelete(story.id)}
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  title="Delete story"
+                >
+                  <Trash2 size={16} style={{ color: "#b23b3b" }} />
+                </button>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Mobile Card View */}
@@ -211,27 +271,34 @@ function Stories() {
           const pillar = getPillar(story.pillar)
           const isPublished = story.status === 'published'
           const isExpanded = expandedId === story.id
+          const statusStyle = STATUS_STYLES[story.status] || STATUS_STYLES.draft
 
           return (
             <div
               key={story.id}
-              className="rounded-2xl border border-ink/10 bg-white p-4 dark:border-white/10 dark:bg-white/5"
+              style={{ 
+                background: COLORS.panel, 
+                border: `1px solid ${COLORS.border}` 
+              }}
+              className="rounded-xl p-4"
             >
               <div className="flex items-start gap-3">
-                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-ink/10 dark:bg-white/10">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg" style={{ background: COLORS.panelAlt }}>
                   {story.thumbnail && (
                     <img src={story.thumbnail} alt="" className="h-full w-full object-cover" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm line-clamp-2">{story.title}</h3>
+                  <h3 className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                    {story.title}
+                  </h3>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     {pillar && (
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${pillar.chipClass}`}>
                         {pillar.label}
                       </span>
                     )}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[story.status]}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle}`}>
                       {STATUS_LABELS[story.status] || story.status}
                     </span>
                     {isPublished && (
@@ -241,40 +308,45 @@ function Stories() {
                 </div>
                 <button
                   onClick={() => toggleExpand(story.id)}
-                  className="shrink-0 p-1 text-ink/40 hover:text-ink dark:text-cream/40 dark:hover:text-cream"
+                  className="shrink-0 p-1 rounded-lg hover:bg-black/5"
                 >
-                  {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  {isExpanded ? <ChevronUp size={20} style={{ color: COLORS.muted }} /> : <ChevronDown size={20} style={{ color: COLORS.muted }} />}
                 </button>
               </div>
 
               {isExpanded && (
-                <div className="mt-4 pt-4 border-t border-ink/10 dark:border-white/10 space-y-3">
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: COLORS.border }}>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <p className="text-xs text-ink/40 dark:text-cream/40">Author</p>
-                      <p className="font-medium text-ink dark:text-cream">{story.author}</p>
+                      <p className="text-xs" style={{ color: COLORS.muted }}>Author</p>
+                      <p className="font-medium" style={{ color: COLORS.text }}>{story.author}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-ink/40 dark:text-cream/40">Published Date</p>
-                      <p className="font-medium text-ink dark:text-cream">
+                      <p className="text-xs" style={{ color: COLORS.muted }}>Published Date</p>
+                      <p className="font-medium" style={{ color: COLORS.text }}>
                         {story.date ? new Date(story.date).toLocaleDateString() : '—'}
                       </p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs text-ink/40 dark:text-cream/40">Last Updated</p>
-                      <p className="font-medium text-ink dark:text-cream">
+                      <p className="text-xs" style={{ color: COLORS.muted }}>Last Updated</p>
+                      <p className="font-medium" style={{ color: COLORS.text }}>
                         {new Date(story.updated).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-ink/10 dark:border-white/10">
+                  <div className="flex flex-wrap gap-2 pt-3 border-t" style={{ borderColor: COLORS.border }}>
                     {isPublished && (
                       <a
                         href={`/stories/${story.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 rounded-lg border border-ink/10 px-3 py-1.5 text-sm font-medium text-ink/70 hover:bg-ink/5 dark:border-white/10 dark:text-cream/70 dark:hover:bg-white/5"
+                        style={{ 
+                          border: `1px solid ${COLORS.border}`, 
+                          background: COLORS.panel, 
+                          color: COLORS.text 
+                        }}
+                        className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold"
                       >
                         <Eye size={14} />
                         View
@@ -282,14 +354,24 @@ function Stories() {
                     )}
                     <button
                       onClick={() => openEditStory(story)}
-                      className="flex items-center gap-1 rounded-lg border border-anika-blue/20 px-3 py-1.5 text-sm font-medium text-anika-blue hover:bg-anika-blue/5"
+                      style={{ 
+                        border: `1px solid ${COLORS.border}`, 
+                        background: COLORS.panel, 
+                        color: COLORS.text 
+                      }}
+                      className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold hover:border-current"
                     >
                       <Edit size={14} />
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(story.id)}
-                      className="flex items-center gap-1 rounded-lg border border-coral/20 px-3 py-1.5 text-sm font-medium text-coral hover:bg-coral/5"
+                      style={{ 
+                        border: `1px solid ${COLORS.border}`, 
+                        background: COLORS.panel, 
+                        color: COLORS.text 
+                      }}
+                      className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-bold hover:border-red-400 hover:text-red-500"
                     >
                       <Trash2 size={14} />
                       Delete
@@ -301,7 +383,10 @@ function Stories() {
           )
         })}
         {filteredStories.length === 0 && (
-          <div className="rounded-2xl border border-ink/10 bg-white p-8 text-center text-sm text-ink/40 dark:border-white/10 dark:bg-white/5 dark:text-cream/40">
+          <div
+            style={{ background: COLORS.panel, border: `1px dashed ${COLORS.border}`, color: COLORS.muted }}
+            className="rounded-xl p-10 text-center text-sm"
+          >
             No stories in this view yet. Click "New story" to create one.
           </div>
         )}
