@@ -56,6 +56,19 @@ function toCSV(rows) {
   return [header.join(","), ...lines].join("\n");
 }
 
+function downloadCSV(rows, filename) {
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function Pill({ active, children, onClick }) {
   return (
     <button
@@ -85,3 +98,133 @@ function TypeBadge({ type }) {
   );
 }
 
+const emptyForm = { name: "", type: "Artist", interest: "", country: "", source: MANUAL_SOURCES[0] };
+
+
+// form for adding evvent
+function ContactModal({ initialValue, onClose, onSave }) {
+  const [form, setForm] = useState(initialValue || emptyForm);
+  const isEdit = Boolean(initialValue);
+
+  function submit(e) {
+    e.preventDefault();
+    if (!form.name.trim()) return;
+    onSave({ ...form, id: initialValue ? initialValue.id : Date.now() });
+    onClose();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+        className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: COLORS.border }}>
+          <h2 className="font-bold text-lg" style={{ color: COLORS.text }}>
+            {isEdit ? "Edit contact" : "Add contact"}
+          </h2>
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
+            <X size={18} color={COLORS.muted} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Name
+            </label>
+            <input
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${COLORS.border}` }}
+              placeholder="Full name or organisation"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+                Type
+              </label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
+                style={{ border: `1px solid ${COLORS.border}` }}
+              >
+                {Object.keys(TYPE_STYLE).map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+                Country
+              </label>
+              <input
+                value={form.country}
+                onChange={(e) => setForm({ ...form, country: e.target.value })}
+                className="px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ border: `1px solid ${COLORS.border}` }}
+                placeholder="Kenya"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Interest
+            </label>
+            <input
+              value={form.interest}
+              onChange={(e) => setForm({ ...form, interest: e.target.value })}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${COLORS.border}` }}
+              placeholder="Arts & Culture"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Source
+            </label>
+            <select
+              value={form.source}
+              onChange={(e) => setForm({ ...form, source: e.target.value })}
+              className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
+              style={{ border: `1px solid ${COLORS.border}` }}
+            >
+              {MANUAL_SOURCES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs mt-0.5" style={{ color: COLORS.muted }}>
+              Event and WhatsApp contacts are captured automatically and aren't logged here.
+            </span>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: COLORS.border }}>
+          <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: COLORS.muted }}>
+            Cancel
+          </button>
+          <button type="submit" style={{ background: COLORS.text }} className="text-white text-sm font-semibold px-4 py-2 rounded-full">
+            {isEdit ? "Save changes" : "Add contact"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
