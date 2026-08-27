@@ -1,12 +1,30 @@
 import React, { useMemo, useState } from "react";
 import { X, ChevronDown, Trash2 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 
-const COLORS = {
+// configuring light and dark theme
+const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
   text: "#1c1a17",
   muted: "#8c8579",
   panel: "#ffffff",
+  buttonBg: "#1c1a17",
+  buttonText: "#ffffff",
+  inputBg: "#ffffff",
+  inputPlaceholder: "#8c8579",
+};
+
+const darkColors = {
+  bg: "#1a1a1a",
+  border: "#3a3a3a",
+  text: "#f0f0f0",
+  muted: "#aaaaaa",
+  panel: "#2a2a2a",
+  buttonBg: "#f0f0f0",
+  buttonText: "#1a1a1a",
+  inputBg: "#2a2a2a",
+  inputPlaceholder: "#aaaaaa",
 };
 
 const AVATAR_COLORS = ["#2f4a6b", "#c0392b", "#2d7a43", "#b3760c", "#6b4a8a"];
@@ -97,14 +115,14 @@ function downloadCSV(rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-function Pill({ active, children, onClick }) {
+function Pill({ active, children, onClick, colors }) {
   return (
     <button
       onClick={onClick}
       style={{
-        background: active ? COLORS.text : "#fff",
-        color: active ? "#fff" : COLORS.text,
-        border: `1px solid ${active ? COLORS.text : COLORS.border}`,
+        background: active ? colors.text : colors.panel,
+        color: active ? colors.panel : colors.text,
+        border: `1px solid ${active ? colors.text : colors.border}`,
       }}
       className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors"
     >
@@ -126,7 +144,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
+function ReviewModal({ app, onClose, onUpdateStatus, onDelete, colors }) {
   if (!app) return null;
   return (
     <div
@@ -136,10 +154,10 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+        style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
         className="w-full max-w-lg rounded-2xl shadow-xl overflow-hidden"
       >
-        <div className="flex items-start justify-between p-5 border-b" style={{ borderColor: COLORS.border }}>
+        <div className="flex items-start justify-between p-5 border-b" style={{ borderColor: colors.border }}>
           <div className="flex items-center gap-3">
             <div
               style={{ background: avatarColor(app.name) }}
@@ -148,52 +166,52 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
               {initials(app.name)}
             </div>
             <div>
-              <div className="font-bold text-lg" style={{ color: COLORS.text }}>
+              <div className="font-bold text-lg" style={{ color: colors.text }}>
                 {app.name}
               </div>
-              <div className="text-sm" style={{ color: COLORS.muted }}>
+              <div className="text-sm" style={{ color: colors.muted }}>
                 {app.programme}
               </div>
             </div>
           </div>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
-            <X size={18} color={COLORS.muted} />
+            <X size={18} color={colors.muted} />
           </button>
         </div>
 
         <div className="p-5 space-y-4 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-xs uppercase tracking-wide" style={{ color: COLORS.muted }}>
+              <div className="text-xs uppercase tracking-wide" style={{ color: colors.muted }}>
                 Submitted
               </div>
-              <div style={{ color: COLORS.text }}>{app.submitted}</div>
+              <div style={{ color: colors.text }}>{app.submitted}</div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wide" style={{ color: COLORS.muted }}>
+              <div className="text-xs uppercase tracking-wide" style={{ color: colors.muted }}>
                 Contact
               </div>
-              <div style={{ color: COLORS.text }}>{app.email}</div>
-              <div style={{ color: COLORS.text }}>{app.phone}</div>
+              <div style={{ color: colors.text }}>{app.email}</div>
+              <div style={{ color: colors.text }}>{app.phone}</div>
             </div>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-wide mb-1" style={{ color: COLORS.muted }}>
+            <div className="text-xs uppercase tracking-wide mb-1" style={{ color: colors.muted }}>
               Application summary
             </div>
-            <p style={{ color: COLORS.text }}>{app.summary}</p>
+            <p style={{ color: colors.text }}>{app.summary}</p>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-wide mb-1" style={{ color: COLORS.muted }}>
+            <div className="text-xs uppercase tracking-wide mb-1" style={{ color: colors.muted }}>
               Relevant experience
             </div>
-            <p style={{ color: COLORS.text }}>{app.experience}</p>
+            <p style={{ color: colors.text }}>{app.experience}</p>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: COLORS.muted }}>
+            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: colors.muted }}>
               Update status
             </div>
             <div className="flex flex-wrap gap-2">
@@ -202,9 +220,9 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
                   key={s}
                   onClick={() => onUpdateStatus(app.id, s)}
                   style={{
-                    background: app.status === s ? COLORS.text : "#fff",
-                    color: app.status === s ? "#fff" : COLORS.text,
-                    border: `1px solid ${app.status === s ? COLORS.text : COLORS.border}`,
+                    background: app.status === s ? colors.text : colors.panel,
+                    color: app.status === s ? colors.panel : colors.text,
+                    border: `1px solid ${app.status === s ? colors.text : colors.border}`,
                   }}
                   className="px-3 py-1.5 rounded-full text-xs font-semibold"
                 >
@@ -217,7 +235,7 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
 
         <div
           className="flex items-center justify-between p-4 border-t"
-          style={{ borderColor: COLORS.border }}
+          style={{ borderColor: colors.border }}
         >
           <button
             onClick={() => {
@@ -231,8 +249,8 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
           </button>
           <button
             onClick={onClose}
-            style={{ background: COLORS.text }}
-            className="text-white text-sm font-semibold px-4 py-2 rounded-full"
+            style={{ background: colors.buttonBg, color: colors.buttonText }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
           >
             Done
           </button>
@@ -243,6 +261,10 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete }) {
 }
 
 export default function Applications() {
+  // taking theme and searchquery from outlet context
+  const { theme, searchQuery } = useOutletContext();
+  const COLORS = theme === 'dark' ? darkColors : lightColors;
+
   const [applications, setApplications] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
@@ -251,10 +273,27 @@ export default function Applications() {
 
   const tabs = ["All", "New", "Shortlisted", "Accepted"];
 
+  // filter ya search
   const filtered = useMemo(() => {
-    if (tab === "All") return applications;
-    return applications.filter((a) => a.status === tab);
-  }, [applications, tab]);
+    let result = applications;
+
+    // filter by tab
+    if (tab !== "All") {
+      result = result.filter((a) => a.status === tab);
+    }
+
+    // filter by searcg
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          a.programme.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [applications, tab, searchQuery]);
 
   function updateStatus(id, status) {
     setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
@@ -286,7 +325,14 @@ export default function Applications() {
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
-      <div className="flex items-start justify-between mb-6 flex-wrap gap-3 ">
+      <style>{`
+        .app-input::placeholder {
+          color: ${COLORS.inputPlaceholder};
+          opacity: 1;
+        }
+      `}</style>
+
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
             Applications
@@ -298,15 +344,22 @@ export default function Applications() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowNewForm((v) => !v)}
-            style={{ background: COLORS.text }}
-            className="text-white text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
+            style={{
+              background: COLORS.buttonBg,
+              color: COLORS.buttonText,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             + NEW APPLICATION
           </button>
           <button
             onClick={() => downloadCSV(filtered, "applications.csv")}
-            style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text }}
-            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg bg-white"
+            style={{
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.panel,
+              color: COLORS.text,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             EXPORT CSV
           </button>
@@ -326,8 +379,12 @@ export default function Applications() {
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              className="app-input px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                border: `1px solid ${COLORS.border}`,
+                background: COLORS.inputBg,
+                color: COLORS.text,
+              }}
               placeholder="e.g. Peter Otieno"
             />
           </div>
@@ -338,15 +395,22 @@ export default function Applications() {
             <input
               value={form.programme}
               onChange={(e) => setForm({ ...form, programme: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              className="app-input px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                border: `1px solid ${COLORS.border}`,
+                background: COLORS.inputBg,
+                color: COLORS.text,
+              }}
               placeholder="e.g. Gaining Grip (Enterprise)"
             />
           </div>
           <button
             type="submit"
-            style={{ background: COLORS.text }}
-            className="text-white text-sm font-semibold px-4 py-2 rounded-lg"
+            style={{
+              background: COLORS.buttonBg,
+              color: COLORS.buttonText,
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-lg"
           >
             Add
           </button>
@@ -363,14 +427,17 @@ export default function Applications() {
 
       <div className="flex gap-2 mb-5 flex-wrap">
         {tabs.map((t) => (
-          <Pill key={t} active={tab === t} onClick={() => setTab(t)}>
+          <Pill key={t} active={tab === t} onClick={() => setTab(t)} colors={COLORS}>
             {t}
           </Pill>
         ))}
       </div>
 
       <div
-        style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+        style={{
+          background: COLORS.panel,
+          border: `1px solid ${COLORS.border}`,
+        }}
         className="rounded-xl overflow-hidden"
       >
         <div
@@ -390,7 +457,7 @@ export default function Applications() {
 
         {filtered.length === 0 && (
           <div className="px-5 py-10 text-center text-sm" style={{ color: COLORS.muted }}>
-            No applications in this view.
+            No applications match the current filter.
           </div>
         )}
 
@@ -423,8 +490,12 @@ export default function Applications() {
             <div className="text-right">
               <button
                 onClick={() => setReviewing(app)}
-                style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text }}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white"
+                style={{
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.panel,
+                  color: COLORS.text,
+                }}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
               >
                 Review
               </button>
@@ -438,6 +509,7 @@ export default function Applications() {
         onClose={() => setReviewing(null)}
         onUpdateStatus={updateStatus}
         onDelete={deleteApp}
+        colors={COLORS}
       />
     </div>
   );
