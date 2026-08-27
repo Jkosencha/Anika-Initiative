@@ -16,12 +16,16 @@ import AlliancePage from './pages/AlliancePage'
 import {Toaster} from "sonner";
 import ScrollToTop from './components/ScrollToTop'
 import WhatsAppFab from './components/WhatsAppFab'
+import AdminLayout from './admin/layout/AdminLayout'
+import AdminDashboard from './admin/pages/Dashboard'
+import AdminTeam from './admin/pages/Team'
+import AdminRolesAccess from './admin/pages/RolesAccess'
+import AdminComingSoon from './admin/pages/ComingSoon'
 
-function App() {
+function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <SplashScreen />
-      <ScrollToTop />
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -40,8 +44,38 @@ function App() {
       </main>
       <Footer />
       <WhatsAppFab />
-      <Toaster richColors position="top-right" />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="contacts" element={<AdminComingSoon title="Contacts" />} />
+          <Route path="partners" element={<AdminComingSoon title="Partners" />} />
+          <Route path="events" element={<AdminComingSoon title="Events" />} />
+          <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
+          <Route path="applications" element={<AdminComingSoon title="Applications" />} />
+          <Route path="stories" element={<AdminComingSoon title="Stories" />} />
+          <Route path="gallery" element={<AdminComingSoon title="Gallery" />} />
+          <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
+          <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
+          <Route path="messages" element={<AdminComingSoon title="Messages" />} />
+          <Route path="donations" element={<AdminComingSoon title="Contributions" />} />
+          <Route path="impact" element={<AdminComingSoon title="Impact" />} />
+          <Route path="reports" element={<AdminComingSoon title="Reports" />} />
+          <Route path="team" element={<AdminTeam />} />
+          <Route path="settings" element={<AdminComingSoon title="Settings" />} />
+          <Route path="roles" element={<AdminRolesAccess />} />
+        </Route>
+        <Route path="/*" element={<SiteLayout />} />
+      </Routes>
+      <Toaster richColors position="top-right" />
+    </>
   )
 }
 
