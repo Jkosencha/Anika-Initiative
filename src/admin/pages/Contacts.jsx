@@ -1,13 +1,33 @@
+// src/admin/pages/Contacts.jsx
 import React, { useMemo, useState } from "react";
 import { X, Search, Trash2, Pencil } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 
-const COLORS = {
+// ----- Light & Dark color sets (extended) -----
+const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
   text: "#1c1a17",
   muted: "#8c8579",
   panel: "#ffffff",
+  buttonBg: "#1c1a17",      // dark bg, white text
+  buttonText: "#ffffff",
+  inputBg: "#ffffff",
+  inputPlaceholder: "#8c8579",
 };
+
+const darkColors = {
+  bg: "#1a1a1a",
+  border: "#3a3a3a",
+  text: "#f0f0f0",
+  muted: "#aaaaaa",
+  panel: "#2a2a2a",
+  buttonBg: "#f0f0f0",      // light bg, dark text
+  buttonText: "#1a1a1a",
+  inputBg: "#2a2a2a",
+  inputPlaceholder: "#aaaaaa",
+};
+// --------------------------------------------
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
@@ -43,6 +63,7 @@ function avatarColor(name) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
+
 //dummy data seeed
 const SEED = [
   {
@@ -123,14 +144,15 @@ function downloadCSV(rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-function Pill({ active, children, onClick }) {
+// Pill now receives colors as a prop
+function Pill({ active, children, onClick, colors }) {
   return (
     <button
       onClick={onClick}
       style={{
-        background: active ? COLORS.text : "#fff",
-        color: active ? "#fff" : COLORS.text,
-        border: `1px solid ${active ? COLORS.text : COLORS.border}`,
+        background: active ? colors.text : colors.panel,
+        color: active ? colors.panel : colors.text,
+        border: `1px solid ${active ? colors.text : colors.border}`,
       }}
       className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors whitespace-nowrap"
     >
@@ -164,7 +186,7 @@ const emptyForm = {
 };
 
 // form for adding evvent
-function ContactModal({ initialValue, onClose, onSave }) {
+function ContactModal({ initialValue, onClose, onSave, colors }) {
   const [form, setForm] = useState(initialValue || emptyForm);
   const isEdit = Boolean(initialValue);
 
@@ -185,16 +207,16 @@ function ContactModal({ initialValue, onClose, onSave }) {
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: COLORS.panel,
-          border: `1px solid ${COLORS.border}`,
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
         }}
         className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
       >
         <div
           className="flex items-center justify-between p-5 border-b"
-          style={{ borderColor: COLORS.border }}
+          style={{ borderColor: colors.border }}
         >
-          <h2 className="font-bold text-lg" style={{ color: COLORS.text }}>
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
             {isEdit ? "Edit contact" : "Add contact"}
           </h2>
           <button
@@ -202,7 +224,7 @@ function ContactModal({ initialValue, onClose, onSave }) {
             onClick={onClose}
             className="p-1 rounded-full hover:bg-black/5"
           >
-            <X size={18} color={COLORS.muted} />
+            <X size={18} color={colors.muted} />
           </button>
         </div>
 
@@ -210,7 +232,7 @@ function ContactModal({ initialValue, onClose, onSave }) {
           <div className="flex flex-col gap-1">
             <label
               className="text-xs font-semibold"
-              style={{ color: COLORS.muted }}
+              style={{ color: colors.muted }}
             >
               Name
             </label>
@@ -219,7 +241,11 @@ function ContactModal({ initialValue, onClose, onSave }) {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
               placeholder="Full name or organisation"
             />
           </div>
@@ -228,15 +254,19 @@ function ContactModal({ initialValue, onClose, onSave }) {
             <div className="flex flex-col gap-1">
               <label
                 className="text-xs font-semibold"
-                style={{ color: COLORS.muted }}
+                style={{ color: colors.muted }}
               >
                 Type
               </label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
-                style={{ border: `1px solid ${COLORS.border}` }}
+                className="px-3 py-2 rounded-lg text-sm outline-none"
+                style={{
+                  border: `1px solid ${colors.border}`,
+                  background: colors.inputBg,
+                  color: colors.text,
+                }}
               >
                 {Object.keys(TYPE_STYLE).map((t) => (
                   <option key={t} value={t}>
@@ -248,7 +278,7 @@ function ContactModal({ initialValue, onClose, onSave }) {
             <div className="flex flex-col gap-1">
               <label
                 className="text-xs font-semibold"
-                style={{ color: COLORS.muted }}
+                style={{ color: colors.muted }}
               >
                 Country
               </label>
@@ -256,7 +286,11 @@ function ContactModal({ initialValue, onClose, onSave }) {
                 value={form.country}
                 onChange={(e) => setForm({ ...form, country: e.target.value })}
                 className="px-3 py-2 rounded-lg text-sm outline-none"
-                style={{ border: `1px solid ${COLORS.border}` }}
+                style={{
+                  border: `1px solid ${colors.border}`,
+                  background: colors.inputBg,
+                  color: colors.text,
+                }}
                 placeholder="Kenya"
               />
             </div>
@@ -265,7 +299,7 @@ function ContactModal({ initialValue, onClose, onSave }) {
           <div className="flex flex-col gap-1">
             <label
               className="text-xs font-semibold"
-              style={{ color: COLORS.muted }}
+              style={{ color: colors.muted }}
             >
               Interest
             </label>
@@ -273,7 +307,11 @@ function ContactModal({ initialValue, onClose, onSave }) {
               value={form.interest}
               onChange={(e) => setForm({ ...form, interest: e.target.value })}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
               placeholder="Arts & Culture"
             />
           </div>
@@ -281,15 +319,19 @@ function ContactModal({ initialValue, onClose, onSave }) {
           <div className="flex flex-col gap-1">
             <label
               className="text-xs font-semibold"
-              style={{ color: COLORS.muted }}
+              style={{ color: colors.muted }}
             >
               Source
             </label>
             <select
               value={form.source}
               onChange={(e) => setForm({ ...form, source: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
             >
               {MANUAL_SOURCES.map((s) => (
                 <option key={s} value={s}>
@@ -297,7 +339,7 @@ function ContactModal({ initialValue, onClose, onSave }) {
                 </option>
               ))}
             </select>
-            <span className="text-xs mt-0.5" style={{ color: COLORS.muted }}>
+            <span className="text-xs mt-0.5" style={{ color: colors.muted }}>
               Event and WhatsApp contacts are captured automatically and aren't
               logged here.
             </span>
@@ -306,20 +348,23 @@ function ContactModal({ initialValue, onClose, onSave }) {
 
         <div
           className="flex justify-end gap-2 p-4 border-t"
-          style={{ borderColor: COLORS.border }}
+          style={{ borderColor: colors.border }}
         >
           <button
             type="button"
             onClick={onClose}
             className="text-sm font-semibold px-3 py-2"
-            style={{ color: COLORS.muted }}
+            style={{ color: colors.muted }}
           >
             Cancel
           </button>
           <button
             type="submit"
-            style={{ background: COLORS.text }}
-            className="text-white text-sm font-semibold px-4 py-2 rounded-full"
+            style={{
+              background: colors.buttonBg,
+              color: colors.buttonText,
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
           >
             {isEdit ? "Save changes" : "Add contact"}
           </button>
@@ -328,7 +373,12 @@ function ContactModal({ initialValue, onClose, onSave }) {
     </div>
   );
 }
+
 export default function Contacts() {
+  // Get the current theme from AdminLayout via Outlet context
+  const { theme } = useOutletContext();
+  const COLORS = theme === 'dark' ? darkColors : lightColors;
+
   const [contacts, setContacts] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
@@ -379,7 +429,15 @@ export default function Contacts() {
       style={{ background: COLORS.bg, minHeight: "100%" }}
       className="p-6 font-sans rounded-lg"
     >
-      <div className="flex items-start justify-between mb-5 flex-wrap gap-3 ">
+      {/* Dynamic placeholder color for search input */}
+      <style>{`
+        .search-input::placeholder {
+          color: ${COLORS.inputPlaceholder};
+          opacity: 1;
+        }
+      `}</style>
+
+      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
             Contacts
@@ -395,15 +453,22 @@ export default function Contacts() {
               setEditing(null);
               setModalOpen(true);
             }}
-            style={{ background: COLORS.text }}
-            className="text-white text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
+            style={{
+              background: COLORS.buttonBg,
+              color: COLORS.buttonText,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             + ADD CONTACT
           </button>
           <button
             onClick={() => downloadCSV(filtered, "contacts.csv")}
-            style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text }}
-            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg bg-white"
+            style={{
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.panel,
+              color: COLORS.text,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             EXPORT
           </button>
@@ -413,21 +478,25 @@ export default function Contacts() {
       <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
         <div className="flex gap-2 flex-wrap">
           {tabs.map((t) => (
-            <Pill key={t} active={tab === t} onClick={() => setTab(t)}>
+            <Pill key={t} active={tab === t} onClick={() => setTab(t)} colors={COLORS}>
               {t}
             </Pill>
           ))}
         </div>
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white"
-          style={{ border: `1px solid ${COLORS.border}`, minWidth: 220 }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg"
+          style={{
+            background: COLORS.panel,
+            border: `1px solid ${COLORS.border}`,
+            minWidth: 220,
+          }}
         >
           <Search size={15} color={COLORS.muted} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search contacts..."
-            className="text-sm outline-none flex-1"
+            className="search-input text-sm outline-none flex-1 bg-transparent"
             style={{ color: COLORS.text }}
           />
         </div>
@@ -532,6 +601,7 @@ export default function Contacts() {
           initialValue={editing}
           onClose={() => setModalOpen(false)}
           onSave={saveContact}
+          colors={COLORS}
         />
       )}
     </div>
