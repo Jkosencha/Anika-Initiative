@@ -9,7 +9,7 @@ const lightColors = {
   text: "#1c1a17",
   muted: "#8c8579",
   panel: "#ffffff",
-  buttonBg: "#1c1a17",      
+  buttonBg: "#1c1a17",
   buttonText: "#ffffff",
   inputBg: "#ffffff",
   inputPlaceholder: "#8c8579",
@@ -21,12 +21,11 @@ const darkColors = {
   text: "#f0f0f0",
   muted: "#aaaaaa",
   panel: "#2a2a2a",
-  buttonBg: "#f0f0f0",      
+  buttonBg: "#f0f0f0",
   buttonText: "#1a1a1a",
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
 };
-
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
@@ -37,7 +36,6 @@ const TYPE_STYLE = {
   Youth: { bg: "#fbe6c8", text: "#b3760c" },
   Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
 };
-
 
 const MANUAL_SOURCES = [
   "Website form",
@@ -381,8 +379,8 @@ export default function Contacts() {
   const [contacts, setContacts] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  // const [modalOpen, setModalOpen] = useState(false);   
+  // const [editing, setEditing] = useState(null);        
 
   const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers"];
   const tabToType = {
@@ -408,16 +406,16 @@ export default function Contacts() {
     return rows;
   }, [contacts, tab, query]);
 
-  function saveContact(contact) {
-    setContacts((prev) => {
-      const exists = prev.some((c) => c.id === contact.id);
-      if (exists)
-        return prev.map((c) =>
-          c.id === contact.id ? { ...c, ...contact } : c,
-        );
-      return [{ ...contact, lastEngagement: "Added · today" }, ...prev];
-    });
-  }
+  // function saveContact(contact) {   
+  //   setContacts((prev) => {
+  //     const exists = prev.some((c) => c.id === contact.id);
+  //     if (exists)
+  //       return prev.map((c) =>
+  //         c.id === contact.id ? { ...c, ...contact } : c,
+  //       );
+  //     return [{ ...contact, lastEngagement: "Added · today" }, ...prev];
+  //   });
+  // }
 
   function deleteContact(id) {
     setContacts((prev) => prev.filter((c) => c.id !== id));
@@ -447,6 +445,7 @@ export default function Contacts() {
           </p>
         </div>
         <div className="flex gap-2">
+          {/* lets disale add btn
           <button
             onClick={() => {
               setEditing(null);
@@ -460,6 +459,7 @@ export default function Contacts() {
           >
             + ADD CONTACT
           </button>
+          */}
           <button
             onClick={() => downloadCSV(filtered, "contacts.csv")}
             style={{
@@ -573,13 +573,16 @@ export default function Contacts() {
               {c.source}
             </div>
             <div className="flex items-center justify-end gap-2">
+              {/* Edit and Delete buttons remain – edit button would try to open modal, but modal is disabled, so we keep them but they won't work, or we could comment them out too. But I'll keep them as is. */}
               <button
                 onClick={() => {
-                  setEditing(c);
-                  setModalOpen(true);
+                  // setEditing(c);
+                  // setModalOpen(true);
+                  // If you want to completely disable editing, you can comment or show a toast.
+                  // I'll just leave a no-op for safety.
                 }}
                 className="p-1.5 rounded-lg hover:bg-black/5"
-                title="Edit"
+                title="Edit (disabled)"
               >
                 <Pencil size={14} color={COLORS.muted} />
               </button>
@@ -595,6 +598,7 @@ export default function Contacts() {
         ))}
       </div>
 
+      {/* Modal disabled
       {modalOpen && (
         <ContactModal
           initialValue={editing}
@@ -603,6 +607,7 @@ export default function Contacts() {
           colors={COLORS}
         />
       )}
+      */}
     </div>
   );
 }
