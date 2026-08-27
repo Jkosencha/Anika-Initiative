@@ -30,7 +30,7 @@ const foldClasses = {
 const formatDate = (value) => {
   if (!value) return null;
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value; // already a display string
+  if (Number.isNaN(parsed.getTime())) return value;
   return parsed.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -38,9 +38,6 @@ const formatDate = (value) => {
   });
 };
 
-// Stable placeholder dates for stories that don't have a real `date` field
-// yet — add `date: "2026-02-25"` (or similar) to a story in data/stories.js
-// to override this with a real one.
 const SAMPLE_DATES = [
   "Feb 25, 2026",
   "Feb 4, 2026",
@@ -65,8 +62,8 @@ const StoryCard = ({ story }) => {
   const date = formatDate(story.date) ?? fallbackDate(story.id ?? story.slug ?? story.title);
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg bg-white/40 shadow-sm">
-      <div className="aspect-4/3 overflow-hidden bg-ink/10">
+    <article className="flex flex-col h-full overflow-hidden rounded-lg bg-white/40 shadow-sm">
+      <div className="aspect-4/3 overflow-hidden bg-ink/10 flex-shrink-0">
         <img
           src={story.image}
           alt=""
@@ -96,17 +93,17 @@ const StoryCard = ({ story }) => {
           {pillarName}
         </span>
 
-        <h3 className="font-bold text-xl mt-4 mb-2 text-ink leading-snug">
+        <h3 className="font-bold text-xl mt-4 mb-2 text-ink leading-snug line-clamp-2">
           {story.title}
         </h3>
 
-        <p className="font-body text-base text-ink/65 leading-relaxed flex-1">
+        <p className="font-body text-base text-ink/65 leading-relaxed flex-1 line-clamp-4">
           {story.excerpt}
         </p>
 
         <Link
           to={`/stories/${story.slug}`}
-          className="mt-6 inline-flex self-start items-center gap-2 rounded-full bg-anika-blue px-5 py-2 font-body text-sm font-semibold text-cream transition-colors duration-200 hover:bg-coral"
+          className="mt-6 inline-flex self-start items-center gap-2 rounded-full bg-anika-blue px-5 py-2 font-body text-sm font-semibold text-cream transition-colors duration-200 hover:bg-coral flex-shrink-0"
         >
           Read More
         </Link>

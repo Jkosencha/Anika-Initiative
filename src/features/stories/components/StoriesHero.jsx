@@ -1,4 +1,5 @@
 import { storiesContent as content } from "../data/storiesContent.js";
+import Reveal from "./Reveal.jsx";
 
 const StoriesHero = () => {
   const { headingLead, headingAccent, subheading } = content;
@@ -12,16 +13,20 @@ const StoriesHero = () => {
         className='absolute -top-10 right-5 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
       />
       <div className="mx-auto max-w-6xl px-6">
-        <h1 className="font-display text-5xl uppercase md:text-6xl">
-          {headingLead} {headingAccent}
-        </h1>
+        <Reveal>
+          <h1 className="font-display text-5xl uppercase md:text-6xl">
+            {headingLead} {headingAccent}
+          </h1>
+        </Reveal>
 
-        <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
-          {subheading}
-        </p>
+        <Reveal delay={200}>
+          <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
+            {subheading}
+          </p>
+        </Reveal>
       </div>
     </section>
   );
 };
 
-export default StoriesHero; 
+export default StoriesHero;
