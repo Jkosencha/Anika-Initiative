@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 
-const COLORS = {
+// confgruyintg light an dark theme toggle color
+const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
   text: "#1c1a17",
@@ -11,6 +13,25 @@ const COLORS = {
   green: "#3c8a4c",
   red: "#d24a42",
   orange: "#e2a63f",
+  buttonBg: "#1c1a17",
+  buttonText: "#ffffff",
+  inputBg: "#ffffff",
+  inputPlaceholder: "#8c8579",
+};
+
+const darkColors = {
+  bg: "#1a1a1a",
+  border: "#3a3a3a",
+  text: "#f0f0f0",
+  muted: "#aaaaaa",
+  panel: "#2a2a2a",
+  green: "#4c9a5c",   
+  red: "#d24a42",
+  orange: "#e2a63f",
+  buttonBg: "#f0f0f0",
+  buttonText: "#1a1a1a",
+  inputBg: "#2a2a2a",
+  inputPlaceholder: "#aaaaaa",
 };
 
 const STATUS_STYLE = {
@@ -104,7 +125,7 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   );
 }
 
-function AddDonationModal({ onClose, onAdd }) {
+function AddDonationModal({ onClose, onAdd, colors }) {
   const [donor, setDonor] = useState("");
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
@@ -132,20 +153,20 @@ function AddDonationModal({ onClose, onAdd }) {
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+        style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
         className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
       >
-        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: COLORS.border }}>
-          <h2 className="font-bold text-lg" style={{ color: COLORS.text }}>
+        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
             Record M-Pesa donation
           </h2>
           <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
-            <X size={18} color={COLORS.muted} />
+            <X size={18} color={colors.muted} />
           </button>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
               Donor name
             </label>
             <input
@@ -153,12 +174,16 @@ function AddDonationModal({ onClose, onAdd }) {
               value={donor}
               onChange={(e) => setDonor(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
               placeholder="e.g. Peter O."
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
               Amount (KES)
             </label>
             <input
@@ -168,31 +193,43 @@ function AddDonationModal({ onClose, onAdd }) {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
               placeholder="1000"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
               Phone number
             </label>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
               placeholder="0712345678"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
               Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
-              style={{ border: `1px solid ${COLORS.border}` }}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
             >
               {Object.keys(STATUS_STYLE).map((s) => (
                 <option key={s} value={s}>
@@ -202,11 +239,11 @@ function AddDonationModal({ onClose, onAdd }) {
             </select>
           </div>
         </div>
-        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: COLORS.border }}>
-          <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: COLORS.muted }}>
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: colors.border }}>
+          <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: colors.muted }}>
             Cancel
           </button>
-          <button type="submit" style={{ background: COLORS.text }} className="text-white text-sm font-semibold px-4 py-2 rounded-full">
+          <button type="submit" style={{ background: colors.buttonBg, color: colors.buttonText }} className="text-sm font-semibold px-4 py-2 rounded-full">
             Add donation
           </button>
         </div>
@@ -216,6 +253,10 @@ function AddDonationModal({ onClose, onAdd }) {
 }
 
 export default function Donations() {
+  // now lets get the current theme from AdminLayout via Outlet context
+  const { theme } = useOutletContext();
+  const COLORS = theme === 'dark' ? darkColors : lightColors;
+
   const [donations, setDonations] = useState(SEED);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -267,6 +308,14 @@ export default function Donations() {
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
+      {/* Dynamic placeholder color for inputs */}
+      <style>{`
+        .donation-input::placeholder {
+          color: ${COLORS.inputPlaceholder};
+          opacity: 1;
+        }
+      `}</style>
+
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
@@ -279,15 +328,22 @@ export default function Donations() {
         <div className="flex gap-2">
           <button
             onClick={() => setModalOpen(true)}
-            style={{ background: COLORS.text }}
-            className="text-white text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
+            style={{
+              background: COLORS.buttonBg,
+              color: COLORS.buttonText,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
           >
             <Plus size={14} /> RECORD DONATION
           </button>
           <button
             onClick={() => downloadCSV(donations, "donations.csv")}
-            style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text }}
-            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg bg-white"
+            style={{
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.panel,
+              color: COLORS.text,
+            }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             EXPORT CSV
           </button>
@@ -295,8 +351,8 @@ export default function Donations() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} />
-        <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} />
+        <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} textColor="#fff" />
+        <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} textColor="#fff" />
         <StatCard label="AVG GIFT" value={stats.avgGift.toLocaleString()} sub="KES" bg={COLORS.orange} textColor="#1c1a17" />
         <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl p-4 flex items-center gap-4">
           <div style={{ width: 84, height: 84 }}>
@@ -383,7 +439,13 @@ export default function Donations() {
         })}
       </div>
 
-      {modalOpen && <AddDonationModal onClose={() => setModalOpen(false)} onAdd={addDonation} />}
+      {modalOpen && (
+        <AddDonationModal
+          onClose={() => setModalOpen(false)}
+          onAdd={addDonation}
+          colors={COLORS}
+        />
+      )}
     </div>
   );
 }
