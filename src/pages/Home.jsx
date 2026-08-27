@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
+import { whatsappUrl } from '../lib/whatsapp'
 
 const stats = [
   { target: 100, suffix: '+', label: 'Events Held', color: 'text-coral' },
@@ -244,7 +245,7 @@ function Home() {
               you already are. No spam, opt out anytime.
             </p>
             <a
-              href="https://whatsapp.com"
+              href={whatsappUrl('Hello ANIKA, I would like to join the WhatsApp channel.')}
               target="_blank"
               rel="noreferrer"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-cream px-6 py-3 font-body text-sm font-semibold uppercase tracking-wide text-anika-green hover:opacity-90"

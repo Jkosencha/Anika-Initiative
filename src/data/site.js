@@ -3,18 +3,17 @@
    Sources: ANIKA Brand Guide + ECI Problem Statement (Moringa.document).
    ============================================================ */
 
-import heroImg from '../images/listener.jpg';
-import teamImg from '../images/anika team.jpg';
-import semaPoster from '../images/SEMA ANIKA POSTER.jpg';
-import storytellingImg from '../images/smiles.jpg';
-import griphonImg from '../images/griphon.jpg';
-import cameraImg from '../images/Camera Gaining Grip.jpg';
-import forumImg from '../images/ANIKA -32 (1).jpg';
-import herStoryImg from '../images/jaaziya.jpg';
-
+/* Images are served from the public/ folder via "/..." URL paths (see Vite public asset handling).
+   NOTE: the following map to temporary/candidate files where the original source image is not yet
+   present in public/ — flagged with "TODO: replace" so they can be swapped for the real files.
+   - try-my-shoe   (was ../images/smiles.jpg)          -> /singer.jpg  [TODO: replace]
+   - griphon       (was ../images/griphon.jpg)         -> /image5.jpg  [TODO: replace]
+   - gaining-grip  (was ../images/Camera Gaining Grip.jpg) -> /image6.jpg [TODO: replace]
+   - civic-forum   (was ../images/ANIKA -32 (1).jpg)   -> /image9.jpg  [TODO: replace]
+*/
 export const imagery = {
-  hero: heroImg,
-  team: teamImg,
+  hero: '/listener.jpg',
+  team: '/anika team.jpg',
 };
 
 /* --------------------------- BRAND FOUNDATIONS --------------------------- */
@@ -249,7 +248,7 @@ export const events = [
     time: '14:00 EAT',
     location: 'Nairobi Cultural Centre',
     pillarSlug: 'arts-culture',
-    image: semaPoster,
+    image: '/SEMA ANIKA POSTER.jpg',
     imageAlt:
       'Sema-Anika Community Dialogue Forum artwork, inviting community conversations on healing and mental health.',
     context:
@@ -267,7 +266,7 @@ export const events = [
     time: '10:00 EAT',
     location: 'Kilimani Creative Space, Nairobi',
     pillarSlug: 'youth-migration',
-    image: storytellingImg,
+    image: '/singer.jpg',
     imageAlt: 'Young people smiling together at a youth storytelling and community session.',
     context:
       'A hands-on residency where young storytellers craft and share lived experiences of migration, belonging and host-community relationships.',
@@ -283,7 +282,7 @@ export const events = [
     time: '19:00 EAT',
     location: 'The GoDown Arts Centre, Nairobi',
     pillarSlug: 'expressions',
-    image: griphonImg,
+    image: '/image5.jpg',
     imageAlt: 'Griphon performing spoken word live at an ANIKA poetry night.',
     context:
       'A curated night of spoken word, live beats and open-mic slots celebrating the power of the spoken word to heal and connect.',
@@ -299,7 +298,7 @@ export const events = [
     time: '09:00 EAT',
     location: 'Karura Creative Space, Nairobi',
     pillarSlug: 'expressions',
-    image: cameraImg,
+    image: '/image6.jpg',
     imageAlt: 'Participants documenting and creating together at a Gaining Grip expressive arts lab.',
     context:
       'A flagship expressive-arts experience where artists move from surviving to thriving through collaborative production and safeguarded creative process.',
@@ -315,7 +314,7 @@ export const events = [
     time: '14:00 EAT',
     location: 'Nairobi City Hall Amphitheatre',
     pillarSlug: 'governance',
-    image: forumImg,
+    image: '/image9.jpg',
     imageAlt: 'Crowd gathered at an ANIKA civic forum discussing community governance.',
     context:
       'A public forum using theatre and testimony to deepen young people’s engagement with human rights, civic responsibility and democratic participation.',
@@ -331,7 +330,7 @@ export const events = [
     time: '16:00 EAT',
     location: 'Kenya National Theatre, Nairobi',
     pillarSlug: 'gender-equality',
-    image: herStoryImg,
+    image: '/jaaziya.jpg',
     imageAlt: 'A woman performing her story on stage at the Her Story open mic.',
     context:
       'Women and marginalised voices take the mic to share stories, assert agency and shape conversations on gender equality, SRHR and SGBV.',

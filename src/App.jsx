@@ -15,6 +15,7 @@ import Donate from './pages/Donate'
 import AlliancePage from './pages/AlliancePage'
 import {Toaster} from "sonner";
 import ScrollToTop from './components/ScrollToTop'
+import WhatsAppFab from './components/WhatsAppFab'
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <WhatsAppFab />
       <Toaster richColors position="top-right" />
     </div>
   )
