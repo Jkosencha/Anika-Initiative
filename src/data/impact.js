@@ -1,12 +1,12 @@
 export const impactStats = [
-  { value: '100+', label: 'Events Held', accentClass: 'coral' },
-  { value: '2,500+', label: 'Forum Participants', accentClass: 'anika-green' },
-  { value: '150', label: 'Artists Engaged', accentClass: 'gold' },
-  { value: '11.4M+', label: 'Online Impressions', accentClass: 'anika-blue' },
-  { value: '200+', label: 'Refugees Engaged', accentClass: 'coral' },
-  { value: '160', label: 'Scripts Received', accentClass: 'anika-green' },
-  { value: '80', label: 'Young Leaders', accentClass: 'gold' },
-  { value: '14', label: 'African Countries', accentClass: 'anika-blue' },
+  { target: 100, suffix: '+', label: 'Events Held', accentClass: 'coral' },
+  { target: 2500, suffix: '+', label: 'Forum Participants', accentClass: 'anika-green' },
+  { target: 150, suffix: '', label: 'Artists Engaged', accentClass: 'gold' },
+  { target: 11.4, suffix: 'M+', label: 'Online Impressions', accentClass: 'anika-blue' },
+  { target: 200, suffix: '+', label: 'Refugees Engaged', accentClass: 'coral' },
+  { target: 160, suffix: '', label: 'Scripts Received', accentClass: 'anika-green' },
+  { target: 80, suffix: '', label: 'Young Leaders', accentClass: 'gold' },
+  { target: 14, suffix: '', label: 'African Countries', accentClass: 'anika-blue' },
 ];
 
 export const caseStudies = [
@@ -21,11 +21,11 @@ export const caseStudies = [
     title: 'Gaining Grip Experience',
     description: 'Five editions of programming creating safe spaces for conversations on gender equality, rights and healing.',
     image: '/slim.jpg'
-    },
+  },
   {
     id: 'refupoet',
     title: 'Refupoet',
     description: 'An artistic platform using poetry and storytelling to engage urban refugees on migration, belonging and identity.',
     image: '/KWAJ.jpg'
-    },
+  },
 ];

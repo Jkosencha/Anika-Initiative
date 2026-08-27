@@ -1,8 +1,11 @@
+import Reveal from "../Reveal";
+
 export default function ImpactHeader() {
   return (
-    <section className='relative bg-charcoal text-cream py-16 overflow-hidden'>
-        <img
-          src='/abstract-green.png'
+    <Reveal>
+      <section className='relative bg-charcoal text-cream py-16 overflow-hidden'>
+        <img 
+          src="/anika-gold-blob.png"
           className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
         />
 
@@ -12,8 +15,7 @@ export default function ImpactHeader() {
             Numbers matter, but the change lives in the rooms, the mics and the people.
           </p>
         </div>
-      
-      
-    </section>
+      </section>
+    </Reveal> 
   );
 }
