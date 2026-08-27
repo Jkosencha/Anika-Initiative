@@ -28,6 +28,7 @@ import Donations from './admin/pages/Donations'
 import AdminGallery from './admin/pages/AdminGallery'
 import Partners from './admin/pages/Partners'
 import StoriesAdmin from './admin/pages/stories/Stories'
+import Settings from './admin/pages/Settings'
 
 function SiteLayout() {
   return (
@@ -76,7 +77,7 @@ function App() {
           <Route path="impact" element={<AdminComingSoon title="Impact" />} />
           <Route path="reports" element={<AdminComingSoon title="Reports" />} />
           <Route path="team" element={<AdminTeam />} />
-          <Route path="settings" element={<AdminComingSoon title="Settings" />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="roles" element={<AdminRolesAccess />} />
         </Route>
         <Route path="/*" element={<SiteLayout />} />
