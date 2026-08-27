@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { PartnerProvider } from './features/about/context/PartnerContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import SplashScreen from './components/SplashScreen'
@@ -56,7 +57,7 @@ function SiteLayout() {
 
 function App() {
   return (
-    <>
+    <PartnerProvider>
       <ScrollToTop />
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
@@ -81,7 +82,7 @@ function App() {
         <Route path="/*" element={<SiteLayout />} />
       </Routes>
       <Toaster richColors position="top-right" />
-    </>
+    </PartnerProvider>
   )
 }
 

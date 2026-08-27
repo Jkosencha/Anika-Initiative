@@ -1,10 +1,8 @@
 // admin/pages/stories/StoryEditor.jsx
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import {
   Undo2,
@@ -18,6 +16,9 @@ import {
   Link as LinkIcon,
   ImagePlus,
   ArrowLeft,
+  X,
+  Check,
+  UploadCloud,
 } from 'lucide-react'
 import { PILLARS, STATUS_LABELS } from './data/pillars'
 import { storiesStore } from '../../../data/storiesStore'
@@ -59,6 +60,16 @@ const AVOID_PHRASES = [
   'sensitise',
   'victims',
 ]
+
+// Gallery images from AdminGallery
+const GALLERY_IMAGES = [
+  { id: 1, caption: "ANIKA team", src: "/anika team.jpg" },
+  { id: 2, caption: "Jaaziya", src: "/jaaziya.jpg" },
+  { id: 3, caption: "KWAJ", src: "/KWAJ.jpg" },
+  { id: 4, caption: "PHYL", src: "/PHYL.jpg" },
+  { id: 5, caption: "RAYA1", src: "/RAYA1.jpg" },
+  { id: 6, caption: "Jojo", src: "/jojo.jpg" },
+];
 
 function ToolbarButton({ onClick, active, disabled, title, children }) {
   return (
@@ -148,6 +159,109 @@ function Toolbar({ editor }) {
   )
 }
 
+// Gallery Picker Modal Component
+function GalleryPicker({ onClose, onSelect, colors }) {
+  const [selectedUrl, setSelectedUrl] = useState(null)
+  const [uploadPreview, setUploadPreview] = useState(null)
+  const fileInputRef = useRef(null)
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const localUrl = URL.createObjectURL(file)
+    setUploadPreview(localUrl)
+    setSelectedUrl(localUrl)
+  }
+
+  function confirmSelection() {
+    if (selectedUrl) onSelect(selectedUrl)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4">
+      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-charcoal">
+        <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4 dark:border-white/10">
+          <h3 className="font-display text-lg tracking-wide">Choose Cover Image</h3>
+          <button onClick={onClose} className="text-ink/50 hover:text-ink dark:text-cream/50 dark:hover:text-cream">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="flex gap-1 border-b border-ink/10 px-5 pt-3 dark:border-white/10">
+          <button
+            className="rounded-t-lg px-4 py-2 text-sm font-medium bg-coral/15 text-coral"
+          >
+            Choose from gallery
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {GALLERY_IMAGES.map((img) => {
+              const active = selectedUrl === img.src
+              return (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedUrl(img.src)}
+                  className={`group relative overflow-hidden rounded-xl border text-left transition-colors ${
+                    active ? 'border-coral ring-2 ring-coral' : 'border-ink/10 dark:border-white/10'
+                  }`}
+                >
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-ink/5 dark:bg-white/5">
+                    <img src={img.src} alt={img.caption} className="h-full w-full object-cover" />
+                  </div>
+                  <p className="truncate px-2 py-1.5 text-xs text-ink/70 dark:text-cream/70">{img.caption}</p>
+                  {active && (
+                    <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-white">
+                      <Check size={12} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Upload option */}
+          <div className="mt-6 pt-6 border-t border-ink/10 dark:border-white/10">
+            <p className="text-xs font-medium text-ink/60 dark:text-cream/60 mb-3">Or upload a new image</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-ink/15 py-6 text-ink/50 hover:border-coral hover:text-coral dark:border-white/15 dark:text-cream/50"
+            >
+              <UploadCloud size={28} />
+              <span className="text-sm font-medium">Click to upload</span>
+              <span className="text-xs text-ink/40 dark:text-cream/40">JPG or PNG, up to 5MB</span>
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+
+            {uploadPreview && (
+              <div className="mt-3 overflow-hidden rounded-xl border border-ink/10 dark:border-white/10">
+                <img src={uploadPreview} alt="Preview" className="aspect-video w-full object-cover" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 border-t border-ink/10 px-5 py-4 dark:border-white/10">
+          <button
+            onClick={onClose}
+            className="rounded-lg px-4 py-2 text-sm font-medium text-ink/60 hover:text-ink dark:text-cream/60 dark:hover:text-cream"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmSelection}
+            disabled={!selectedUrl}
+            className="rounded-lg bg-coral px-4 py-2 text-sm font-medium text-white hover:bg-coral/90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Use this image
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function StoryEditor({ story, onCancel, onSave }) {
   // Get theme from outlet context
   const { theme } = useOutletContext();
@@ -168,12 +282,14 @@ function StoryEditor({ story, onCancel, onSave }) {
   const [saveState, setSaveState] = useState('Saved')
   const [errors, setErrors] = useState({})
   const [content, setContent] = useState(story?.content || '<p></p>')
+  const [showGalleryPicker, setShowGalleryPicker] = useState(false)
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({ openOnClick: false, autolink: true }),
+      StarterKit.configure({
+        // Configure StarterKit to include all default extensions
+        // including bold, italic, link, etc.
+      }),
       Placeholder.configure({ placeholder: 'Start airing the story…' }),
     ],
     content: content,
@@ -222,6 +338,7 @@ function StoryEditor({ story, onCancel, onSave }) {
     setThumbnail(url);
     setSaveState('Unsaved changes');
     setErrors((prev) => ({ ...prev, thumbnail: undefined }));
+    setShowGalleryPicker(false);
   };
 
   function validate() {
@@ -400,6 +517,19 @@ function StoryEditor({ story, onCancel, onSave }) {
             </div>
             
             <div className="mt-3 space-y-2">
+              <button
+                onClick={() => setShowGalleryPicker(true)}
+                className="w-full rounded-lg px-3 py-2 text-sm font-medium flex items-center justify-center gap-2"
+                style={{ 
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.panel,
+                  color: COLORS.text
+                }}
+              >
+                <ImagePlus size={16} />
+                Choose from gallery
+              </button>
+              
               <label className="block w-full">
                 <input
                   type="file"
@@ -416,26 +546,9 @@ function StoryEditor({ story, onCancel, onSave }) {
                     color: COLORS.text
                   }}
                 >
-                  {isUploading ? 'Uploading...' : 'Upload image'}
+                  {isUploading ? 'Uploading...' : 'Or upload new image'}
                 </div>
               </label>
-              
-              <button
-                onClick={() => {
-                  const url = window.prompt('Enter image URL:', thumbnail || 'https://picsum.photos/seed/story/800/600');
-                  if (url) {
-                    handleGallerySelect(url);
-                  }
-                }}
-                className="w-full rounded-lg px-3 py-2 text-sm font-medium"
-                style={{ 
-                  border: `1px solid ${COLORS.border}`,
-                  background: COLORS.panel,
-                  color: COLORS.text
-                }}
-              >
-                Or enter image URL
-              </button>
             </div>
             
             {errors.thumbnail && <p className="mt-2 text-xs text-coral">{errors.thumbnail}</p>}
@@ -445,6 +558,15 @@ function StoryEditor({ story, onCancel, onSave }) {
               </p>
             )}
           </div>
+
+          {/* Gallery Picker Modal */}
+          {showGalleryPicker && (
+            <GalleryPicker
+              onClose={() => setShowGalleryPicker(false)}
+              onSelect={handleGallerySelect}
+              colors={COLORS}
+            />
+          )}
 
           {/* Pillar Selection */}
           <div style={{ 
