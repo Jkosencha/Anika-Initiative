@@ -1,16 +1,15 @@
-// src/admin/pages/Contacts.jsx
 import React, { useMemo, useState } from "react";
 import { X, Search, Trash2, Pencil } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 
-// ----- Light & Dark color sets (extended) -----
+//configuring light adn dark teme toggling
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
   text: "#1c1a17",
   muted: "#8c8579",
   panel: "#ffffff",
-  buttonBg: "#1c1a17",      // dark bg, white text
+  buttonBg: "#1c1a17",      
   buttonText: "#ffffff",
   inputBg: "#ffffff",
   inputPlaceholder: "#8c8579",
@@ -22,12 +21,12 @@ const darkColors = {
   text: "#f0f0f0",
   muted: "#aaaaaa",
   panel: "#2a2a2a",
-  buttonBg: "#f0f0f0",      // light bg, dark text
+  buttonBg: "#f0f0f0",      
   buttonText: "#1a1a1a",
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
 };
-// --------------------------------------------
+
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
@@ -39,7 +38,7 @@ const TYPE_STYLE = {
   Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
 };
 
-//things that will get captured automatically
+
 const MANUAL_SOURCES = [
   "Website form",
   "M-Pesa",
