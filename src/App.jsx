@@ -24,6 +24,7 @@ import AdminComingSoon from './admin/pages/ComingSoon'
 import Contacts from './admin/pages/Contacts';
 import Application from './admin/pages/Application'
 import Donations from './admin/pages/Donations'
+import StoriesAdmin from './admin/pages/stories/Stories'
 
 function SiteLayout() {
   return (
@@ -63,7 +64,7 @@ function App() {
           <Route path="events" element={<AdminComingSoon title="Events" />} />
           <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
           <Route path="applications" element={<Application />} />
-          <Route path="stories" element={<AdminComingSoon title="Stories" />} />
+          <Route path="stories" element={<StoriesAdmin />} />
           <Route path="gallery" element={<AdminComingSoon title="Gallery" />} />
           <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
           <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
