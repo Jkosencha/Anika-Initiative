@@ -73,7 +73,7 @@ const SEED = [
   { id: 1, donor: "Jennifer K", amount: 2500, phone: "+254 704239554", reference: "SGH7K2P9Q1", date: "Today 09:14", status: "Completed", month: "current" },
   { id: 2, donor: "James N.", amount: 1000, phone: "+254 799799220", reference: "SGH6M4T2LX", date: "Today 08:02", status: "Completed", month: "current" },
   { id: 3, donor: "Lynette M.", amount: 5000, phone: "+254 112544427", reference: "SGH5B9Q0RM", date: "Yesterday", status: "Completed", month: "current" },
-  { id: 4, donor: "Brian E.", amount: 500, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Pending", month: "current" },
+  { id: 4, donor: "Brian E.", amount: 500, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Completed", month: "current" },
   { id: 5, donor: "Daniel M.", amount: 10000, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
 ];
 
