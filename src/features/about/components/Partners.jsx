@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { partnersIntro, partners } from '../data/partners'
+import { partnersIntro } from '../data/partners'
+import { usePartners } from '../context/PartnerContext'
 
 const CARDS_PER_PAGE_DESKTOP = 4
 const AUTOPLAY_MS = 3000
@@ -15,21 +16,37 @@ function chunk(list, size) {
 }
 
 function PartnerCard({ partner, compact = false }) {
+  // State to track if logo failed to load
+  const [logoError, setLogoError] = useState(false)
+  
+  // Map partner names to logo files if they exist
+  const getLogoPath = (name) => {
+    const logoMap = {
+      'SEMA': '/partners/sema.png',
+      'Strategic Applications': '/partners/strategic-applications.png',
+      'Creatives Garage': '/partners/creatives-garage.png',
+      'YWCA': '/partners/ywca.png',
+    }
+    return logoMap[name]
+  }
+
+  const logoPath = getLogoPath(partner.name)
+
   return (
     <div
       className={`group flex items-center justify-center rounded-lg border border-ink/10 bg-white/40 px-4 ${
         compact ? 'h-24 w-28 shrink-0' : 'h-32 w-full'
       }`}
     >
-      {partner.logo ? (
+      {logoPath && !logoError ? (
         <img
-          src={partner.logo}
+          src={logoPath}
           alt={partner.name}
           className="max-h-8 w-auto object-contain grayscale opacity-70 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100"
+          onError={() => setLogoError(true)} // Handle image load error
         />
       ) : (
-        // Neutral text logotype fallback — matches brand guide guidance to keep
-        // multi-partner strips plain rather than placing marks over paint/photography.
+        // Fallback text logotype — displays when logo is missing or fails to load
         <span className="font-display text-sm uppercase tracking-wide text-ink/60 transition duration-200 group-hover:text-ink">
           {partner.name}
         </span>
@@ -39,6 +56,9 @@ function PartnerCard({ partner, compact = false }) {
 }
 
 export default function Partners() {
+  // Use the shared partner context
+  const { partners } = usePartners()
+  
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
   )
@@ -51,7 +71,11 @@ export default function Partners() {
     return () => mql.removeEventListener('change', handleChange)
   }, [])
 
-  
+  // If no partners, don't render the section
+  if (!partners || partners.length === 0) {
+    return null
+  }
+
   const pages = chunk(partners, CARDS_PER_PAGE_DESKTOP)
   const [index, setIndex] = useState(0)
   const timerRef = useRef(null)
@@ -67,9 +91,7 @@ export default function Partners() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, isPaused, pages.length, isMobile])
 
-  // Mobile:every partner shown at once in a continuous, looping marquee.
-  // The list is duplicated so translateX(-50%) lines up seamlessly with the
-  // start of the first copy, giving an endless scroll with no visible reset.
+  // Mobile: every partner shown at once in a continuous, looping marquee.
   const marqueeItems = [...partners, ...partners]
 
   return (
