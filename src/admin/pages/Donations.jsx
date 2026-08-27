@@ -75,6 +75,8 @@ const SEED = [
   { id: 3, donor: "Lynette M.", amount: 20000, phone: "+254 112544427", reference: "SGH5B9Q0RM", date: "Yesterday", status: "Completed", month: "current" },
   { id: 4, donor: "Brian E.", amount: 50000, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Completed", month: "current" },
   { id: 5, donor: "Daniel M.", amount: 10000, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
+  { id: 5, donor: "Anderson M.", amount: 500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "pending", month: "current" },
+  { id: 5, donor: "Levi M.", amount: 1500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
 ];
 
 // Baseline totals for prior months already banked in 2026, so "Total 2026"
