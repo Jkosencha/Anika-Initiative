@@ -268,8 +268,8 @@ export default function Applications() {
   const [applications, setApplications] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [form, setForm] = useState({ name: "", programme: "" });
+  // const [showNewForm, setShowNewForm] = useState(false);   // <-- commented out
+  // const [form, setForm] = useState({ name: "", programme: "" }); // <-- commented out
 
   const tabs = ["All", "New", "Shortlisted", "Accepted"];
 
@@ -304,24 +304,24 @@ export default function Applications() {
     setApplications((prev) => prev.filter((a) => a.id !== id));
   }
 
-  function addApplication(e) {
-    e.preventDefault();
-    if (!form.name.trim() || !form.programme.trim()) return;
-    const newApp = {
-      id: Date.now(),
-      name: form.name.trim(),
-      programme: form.programme.trim(),
-      submitted: "Today",
-      status: "New",
-      email: "-",
-      phone: "-",
-      summary: "No summary submitted yet.",
-      experience: "-",
-    };
-    setApplications((prev) => [newApp, ...prev]);
-    setForm({ name: "", programme: "" });
-    setShowNewForm(false);
-  }
+  // function addApplication(e) {  
+  //   e.preventDefault();
+  //   if (!form.name.trim() || !form.programme.trim()) return;
+  //   const newApp = {
+  //     id: Date.now(),
+  //     name: form.name.trim(),
+  //     programme: form.programme.trim(),
+  //     submitted: "Today",
+  //     status: "New",
+  //     email: "-",
+  //     phone: "-",
+  //     summary: "No summary submitted yet.",
+  //     experience: "-",
+  //   };
+  //   setApplications((prev) => [newApp, ...prev]);
+  //   setForm({ name: "", programme: "" });
+  //   setShowNewForm(false);
+  // }
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
@@ -342,6 +342,7 @@ export default function Applications() {
           </p>
         </div>
         <div className="flex gap-2">
+          {/* application button removed
           <button
             onClick={() => setShowNewForm((v) => !v)}
             style={{
@@ -352,6 +353,7 @@ export default function Applications() {
           >
             + NEW APPLICATION
           </button>
+          */}
           <button
             onClick={() => downloadCSV(filtered, "applications.csv")}
             style={{
@@ -366,6 +368,7 @@ export default function Applications() {
         </div>
       </div>
 
+      {/* commenting out applicationn form
       {showNewForm && (
         <form
           onSubmit={addApplication}
@@ -424,6 +427,7 @@ export default function Applications() {
           </button>
         </form>
       )}
+      */}
 
       <div className="flex gap-2 mb-5 flex-wrap">
         {tabs.map((t) => (
