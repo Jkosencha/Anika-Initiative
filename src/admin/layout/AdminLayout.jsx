@@ -25,7 +25,7 @@ function AdminLayout() {
           onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
         />
         <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+          <Outlet context={{ theme }}/>
         </main>
       </div>
     </div>
