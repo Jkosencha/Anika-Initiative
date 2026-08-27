@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { usePartners } from "../../features/about/context/PartnerContext";
 
-// Same light/dark palette shape as Donations.jsx, so the two pages feel
-// like one product instead of two different admin panels.
+// Same light/dark palette shape as Donations.jsx
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
@@ -40,21 +40,12 @@ function initials(name) {
     .toUpperCase();
 }
 
-// Same hashing approach as Donations.jsx's avatarColor, so donor avatars
-// and partner logos land on the same palette across the admin.
 const LOGO_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 function logoColor(name) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return LOGO_COLORS[Math.abs(hash) % LOGO_COLORS.length];
 }
-
-const SEED = [
-  { id: 1, name: "SEMA", category: "Civic technology" },
-  { id: 2, name: "Strategic Applications", category: "International" },
-  { id: 3, name: "Creatives Garage", category: "Creative hub" },
-  { id: 4, name: "YWCA", category: "Community" },
-];
 
 function PartnerModal({ onClose, onSave, colors, initial }) {
   const [name, setName] = useState(initial?.name || "");
@@ -186,24 +177,14 @@ function PartnerCard({ partner, colors, onEdit, onDelete }) {
 }
 
 export default function Partners() {
-  // Pull theme from AdminLayout via Outlet context, same as Donations.jsx.
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
+  
+  // Use the shared partner context
+  const { partners, savePartner, deletePartner } = usePartners();
 
-  const [partners, setPartners] = useState(SEED);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-
-  function savePartner(partner) {
-    setPartners((prev) => {
-      const exists = prev.some((p) => p.id === partner.id);
-      return exists ? prev.map((p) => (p.id === partner.id ? partner : p)) : [partner, ...prev];
-    });
-  }
-
-  function deletePartner(id) {
-    setPartners((prev) => prev.filter((p) => p.id !== id));
-  }
 
   function openAdd() {
     setEditing(null);
