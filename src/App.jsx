@@ -25,6 +25,7 @@ import Contacts from './admin/pages/Contacts';
 import Application from './admin/pages/Application'
 import Donations from './admin/pages/Donations'
 import AdminGallery from './admin/pages/AdminGallery'
+import Partners from './admin/pages/Partners'
 import StoriesAdmin from './admin/pages/stories/Stories'
 
 function SiteLayout() {
@@ -61,14 +62,12 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="contacts" element={<Contacts/>} />
-          <Route path="partners" element={<AdminComingSoon title="Partners" />} />
+          <Route path="partners" element={<Partners />} />
           <Route path="events" element={<AdminComingSoon title="Events" />} />
           <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
           <Route path="applications" element={<Application />} />
-          <Route path="stories" element={<AdminComingSoon title="Stories" />} />
-          <Route path="gallery" element={<AdminGallery />} />
           <Route path="stories" element={<StoriesAdmin />} />
-          <Route path="gallery" element={<AdminComingSoon title="Gallery" />} />
+          <Route path="gallery" element={<AdminGallery />} />
           <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
           <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
           <Route path="messages" element={<AdminComingSoon title="Messages" />} />
