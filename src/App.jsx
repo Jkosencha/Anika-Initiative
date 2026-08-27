@@ -21,6 +21,7 @@ import AdminDashboard from './admin/pages/Dashboard'
 import AdminTeam from './admin/pages/Team'
 import AdminRolesAccess from './admin/pages/RolesAccess'
 import AdminComingSoon from './admin/pages/ComingSoon'
+import Contacts from './admin/pages/Contacts';
 
 function SiteLayout() {
   return (
@@ -55,7 +56,7 @@ function App() {
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="contacts" element={<AdminComingSoon title="Contacts" />} />
+          <Route path="contacts" element={<Contacts/>} />
           <Route path="partners" element={<AdminComingSoon title="Partners" />} />
           <Route path="events" element={<AdminComingSoon title="Events" />} />
           <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
