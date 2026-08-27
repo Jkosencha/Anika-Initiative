@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import Reveal from './components/Reveal'
 import AboutHero from './components/AboutHero'
 import OriginStory from './components/OriginStory'
 import PoemSpotlight from './components/PoemSpotlight'
@@ -30,16 +31,44 @@ export default function AboutSection() {
 
   return (
     <>
+      {/* Hero renders immediately — no reveal, it's the first thing visible on load */}
       <AboutHero />
-      <OriginStory />
-      <PoemSpotlight />
-      <MissionVision />
-      <Objectives />
-      <Governance />
-      <HistoryTimeline />
-      <CoreValues />
-      <Partners />
-      <JoinCTA />
+
+      <Reveal>
+        <OriginStory />
+      </Reveal>
+
+      <Reveal>
+        <PoemSpotlight />
+      </Reveal>
+
+      <Reveal>
+        <MissionVision />
+      </Reveal>
+
+      <Reveal>
+        <Objectives />
+      </Reveal>
+
+      <Reveal>
+        <Governance />
+      </Reveal>
+
+      <Reveal>
+        <HistoryTimeline />
+      </Reveal>
+
+      <Reveal>
+        <CoreValues />
+      </Reveal>
+
+      <Reveal>
+        <Partners />
+      </Reveal>
+
+      <Reveal>
+        <JoinCTA />
+      </Reveal>
     </>
   )
 }
