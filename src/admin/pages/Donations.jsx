@@ -1,0 +1,389 @@
+import React, { useMemo, useState } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { X, Plus } from "lucide-react";
+
+const COLORS = {
+  bg: "#fafaf8",
+  border: "#e8e5df",
+  text: "#1c1a17",
+  muted: "#8c8579",
+  panel: "#ffffff",
+  green: "#3c8a4c",
+  red: "#d24a42",
+  orange: "#e2a63f",
+};
+
+const STATUS_STYLE = {
+  Completed: { bg: "#dcefe0", text: "#2d7a43" },
+  Pending: { bg: "#fdecd2", text: "#8a5c10" },
+  Failed: { bg: "#f6d9d9", text: "#b23b3b" },
+};
+
+function initials(name) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
+function avatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function genRef() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+  let ref = "SGH";
+  for (let i = 0; i < 6; i++) ref += chars[Math.floor(Math.random() * chars.length)];
+  return ref;
+}
+
+function maskPhone(phone) {
+  const digits = phone.replace(/\D/g, "");
+  const last3 = digits.slice(-3);
+  return `+254 7•• ••• ${last3.padStart(3, "0")}`;
+}
+
+const SEED = [
+  { id: 1, donor: "Jennifer K", amount: 2500, phone: "+254 704239554", reference: "SGH7K2P9Q1", date: "Today 09:14", status: "Completed", month: "current" },
+  { id: 2, donor: "James N.", amount: 1000, phone: "+254 799799220", reference: "SGH6M4T2LX", date: "Today 08:02", status: "Completed", month: "current" },
+  { id: 3, donor: "Lynette M.", amount: 5000, phone: "+254 112544427", reference: "SGH5B9Q0RM", date: "Yesterday", status: "Completed", month: "current" },
+  { id: 4, donor: "Brian E.", amount: 500, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Pending", month: "current" },
+  { id: 5, donor: "Daniel M.", amount: 10000, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
+];
+
+// Baseline totals for prior months already banked in 2026, so "Total 2026"
+// and the average reflect the whole year, not just what's listed below.
+const PRIOR_MONTHS_TOTAL = 394000;
+const PRIOR_MONTHS_COUNT = 137;
+
+function toCSV(rows) {
+  const header = ["Donor", "Amount (KES)", "Phone", "Reference", "Date", "Status"];
+  const lines = rows.map((r) =>
+    [r.donor, r.amount, r.phone, r.reference, r.date, r.status]
+      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .join(",")
+  );
+  return [header.join(","), ...lines].join("\n");
+}
+
+function downloadCSV(rows, filename) {
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
+  return (
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+      <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">
+        {label}
+      </div>
+      <div>
+        <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">
+          {value}
+        </div>
+        {sub && (
+          <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-semibold mt-1">
+            {sub}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AddDonationModal({ onClose, onAdd }) {
+  const [donor, setDonor] = useState("");
+  const [amount, setAmount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [status, setStatus] = useState("Completed");
+
+  function submit(e) {
+    e.preventDefault();
+    const amt = parseFloat(amount);
+    if (!donor.trim() || !amt || amt <= 0) return;
+    onAdd({
+      id: Date.now(),
+      donor: donor.trim(),
+      amount: amt,
+      phone: phone.trim() ? maskPhone(phone) : "+254 7•• ••• 000",
+      reference: genRef(),
+      date: "Today " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      status,
+      month: "current",
+    });
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: "rgba(20,18,15,0.45)" }} onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: COLORS.border }}>
+          <h2 className="font-bold text-lg" style={{ color: COLORS.text }}>
+            Record M-Pesa donation
+          </h2>
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
+            <X size={18} color={COLORS.muted} />
+          </button>
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Donor name
+            </label>
+            <input
+              required
+              value={donor}
+              onChange={(e) => setDonor(e.target.value)}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${COLORS.border}` }}
+              placeholder="e.g. Peter O."
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Amount (KES)
+            </label>
+            <input
+              required
+              type="number"
+              min="1"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${COLORS.border}` }}
+              placeholder="1000"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Phone number
+            </label>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${COLORS.border}` }}
+              placeholder="0712345678"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
+              Status
+            </label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="px-3 py-2 rounded-lg text-sm outline-none bg-white"
+              style={{ border: `1px solid ${COLORS.border}` }}
+            >
+              {Object.keys(STATUS_STYLE).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: COLORS.border }}>
+          <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: COLORS.muted }}>
+            Cancel
+          </button>
+          <button type="submit" style={{ background: COLORS.text }} className="text-white text-sm font-semibold px-4 py-2 rounded-full">
+            Add donation
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default function Donations() {
+  const [donations, setDonations] = useState(SEED);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const stats = useMemo(() => {
+    const currentMonth = donations.filter((d) => d.month === "current");
+    const thisMonthTotal = currentMonth.reduce((sum, d) => sum + d.amount, 0);
+    const total2026 = PRIOR_MONTHS_TOTAL + thisMonthTotal;
+    const totalGifts = PRIOR_MONTHS_COUNT + donations.length;
+    const avgGift = totalGifts ? Math.round(total2026 / totalGifts) : 0;
+
+    const brackets = { under: 0, mid: 0, over: 0 };
+    donations.forEach((d) => {
+      if (d.amount < 1000) brackets.under += 1;
+      else if (d.amount <= 5000) brackets.mid += 1;
+      else brackets.over += 1;
+    });
+    const total = donations.length || 1;
+    const pctUnder = Math.round((brackets.under / total) * 100);
+    const pctMid = Math.round((brackets.mid / total) * 100);
+    const pctOver = 100 - pctUnder - pctMid;
+
+    return { thisMonthTotal, total2026, avgGift, totalGifts, pctUnder, pctMid, pctOver };
+  }, [donations]);
+
+  const pieData = [
+    { name: "Under 1,000", value: stats.pctUnder, color: COLORS.red },
+    { name: "1,000–5,000", value: stats.pctMid, color: COLORS.orange },
+    { name: "Over 5,000", value: stats.pctOver, color: COLORS.green },
+  ];
+
+  function addDonation(donation) {
+    setDonations((prev) => [donation, ...prev]);
+  }
+
+  function cycleStatus(id) {
+    setDonations((prev) =>
+      prev.map((d) => {
+        if (d.id !== id) return d;
+        const order = ["Pending", "Completed", "Failed"];
+        const next = order[(order.indexOf(d.status) + 1) % order.length];
+        return { ...d, status: next };
+      })
+    );
+  }
+
+  function fmt(n) {
+    return `KES ${n.toLocaleString()}`;
+  }
+
+  return (
+    <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+            Donations
+          </h1>
+          <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
+            M-Pesa contributions to ANIKA.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setModalOpen(true)}
+            style={{ background: COLORS.text }}
+            className="text-white text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
+          >
+            <Plus size={14} /> RECORD DONATION
+          </button>
+          <button
+            onClick={() => downloadCSV(donations, "donations.csv")}
+            style={{ border: `1px solid ${COLORS.border}`, color: COLORS.text }}
+            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg bg-white"
+          >
+            EXPORT CSV
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} />
+        <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} />
+        <StatCard label="AVG GIFT" value={stats.avgGift.toLocaleString()} sub="KES" bg={COLORS.orange} textColor="#1c1a17" />
+        <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl p-4 flex items-center gap-4">
+          <div style={{ width: 84, height: 84 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" innerRadius={26} outerRadius={40} startAngle={90} endAngle={-270}>
+                  {pieData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} stroke="none" />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex-1">
+            <div className="text-xs font-bold mb-1.5" style={{ color: COLORS.text }}>
+              By gift size
+            </div>
+            {pieData.map((d) => (
+              <div key={d.name} className="flex items-center gap-1.5 text-xs mb-1" style={{ color: COLORS.text }}>
+                <span style={{ background: d.color }} className="w-2 h-2 rounded-sm shrink-0" />
+                <span style={{ color: COLORS.muted }}>{d.name}</span>
+                <span className="font-bold ml-auto">{d.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
+        <div
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]"
+          style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+        >
+          <div>DONOR</div>
+          <div>AMOUNT</div>
+          <div>PHONE</div>
+          <div>REFERENCE</div>
+          <div>DATE</div>
+          <div>STATUS</div>
+        </div>
+
+        {donations.map((d) => {
+          const s = STATUS_STYLE[d.status] || STATUS_STYLE.Pending;
+          return (
+            <div
+              key={d.id}
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[760px]"
+              style={{ borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  style={{ background: avatarColor(d.donor) }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+                >
+                  {initials(d.donor)}
+                </div>
+                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                  {d.donor}
+                </span>
+              </div>
+              <div className="text-sm font-bold" style={{ color: COLORS.text }}>
+                KES {d.amount.toLocaleString()}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {d.phone}
+              </div>
+              <div className="text-sm font-mono" style={{ color: COLORS.text }}>
+                {d.reference}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {d.date}
+              </div>
+              <button
+                onClick={() => cycleStatus(d.id)}
+                style={{ background: s.bg, color: s.text }}
+                className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                title="Click to change status"
+              >
+                <span style={{ background: s.text }} className="w-1.5 h-1.5 rounded-full" />
+                {d.status}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {modalOpen && <AddDonationModal onClose={() => setModalOpen(false)} onAdd={addDonation} />}
+    </div>
+  );
+}
