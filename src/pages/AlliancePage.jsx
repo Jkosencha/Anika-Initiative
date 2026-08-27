@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import Reveal from '../components/Reveal'
+import Counter from '../components/Counter'
 
 const BENEFITS = [
   { title: 'Residencies', text: 'Priority access to cross-border artistic residencies.', accent: 'gold' },
@@ -36,7 +38,7 @@ export default function AlliancePage() {
           aria-hidden="true"
           className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
         />
-        <div className='relative z-10 mx-auto max-w-6xl px-6'>
+        <Reveal className='relative z-10 mx-auto max-w-6xl px-6'>
           <h1 className="mt-4 max-w-3xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
             Pan-African Arts Alliance
           </h1>
@@ -44,17 +46,19 @@ export default function AlliancePage() {
             A living network for artists, cultural organisations, enablers and institutions
             building work that crosses borders.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       <section className="border-b border-ink/10 bg-cream px-6 py-16 md:px-16 md:py-20">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-16">
-          <img
+          <Reveal as="figure" className="h-full min-h-72">
+            <img
             src="/RAYA1.jpg"
             alt="Artists and cultural partners gathered together"
-            className="h-full min-h-72 w-full object-cover"
-          />
-          <div>
+            className="h-full w-full object-cover"
+            />
+          </Reveal>
+          <Reveal delay={150}>
             <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
               About the Alliance
             </p>
@@ -86,13 +90,30 @@ export default function AlliancePage() {
                 to exchange, collaborate and help shape work that travels further.
               </p>  
             </div>
-          </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="bg-charcoal px-6 py-10 text-cream md:px-16">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 sm:grid-cols-3">
+          <Reveal className="text-center">
+            <p className="font-display text-4xl text-coral"><Counter to={14} /></p>
+            <p className="mt-1 font-body text-xs uppercase tracking-[0.2em] text-cream/60">African countries</p>
+          </Reveal>
+          <Reveal delay={100} className="text-center">
+            <p className="font-display text-4xl text-gold"><Counter to={150} suffix="+" /></p>
+            <p className="mt-1 font-body text-xs uppercase tracking-[0.2em] text-cream/60">Artists engaged</p>
+          </Reveal>
+          <Reveal delay={200} className="text-center">
+            <p className="font-display text-4xl text-anika-green"><Counter to={100} suffix="+" /></p>
+            <p className="mt-1 font-body text-xs uppercase tracking-[0.2em] text-cream/60">Events held</p>
+          </Reveal>
         </div>
       </section>
 
       <section className="bg-white px-6 py-20 md:px-16">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 lg:grid-cols-[1fr_0.9fr] lg:items-start">
-          <div>
+          <Reveal>
             <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
               Member benefits
             </p>
@@ -104,17 +125,17 @@ export default function AlliancePage() {
               collective voice for African arts.
             </p>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {BENEFITS.map((b) => (
-                <div key={b.title} className="border border-ink/15 bg-cream p-5">
+              {BENEFITS.map((b, i) => (
+                <Reveal key={b.title} delay={i * 100} className="border border-ink/15 bg-cream p-5">
                   <div className={`h-1.5 w-10 ${accentBar[b.accent]}`} />
                   <h3 className="mt-4 font-display text-lg uppercase tracking-wide text-ink">{b.title}</h3>
                   <p className="mt-2 font-body text-base leading-6 text-ink/70">{b.text}</p>
-                </div>
+                </Reveal>
               ))}
             </div>
-          </div>
+          </Reveal>
 
-          <div className="border border-ink/15 bg-cream p-6 sm:p-8">
+          <Reveal delay={150} className="border border-ink/15 bg-cream p-6 sm:p-8">
             <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-coral">Membership application</p>
             <h2 className="mt-3 font-display text-3xl uppercase tracking-wide text-ink">
               Apply in under 2 minutes
@@ -225,7 +246,7 @@ export default function AlliancePage() {
                 </button>
               </form>
             )}
-          </div>
+          </Reveal>
         </div>
       </section>
     </main>
