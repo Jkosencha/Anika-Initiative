@@ -134,7 +134,7 @@ export default function EventsList() {
   };
 
   return (
-    <div className="bg-[#F8F6E9] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#FFF] min-h-screen text-gray-900 font-sans">
       
       {/* 1. HERO SECTION */}
       <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
@@ -206,7 +206,7 @@ export default function EventsList() {
 
           {/* Inline Form Drawer for Featured Event */}
           {openFormId === FEATURED_EVENT.id && (
-            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-[#FAF9F5] p-6 shadow-md md:p-8">
+            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-[#FFF] p-6 shadow-md md:p-8">
               {renderRegistrationForm(FEATURED_EVENT.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
             </div>
           )}
@@ -314,25 +314,6 @@ export default function EventsList() {
         </section>
 
       </main>
-
-      {/* 3. FOOTER */}
-      <footer className="bg-[#121212] text-gray-400 py-12 px-6 mt-20 text-xs">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 md:grid-cols-3">
-          <div>
-            <h4 className="text-white font-bold uppercase tracking-wider mb-2">PROGRAMS</h4>
-            <p className="leading-relaxed">Youth & Migration, Expressions, Gender Equality, Governance.</p>
-          </div>
-          <div>
-            <h4 className="text-white font-bold uppercase tracking-wider mb-2">NAVIGATE</h4>
-            <p className="leading-relaxed">Events, About Us, Community Dialogue, Contact.</p>
-          </div>
-          <div>
-            <h4 className="text-white font-bold uppercase tracking-wider mb-2">CONTACT</h4>
-            <p className="leading-relaxed">Nairobi, Kenya • info@anika.org</p>
-          </div>
-        </div>
-      </footer>
-
     </div>
   );
 }

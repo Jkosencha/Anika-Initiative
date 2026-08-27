@@ -31,22 +31,62 @@ export default function AlliancePage() {
     <main className="min-h-screen bg-cream">
       <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-24">
         <img
-          src="/abstract-green.png"
+          src="/anika-blue-blob.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 object-contain opacity-80 md:h-80 md:w-80"
+          className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
         />
-        <div className="mx-auto max-w-6xl px-6">
-          <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
-            Pan-African Arts Alliance
-          </p>
+        <div className='relative z-10 mx-auto max-w-6xl px-6'>
           <h1 className="mt-4 max-w-3xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
-            Join the <span className="text-coral">Alliance.</span>
+            Pan-African Arts Alliance
           </h1>
-          <p className="mt-6 max-w-2xl font-editorial text-xl italic text-cream/80 sm:text-2xl">
+          <p className="font-editorial italic text-gold mt-4 max-w-md text-lg">
             A living network for artists, cultural organisations, enablers and institutions
             building work that crosses borders.
           </p>
+        </div>
+      </section>
+
+      <section className="border-b border-ink/10 bg-cream px-6 py-16 md:px-16 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-16">
+          <img
+            src="/RAYA1.jpg"
+            alt="Artists and cultural partners gathered together"
+            className="h-full min-h-72 w-full object-cover"
+          />
+          <div>
+            <p className="font-body text-base font-semibold uppercase tracking-[0.25em] text-anika-blue">
+              About the Alliance
+            </p>
+            <h2 className="max-w-3xl font-display text-4xl uppercase leading-tight text-ink sm:text-5xl">
+              Pan-African Arts Alliance
+            </h2>
+            <div className="mt-5 max-w-3xl space-y-5 font-body text-lg leading-8 text-ink/75">
+              <p>
+                This ANIKA's continental network for artists, cultural
+                organisations, enablers and institutions building work that crosses borders. It is
+                a practical response to the distance, limited resources and disconnected
+                opportunities that can make collaboration across Africa difficult. The Alliance
+                brings people into relationship so that ideas, skills and possibilities can move
+                more freely between communities and countries.
+              </p>
+              <p>
+                At its heart, the Alliance is about shared ambition becoming shared practice.
+                Members can connect through cross-border artistic residencies, co-produce work
+                with partners across the continent, and exchange knowledge about grants and other
+                funding opportunities. It also creates space for artists and cultural workers to
+                amplify one another's voices and contribute to a stronger collective voice for
+                African arts in policy and institutional spaces.
+              </p>
+              <p>
+                The network is formalising during 2025-26, with membership open to the people and
+                organisations who want to build this future together. Joining begins with a short
+                application, and the ANIKA team follows up via WhatsApp. Whether you are an artist,
+                a cultural organisation, an enabler or an institution, the Alliance offers a place
+                to exchange, collaborate and help shape work that travels further.
+              </p>  
+            </div>
+          </div>
         </div>
       </section>
 
