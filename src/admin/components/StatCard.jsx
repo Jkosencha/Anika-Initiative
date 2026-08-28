@@ -8,7 +8,7 @@ function StatCard({ label, value, sub, icon: Icon, bg, textColor = '#fff', to })
     <Tag
       {...linkProp}
       style={{ background: bg, color: textColor }}
-      className={`block rounded-xl p-4 ${to ? 'transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''}`}
+      className={`block rounded-none rounded-tr-xl rounded-bl-xl p-4 ${to ? 'transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''}`}
     >
       <div className="flex items-start justify-between">
         <p className="text-xs font-bold tracking-wide opacity-80">{label}</p>
