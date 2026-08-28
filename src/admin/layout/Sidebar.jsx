@@ -13,8 +13,13 @@ function Sidebar({ open, onClose }) {
         />
       )}
 
+      <style>{`
+        .admin-nav { scrollbar-width: none; -ms-overflow-style: none; }
+        .admin-nav::-webkit-scrollbar { display: none; }
+      `}</style>
+
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-80 flex-col bg-charcoal text-cream
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-charcoal text-cream
           transition-transform duration-200 lg:static lg:translate-x-0
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -27,11 +32,11 @@ function Sidebar({ open, onClose }) {
             <X size={20} />
           </button>
         </div>
-        <p className="px-5 pb-4 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-cream/40">
+        <p className="px-6 pb-4 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-cream/40">
           Admin Desk
         </p>
 
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
+        <nav className="admin-nav flex-1 space-y-6 overflow-y-auto px-3 pb-6">
           {navSections.map((section) => (
             <div key={section.label}>
               <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-cream/40">
@@ -45,9 +50,9 @@ function Sidebar({ open, onClose }) {
                       end={end}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                           isActive
-                            ? 'bg-coral text-white'
+                            ? 'bg-white text-coral'
                             : 'text-cream/70 hover:bg-white/5 hover:text-cream'
                         }`
                       }
@@ -76,10 +81,10 @@ function Sidebar({ open, onClose }) {
             A
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-cream">Admin</p>
-            <p className="truncate text-xs text-cream/50">Leadership</p>
+            <p className="truncate text-sm font-semibold text-cream">Admin</p>
+            <p className="truncate text-xs font-semibold text-cream/50">Leadership</p>
           </div>
-          <button className="text-xs font-medium text-cream/50 hover:text-cream">Exit</button>
+          <button className="text-xs font-semibold text-cream/50 hover:text-cream">Exit</button>
         </div>
       </aside>
     </>
