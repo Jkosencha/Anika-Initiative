@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { DollarSign, CalendarDays, UserPlus, Globe, MapPin } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import TrendBarChart from '../components/charts/TrendBarChart'
@@ -22,10 +23,10 @@ const recentDonations = [
 ]
 
 const recentActivity = [
-  { text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago' },
-  { text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago' },
-  { text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago' },
-  { text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday' },
+  { text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', to: '/admin/registrations' },
+  { text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', to: '/admin/donations' },
+  { text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', to: '/admin/partners' },
+  { text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', to: '/admin/stories' },
 ]
 
 const reach = [
@@ -142,23 +143,24 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <Card title="Recent activity" colors={COLORS} action={<LinkButton colors={COLORS}>VIEW ALL</LinkButton>}>
+        <Card title="Recent activity" colors={COLORS}>
           <ul>
             {recentActivity.map((item) => (
-              <li
-                key={item.text}
-                className="flex items-start gap-3 border-t py-3 first:border-t-0 first:pt-0 last:pb-0"
-                style={{ borderColor: COLORS.border }}
-              >
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: COLORS.blue }} />
-                <div>
-                  <p className="text-sm" style={{ color: COLORS.text }}>
-                    {item.text}
-                  </p>
-                  <p className="text-xs" style={{ color: COLORS.muted }}>
-                    {item.time}
-                  </p>
-                </div>
+              <li key={item.text} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
+                <Link
+                  to={item.to}
+                  className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-black/5"
+                >
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: COLORS.blue }} />
+                  <div>
+                    <p className="text-sm" style={{ color: COLORS.text }}>
+                      {item.text}
+                    </p>
+                    <p className="text-xs" style={{ color: COLORS.muted }}>
+                      {item.time}
+                    </p>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
