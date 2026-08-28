@@ -1,4 +1,3 @@
-// PoemSpotlight.jsx
 import { poem } from '../data/poem'
 
 export default function PoemSpotlight() {
@@ -27,7 +26,6 @@ export default function PoemSpotlight() {
           </span>
         </div>
 
-        {/* Full poem */}
         <div className="mx-auto mt-16 max-w-2xl space-y-8 font-editorial text-xl leading-relaxed text-cream/85 sm:text-2xl">
           {poem.stanzas.map((stanza, i) => (
             <p key={i}>
@@ -40,7 +38,6 @@ export default function PoemSpotlight() {
           ))}
         </div>
 
-        {/* Closing refrain, set apart in colour */}
         <div className="mx-auto mt-16 max-w-2xl border-t border-cream/15 pt-10">
           <p className="font-editorial text-2xl italic leading-relaxed text-coral sm:text-3xl">
             {poem.refrain.map((line, i) => (

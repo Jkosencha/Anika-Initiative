@@ -1,10 +1,11 @@
-import React from 'react'
 import { accentBorder } from '../../utils/accentClasses';
+import Reveal from '../Reveal';
 
 export default function ProgramTabs({ programs, activeId, onSelect }) {
   return (
     <div className='bg-cream pt-10'>
-      <div className='mx-auto max-w-6xl px-6 flex flex-wrap gap-x-6 gap-y-3'>
+      <Reveal>
+        <div className='mx-auto max-w-6xl px-6 flex flex-wrap gap-x-6 gap-y-3'>
         {programs.map((program) => {
           const isActive = program.id === activeId;
           return (
@@ -22,6 +23,8 @@ export default function ProgramTabs({ programs, activeId, onSelect }) {
           )
         })}
       </div>
+      </Reveal>
+      
     </div>
   )
 }

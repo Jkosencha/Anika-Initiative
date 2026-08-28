@@ -15,7 +15,7 @@ function Counter({ to, suffix = '', duration = 1.5 }) {
     const controls = animate(0, to, {
       duration,
       ease: 'easeOut',
-      onUpdate: (v) => setValue(Math.round(v)),
+      onUpdate: (v) => setValue(Number.isInteger(to) ? Math.round(v) : Math.round(v *10) / 10),
     })
     return () => controls.stop()
   }, [inView, splashDone, to, duration])
