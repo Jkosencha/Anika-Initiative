@@ -144,6 +144,79 @@ function StatusBadge({ status }) {
   );
 }
 
+// ----- Delete Confirmation Modal (new) -----
+function DeleteConfirmModal({ app, onClose, onConfirm, colors }) {
+  if (!app) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+        }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div
+          className="flex items-center justify-between p-5 border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+            Confirm Delete
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-black/5"
+          >
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5">
+          <p style={{ color: colors.text }}>
+            Are you sure you want to delete the application from <strong>{app.name}</strong>?
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <div
+          className="flex justify-end gap-2 p-4 border-t"
+          style={{ borderColor: colors.border }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm(app.id);
+              onClose();
+            }}
+            style={{
+              background: "#b23b3b",
+              color: "#ffffff",
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ReviewModal({ app, onClose, onUpdateStatus, onDelete, colors }) {
   if (!app) return null;
   return (
@@ -268,6 +341,7 @@ export default function Applications() {
   const [applications, setApplications] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);   // for delete confirmation
   // const [showNewForm, setShowNewForm] = useState(false);   // <-- commented out
   // const [form, setForm] = useState({ name: "", programme: "" }); // <-- commented out
 
@@ -491,7 +565,7 @@ export default function Applications() {
             <div>
               <StatusBadge status={app.status} />
             </div>
-            <div className="text-right">
+            <div className="flex justify-end gap-2">
               <button
                 onClick={() => setReviewing(app)}
                 style={{
@@ -502,6 +576,14 @@ export default function Applications() {
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg"
               >
                 Review
+              </button>
+              {/* Delete icon – opens confirmation modal */}
+              <button
+                onClick={() => setDeleteTarget(app)}
+                className="p-1.5 rounded-lg hover:bg-black/5"
+                title="Delete application"
+              >
+                <Trash2 size={14} color="#b23b3b" />
               </button>
             </div>
           </div>
@@ -515,6 +597,16 @@ export default function Applications() {
         onDelete={deleteApp}
         colors={COLORS}
       />
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          app={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={deleteApp}
+          colors={COLORS}
+        />
+      )}
     </div>
   );
 }
