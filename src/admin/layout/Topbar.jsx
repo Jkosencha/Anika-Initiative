@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Menu, Moon, Sun, Bell, Check } from 'lucide-react'
 
 function greeting() {
@@ -17,10 +18,10 @@ function today() {
 }
 
 const initialNotifications = [
-  { id: 1, text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', read: false },
-  { id: 2, text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', read: false },
-  { id: 3, text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', read: true },
-  { id: 4, text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', read: true },
+  { id: 1, text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', read: false, to: '/admin/registrations' },
+  { id: 2, text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', read: false, to: '/admin/donations' },
+  { id: 3, text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', read: true, to: '/admin/partners' },
+  { id: 4, text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', read: true, to: '/admin/stories' },
 ]
 
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
@@ -90,8 +91,12 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
                 <ul className="max-h-80 overflow-y-auto">
                   {notifications.map((n) => (
                     <li key={n.id}>
-                      <button
-                        onClick={() => markRead(n.id)}
+                      <Link
+                        to={n.to}
+                        onClick={() => {
+                          markRead(n.id)
+                          setNotifOpen(false)
+                        }}
                         className="flex w-full items-start gap-2.5 border-b border-ink/5 px-4 py-3 text-left last:border-b-0 hover:bg-ink/5 dark:border-white/5 dark:hover:bg-white/5"
                       >
                         <span
@@ -105,7 +110,7 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
                           </p>
                           <p className="mt-0.5 text-xs text-ink/40 dark:text-cream/40">{n.time}</p>
                         </span>
-                      </button>
+                      </Link>
                     </li>
                   ))}
                 </ul>
