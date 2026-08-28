@@ -29,6 +29,10 @@ import AdminGallery from './admin/pages/AdminGallery'
 import Partners from './admin/pages/Partners'
 import StoriesAdmin from './admin/pages/stories/Stories'
 import Settings from './admin/pages/Settings'
+import AdminEvents from './admin/pages/Events'
+import AdminRegistrations from './admin/pages/Registrations'
+import WhatsAppBroadcast from './admin/pages/WhatsAppBroadcast'
+import WhatsAppInbox from './admin/pages/WhatsAppInbox'
 
 function SiteLayout() {
   return (
@@ -65,13 +69,13 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="contacts" element={<Contacts/>} />
           <Route path="partners" element={<Partners />} />
-          <Route path="events" element={<AdminComingSoon title="Events" />} />
-          <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
+          <Route path="events" element={<AdminEvents />} />
+          <Route path="registrations" element={<AdminRegistrations />} />
           <Route path="applications" element={<Application />} />
           <Route path="stories" element={<StoriesAdmin />} />
           <Route path="gallery" element={<AdminGallery />} />
-          <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
-          <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
+          <Route path="whatsapp/broadcast" element={<WhatsAppBroadcast />} />
+          <Route path="whatsapp/inbox" element={<WhatsAppInbox />} />
           <Route path="messages" element={<AdminComingSoon title="Messages" />} />
           <Route path="donations" element={<Donations />} />
           <Route path="impact" element={<AdminComingSoon title="Impact" />} />

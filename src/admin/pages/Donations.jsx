@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { fetchDonations } from "../../lib/api";
 
 //configuring light adn dark teme toggling
 const lightColors = {
@@ -261,14 +262,26 @@ export default function Donations() {
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 🔎 Filter donations by donor name (case‑insensitive, partial match)
-  const filteredDonations = useMemo(() => {
-    if (!searchTerm.trim()) return donations;
-    const lower = searchTerm.toLowerCase().trim();
-    return donations.filter((d) => d.donor.toLowerCase().includes(lower));
-  }, [donations, searchTerm]);
+  // Load persisted donations from the store/API when available.
+  useEffect(() => {
+    fetchDonations().then(({ rows }) => {
+      if (rows && rows.length && rows.some((d) => d.amount != null)) {
+        setDonations(
+          rows.map((d) => ({
+            id: d.id,
+            donor: d.name || d.donor || "Anonymous",
+            amount: d.amount || 0,
+            phone: d.phone || "+254 7•• ••• 000",
+            reference: d.reference || (d.method || "").toUpperCase() || "REF",
+            date: d.date || (d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"),
+            status: d.status ? d.status[0].toUpperCase() + d.status.slice(1).toLowerCase() : "Completed",
+            month: d.month || "current",
+          }))
+        );
+      }
+    });
+  }, []);
 
-  // making stats based on all donationsa not filtered
   const stats = useMemo(() => {
     const currentMonth = donations.filter((d) => d.month === "current");
     const thisMonthTotal = currentMonth.reduce((sum, d) => sum + d.amount, 0);

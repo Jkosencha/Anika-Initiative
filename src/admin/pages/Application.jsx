@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { X, ChevronDown, Trash2 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { fetchApplications } from "../../lib/api";
 
 // configuring light and dark theme
 const lightColors = {
