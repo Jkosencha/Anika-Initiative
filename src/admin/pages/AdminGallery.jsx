@@ -29,7 +29,6 @@ const darkColors = {
   dragBg: "#3a3a3a",      
 };
 
-
 const SEED = [
   { id: 1, caption: "ANIKA team", src: "/anika team.jpg" },
   { id: 2, caption: "Jaaziya", src: "/jaaziya.jpg" },
@@ -39,7 +38,80 @@ const SEED = [
   { id: 6, caption: "Jojo", src: "/jojo.jpg" },
 ];
 
-function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors }) {
+// ----- Delete Confirmation Modal (new) -----
+function DeleteConfirmModal({ item, onClose, onConfirm, colors }) {
+  if (!item) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: colors.overlay }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+        }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div
+          className="flex items-center justify-between p-5 border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+            Confirm Delete
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-black/5"
+          >
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5">
+          <p style={{ color: colors.text }}>
+            Are you sure you want to delete <strong>{item.caption}</strong>?
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <div
+          className="flex justify-end gap-2 p-4 border-t"
+          style={{ borderColor: colors.border }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm(item.id);
+              onClose();
+            }}
+            style={{
+              background: "#b23b3b",
+              color: "#ffffff",
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors, onDeleteClick }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.caption);
 
@@ -89,7 +161,7 @@ function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors }) {
             <Pencil size={13} color={colors.text} />
           </button>
           <button
-            onClick={() => onDelete(item.id)}
+            onClick={() => onDeleteClick(item)}   
             className="p-1.5 rounded-full"
             style={{
               background: colors.panel,
@@ -174,7 +246,8 @@ export default function Gallery() {
   const COLORS = theme === "dark" ? darkColors : lightColors;
 
   const [items, setItems] = useState(SEED);
-  const [selected, setSelected] = useState(null); // for the modal opemning
+  const [selected, setSelected] = useState(null); 
+  const [deleteTarget, setDeleteTarget] = useState(null); 
   const fileInputRef = useRef(null);
 
   function handleFiles(fileList) {
@@ -280,17 +353,28 @@ export default function Gallery() {
             <Tile
               key={item.id}
               item={item}
-              onDelete={onDelete}
+              onDelete={onDelete}               
               onCaptionChange={onCaptionChange}
               onOpen={setSelected}
               colors={COLORS}
+              onDeleteClick={setDeleteTarget}   
             />
           ))}
         </div>
       )}
 
-      {/* Image preview modal */}
+  
       <ImageModal item={selected} onClose={() => setSelected(null)} colors={COLORS} />
+
+
+      {deleteTarget && (
+        <DeleteConfirmModal
+          item={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={onDelete}
+          colors={COLORS}
+        />
+      )}
     </div>
   );
 }
