@@ -19,13 +19,15 @@ function AdminLayout() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar
-          onMenuClick={() => setSidebarOpen(true)}
-          theme={theme}
-          onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-        />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet context={{ theme }}/>
+        <main className="flex-1 overflow-y-auto">
+          <Topbar
+            onMenuClick={() => setSidebarOpen(true)}
+            theme={theme}
+            onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          />
+          <div className="p-6">
+            <Outlet context={{ theme }} />
+          </div>
         </main>
       </div>
     </div>
