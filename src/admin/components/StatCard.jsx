@@ -1,6 +1,15 @@
-function StatCard({ label, value, sub, icon: Icon, bg, textColor = '#fff' }) {
+import { Link } from 'react-router-dom'
+
+function StatCard({ label, value, sub, icon: Icon, bg, textColor = '#fff', to }) {
+  const Tag = to ? (to.startsWith('#') ? 'a' : Link) : 'div'
+  const linkProp = to ? (to.startsWith('#') ? { href: to } : { to }) : {}
+
   return (
-    <div style={{ background: bg, color: textColor }} className="rounded-xl p-4">
+    <Tag
+      {...linkProp}
+      style={{ background: bg, color: textColor }}
+      className={`block rounded-xl p-4 ${to ? 'transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''}`}
+    >
       <div className="flex items-start justify-between">
         <p className="text-xs font-bold tracking-wide opacity-80">{label}</p>
         {Icon && (
@@ -11,7 +20,7 @@ function StatCard({ label, value, sub, icon: Icon, bg, textColor = '#fff' }) {
       </div>
       <p className="mt-2 text-2xl font-bold">{value}</p>
       {sub && <p className="mt-1 text-xs opacity-80">{sub}</p>}
-    </div>
+    </Tag>
   )
 }
 
