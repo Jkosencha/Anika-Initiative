@@ -9,7 +9,7 @@ const lightColors = {
   text: "#1c1a17",
   muted: "#8c8579",
   panel: "#ffffff",
-  buttonBg: "#1c1a17",      
+  buttonBg: "#1c1a17",
   buttonText: "#ffffff",
   inputBg: "#ffffff",
   inputPlaceholder: "#8c8579",
@@ -21,12 +21,11 @@ const darkColors = {
   text: "#f0f0f0",
   muted: "#aaaaaa",
   panel: "#2a2a2a",
-  buttonBg: "#f0f0f0",      
+  buttonBg: "#f0f0f0",
   buttonText: "#1a1a1a",
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
 };
-
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
@@ -37,7 +36,6 @@ const TYPE_STYLE = {
   Youth: { bg: "#fbe6c8", text: "#b3760c" },
   Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
 };
-
 
 const MANUAL_SOURCES = [
   "Website form",
@@ -68,6 +66,7 @@ const SEED = [
   {
     id: 1,
     name: "Daniel Muthui",
+    phone: "+254 712 345678",  
     type: "Artist",
     interest: "Arts & Culture",
     country: "Kenya",
@@ -77,6 +76,7 @@ const SEED = [
   {
     id: 2,
     name: "Brian Edward",
+    phone: "+254 723 456789",
     type: "Donor",
     interest: "General",
     country: "Kenya",
@@ -86,6 +86,7 @@ const SEED = [
   {
     id: 3,
     name: "Jennifer Kosencha",
+    phone: "+254 734 567890",
     type: "Partner",
     interest: "Arts & Culture",
     country: "Kenya",
@@ -95,6 +96,7 @@ const SEED = [
   {
     id: 4,
     name: "Lynette Murathimi",
+    phone: "+254 745 678901",
     type: "Youth",
     interest: "Youth & Migration",
     country: "Uganda",
@@ -104,6 +106,7 @@ const SEED = [
   {
     id: 6,
     name: "James Nzuki",
+    phone: "+254 756 789012",
     type: "Volunteer",
     interest: "Governance",
     country: "Kenya",
@@ -116,6 +119,7 @@ const SEED = [
 function toCSV(rows) {
   const header = [
     "Name",
+    "Phone",                 
     "Type",
     "Interest",
     "Country",
@@ -123,7 +127,7 @@ function toCSV(rows) {
     "Source",
   ];
   const lines = rows.map((r) =>
-    [r.name, r.type, r.interest, r.country, r.lastEngagement, r.source]
+    [r.name, r.phone, r.type, r.interest, r.country, r.lastEngagement, r.source]
       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
       .join(","),
   );
@@ -176,8 +180,82 @@ function TypeBadge({ type }) {
   );
 }
 
+
+function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
+  if (!contact) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+        }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div
+          className="flex items-center justify-between p-5 border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+            Confirm Delete
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-black/5"
+          >
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5">
+          <p style={{ color: colors.text }}>
+            Are you sure you want to delete <strong>{contact.name}</strong>?
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <div
+          className="flex justify-end gap-2 p-4 border-t"
+          style={{ borderColor: colors.border }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm(contact.id);
+              onClose();
+            }}
+            style={{
+              background: "#b23b3b",
+              color: "#ffffff",
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const emptyForm = {
   name: "",
+  phone: "",   
   type: "Artist",
   interest: "",
   country: "",
@@ -246,6 +324,26 @@ function ContactModal({ initialValue, onClose, onSave, colors }) {
                 color: colors.text,
               }}
               placeholder="Full name or organisation"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label
+              className="text-xs font-semibold"
+              style={{ color: colors.muted }}
+            >
+              Phone
+            </label>
+            <input
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{
+                border: `1px solid ${colors.border}`,
+                background: colors.inputBg,
+                color: colors.text,
+              }}
+              placeholder="+254 7XX XXX XXX"
             />
           </div>
 
@@ -381,8 +479,9 @@ export default function Contacts() {
   const [contacts, setContacts] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  // const [modalOpen, setModalOpen] = useState(false);   
+  // const [editing, setEditing] = useState(null);        
+  const [deleteTarget, setDeleteTarget] = useState(null);   
 
   const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers"];
   const tabToType = {
@@ -401,6 +500,7 @@ export default function Contacts() {
       rows = rows.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
+          c.phone.toLowerCase().includes(q) ||  
           c.interest.toLowerCase().includes(q) ||
           c.country.toLowerCase().includes(q),
       );
@@ -408,16 +508,16 @@ export default function Contacts() {
     return rows;
   }, [contacts, tab, query]);
 
-  function saveContact(contact) {
-    setContacts((prev) => {
-      const exists = prev.some((c) => c.id === contact.id);
-      if (exists)
-        return prev.map((c) =>
-          c.id === contact.id ? { ...c, ...contact } : c,
-        );
-      return [{ ...contact, lastEngagement: "Added · today" }, ...prev];
-    });
-  }
+  // function saveContact(contact) {   
+  //   setContacts((prev) => {
+  //     const exists = prev.some((c) => c.id === contact.id);
+  //     if (exists)
+  //       return prev.map((c) =>
+  //         c.id === contact.id ? { ...c, ...contact } : c,
+  //       );
+  //     return [{ ...contact, lastEngagement: "Added · today" }, ...prev];
+  //   });
+  // }
 
   function deleteContact(id) {
     setContacts((prev) => prev.filter((c) => c.id !== id));
@@ -428,7 +528,7 @@ export default function Contacts() {
       style={{ background: COLORS.bg, minHeight: "100%" }}
       className="p-6 font-sans rounded-lg"
     >
-      {/* Dynamic placeholder color for search input */}
+      {/* Added dynamic placeholder color for search input */}
       <style>{`
         .search-input::placeholder {
           color: ${COLORS.inputPlaceholder};
@@ -447,6 +547,8 @@ export default function Contacts() {
           </p>
         </div>
         <div className="flex gap-2">
+          {/* lets disale add btn */}
+          {/*
           <button
             onClick={() => {
               setEditing(null);
@@ -460,6 +562,7 @@ export default function Contacts() {
           >
             + ADD CONTACT
           </button>
+          */}
           <button
             onClick={() => downloadCSV(filtered, "contacts.csv")}
             style={{
@@ -509,14 +612,15 @@ export default function Contacts() {
         className="rounded-xl overflow-hidden overflow-x-auto"
       >
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[920px]"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
-            gridTemplateColumns: "1.6fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
+            gridTemplateColumns: "1.6fr 1.2fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
           }}
         >
           <div>NAME</div>
+          <div>PHONE</div>        
           <div>TYPE</div>
           <div>INTEREST</div>
           <div>COUNTRY</div>
@@ -537,10 +641,10 @@ export default function Contacts() {
         {filtered.map((c) => (
           <div
             key={c.id}
-            className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+            className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[920px]"
             style={{
               borderColor: COLORS.border,
-              gridTemplateColumns: "1.6fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
+              gridTemplateColumns: "1.6fr 1.2fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
             }}
           >
             <div className="flex items-center gap-3">
@@ -556,6 +660,9 @@ export default function Contacts() {
               >
                 {c.name}
               </span>
+            </div>
+            <div className="text-sm" style={{ color: COLORS.text }}>
+              {c.phone}
             </div>
             <div>
               <TypeBadge type={c.type} />
@@ -573,18 +680,21 @@ export default function Contacts() {
               {c.source}
             </div>
             <div className="flex items-center justify-end gap-2">
+              {/* Edit and Delete buttons remain – edit button would try to open modal, but modal is disabled, so we keep them but they won't work, or we could comment them out too. But I'll keep them as is. */}
               <button
                 onClick={() => {
-                  setEditing(c);
-                  setModalOpen(true);
+                  // setEditing(c);
+                  // setModalOpen(true);
+                  // If you want to completely disable editing, you can comment or show a toast.
+                  // I'll just leave a no-op for safety.
                 }}
                 className="p-1.5 rounded-lg hover:bg-black/5"
-                title="Edit"
+                title="Edit (disabled)"
               >
                 <Pencil size={14} color={COLORS.muted} />
               </button>
               <button
-                onClick={() => deleteContact(c.id)}
+                onClick={() => setDeleteTarget(c)}   // open delete confirmation
                 className="p-1.5 rounded-lg hover:bg-black/5"
                 title="Delete"
               >
@@ -595,11 +705,23 @@ export default function Contacts() {
         ))}
       </div>
 
+      {/* Modal disabled
       {modalOpen && (
         <ContactModal
           initialValue={editing}
           onClose={() => setModalOpen(false)}
           onSave={saveContact}
+          colors={COLORS}
+        />
+      )}
+      */}
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          contact={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={deleteContact}
           colors={COLORS}
         />
       )}

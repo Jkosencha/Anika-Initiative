@@ -1,3 +1,4 @@
+// src/data/pillars.js
 export const PILLARS = [
   {
     slug: 'arts-and-culture',
@@ -36,17 +37,14 @@ export const PILLARS = [
   },
 ];
 
-// accentClass lookup for when color is needed
 export const pillarColors = Object.fromEntries(
-    PILLARS.map((p) => [p.slug, p.accentClass])
+  PILLARS.map((p) => [p.slug, p.accentClass])
 );
 
-// Used anywhere with a slug and full pillar object is needed
 export function getPillarBySlug(slug) {
   return PILLARS.find((p) => p.slug === slug);
 }
 
-// Used anywhere with a display name and slug is needed
 export function getPillarByName(name) {
   return PILLARS.find((p) => p.name === name);
 }

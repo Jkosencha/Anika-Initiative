@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { fetchDonations } from "../../lib/api";
 
 
 //configuring light adn dark teme toggling

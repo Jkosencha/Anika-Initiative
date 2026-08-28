@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { PartnerProvider } from './features/about/context/PartnerContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import SplashScreen from './components/SplashScreen'
@@ -24,6 +25,14 @@ import AdminComingSoon from './admin/pages/ComingSoon'
 import Contacts from './admin/pages/Contacts';
 import Application from './admin/pages/Application'
 import Donations from './admin/pages/Donations'
+import AdminGallery from './admin/pages/AdminGallery'
+import Partners from './admin/pages/Partners'
+import StoriesAdmin from './admin/pages/stories/Stories'
+import Settings from './admin/pages/Settings'
+import AdminEvents from './admin/pages/Events'
+import AdminRegistrations from './admin/pages/Registrations'
+import WhatsAppBroadcast from './admin/pages/WhatsAppBroadcast'
+import WhatsAppInbox from './admin/pages/WhatsAppInbox'
 
 function SiteLayout() {
   return (
@@ -53,32 +62,32 @@ function SiteLayout() {
 
 function App() {
   return (
-    <>
+    <PartnerProvider>
       <ScrollToTop />
       <Routes>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="contacts" element={<Contacts/>} />
-          <Route path="partners" element={<AdminComingSoon title="Partners" />} />
-          <Route path="events" element={<AdminComingSoon title="Events" />} />
-          <Route path="registrations" element={<AdminComingSoon title="Registrations" />} />
+          <Route path="partners" element={<Partners />} />
+          <Route path="events" element={<AdminEvents />} />
+          <Route path="registrations" element={<AdminRegistrations />} />
           <Route path="applications" element={<Application />} />
-          <Route path="stories" element={<AdminComingSoon title="Stories" />} />
-          <Route path="gallery" element={<AdminComingSoon title="Gallery" />} />
-          <Route path="whatsapp/broadcast" element={<AdminComingSoon title="WhatsApp Broadcast" />} />
-          <Route path="whatsapp/inbox" element={<AdminComingSoon title="WhatsApp Inbox" />} />
+          <Route path="stories" element={<StoriesAdmin />} />
+          <Route path="gallery" element={<AdminGallery />} />
+          <Route path="whatsapp/broadcast" element={<WhatsAppBroadcast />} />
+          <Route path="whatsapp/inbox" element={<WhatsAppInbox />} />
           <Route path="messages" element={<AdminComingSoon title="Messages" />} />
           <Route path="donations" element={<Donations />} />
           <Route path="impact" element={<AdminComingSoon title="Impact" />} />
           <Route path="reports" element={<AdminComingSoon title="Reports" />} />
           <Route path="team" element={<AdminTeam />} />
-          <Route path="settings" element={<AdminComingSoon title="Settings" />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="roles" element={<AdminRolesAccess />} />
         </Route>
         <Route path="/*" element={<SiteLayout />} />
       </Routes>
       <Toaster richColors position="top-right" />
-    </>
+    </PartnerProvider>
   )
 }
 
