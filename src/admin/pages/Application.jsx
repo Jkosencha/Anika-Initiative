@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { X, ChevronDown, Trash2 } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { fetchApplications } from "../../lib/api";
 
 // configuring light and dark theme
 const lightColors = {
@@ -268,6 +269,24 @@ export default function Applications() {
   const [applications, setApplications] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
+
+  // Load persisted applications (Alliance) from the store/API when available,
+  // mapping store shape (org/note/type) to the UI's programme/summary fields.
+  useEffect(() => {
+    fetchApplications().then(({ rows }) => {
+      if (rows && rows.length) {
+        setApplications(
+          rows.map((a) => ({
+            ...a,
+            programme: a.programme || a.type || a.org || "General",
+            summary: a.summary || a.note || a.org || "",
+            status: (a.status || "NEW").replace(/_/g, " "),
+          }))
+        );
+      }
+    });
+  }, []);
+
   // const [showNewForm, setShowNewForm] = useState(false);   // <-- commented out
   // const [form, setForm] = useState({ name: "", programme: "" }); // <-- commented out
 
