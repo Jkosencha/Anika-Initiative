@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+
 
 //configuring light adn dark teme toggling
 const lightColors = {
@@ -261,14 +262,27 @@ export default function Donations() {
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 🔎 Filter donations by donor name (case‑insensitive, partial match)
-  const filteredDonations = useMemo(() => {
-    if (!searchTerm.trim()) return donations;
-    const lower = searchTerm.toLowerCase().trim();
-    return donations.filter((d) => d.donor.toLowerCase().includes(lower));
-  }, [donations, searchTerm]);
+  // The API call is commented out because fetchDonations is not exported.
+  // If you later add the export, uncomment the import and this effect.
+  // useEffect(() => {
+  //   fetchDonations().then(({ rows }) => {
+  //     if (rows && rows.length && rows.some((d) => d.amount != null)) {
+  //       setDonations(
+  //         rows.map((d) => ({
+  //           id: d.id,
+  //           donor: d.name || d.donor || "Anonymous",
+  //           amount: d.amount || 0,
+  //           phone: d.phone || "+254 7•• ••• 000",
+  //           reference: d.reference || (d.method || "").toUpperCase() || "REF",
+  //           date: d.date || (d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"),
+  //           status: d.status ? d.status[0].toUpperCase() + d.status.slice(1).toLowerCase() : "Completed",
+  //           month: d.month || "current",
+  //         }))
+  //       );
+  //     }
+  //   });
+  // }, []);
 
-  // making stats based on all donationsa not filtered
   const stats = useMemo(() => {
     const currentMonth = donations.filter((d) => d.month === "current");
     const thisMonthTotal = currentMonth.reduce((sum, d) => sum + d.amount, 0);
@@ -295,6 +309,13 @@ export default function Donations() {
     { name: "1,000–5,000", value: stats.pctMid, color: COLORS.orange },
     { name: "Over 5,000", value: stats.pctOver, color: COLORS.green },
   ];
+
+  // filter donations based on searchTerm
+  const filteredDonations = useMemo(() => {
+    if (!searchTerm.trim()) return donations;
+    const q = searchTerm.toLowerCase().trim();
+    return donations.filter((d) => d.donor.toLowerCase().includes(q));
+  }, [donations, searchTerm]);
 
   function addDonation(donation) {
     setDonations((prev) => [donation, ...prev]);
@@ -330,11 +351,10 @@ export default function Donations() {
             Donations
           </h1>
           <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
-          Total contributions to ANIKA.
+            Total contributions to ANIKA.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-         
           <input
             type="text"
             placeholder="Search donor..."
@@ -372,7 +392,7 @@ export default function Donations() {
         </div>
       </div>
 
-     {/* //stats card showcase*/}
+      {/* //stats card showcase*/}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} textColor="#fff" />
         <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} textColor="#fff" />
