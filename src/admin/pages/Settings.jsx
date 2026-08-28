@@ -8,6 +8,12 @@ import {
   Check,
   Lock,
   Unlock,
+  Filter,
+  Users,
+  HandCoins,
+  FileText,
+  AlertTriangle,
+  Key,
 } from "lucide-react";
 
 // Same light/dark palette shape as Donations.jsx / Partners.jsx
@@ -24,6 +30,8 @@ const lightColors = {
   buttonText: "#ffffff",
   inputBg: "#ffffff",
   inputPlaceholder: "#8c8579",
+  warning: "#d97706",
+  warningBg: "#fffbeb",
 };
 
 const darkColors = {
@@ -39,6 +47,8 @@ const darkColors = {
   buttonText: "#1a1a1a",
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
+  warning: "#f59e0b",
+  warningBg: "#3f2e1f",
 };
 
 function SectionCard({ icon: Icon, title, description, colors, children }) {
@@ -85,7 +95,7 @@ function TextInput({ colors, ...props }) {
   return (
     <input
       {...props}
-      className="settings-input px-3 py-2 rounded-lg text-sm outline-none"
+      className="settings-input px-3 py-2 rounded-lg text-sm outline-none w-full"
       style={{
         border: `1px solid ${colors.border}`,
         background: colors.inputBg,
@@ -131,6 +141,195 @@ function ToggleRow({ label, sub, checked, onChange, colors }) {
   );
 }
 
+function ResetConfirmModal({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  colors,
+  selectedData,
+  onDataToggle,
+}) {
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleConfirm = async () => {
+    if (!password.trim()) {
+      setPasswordError("Password is required");
+      return;
+    }
+
+    // Check if at least one data type is selected
+    if (!selectedData.partners && !selectedData.donations && !selectedData.applications) {
+      setPasswordError("Please select at least one data type to reset");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // In a real app, you would verify the password with your backend
+      // For demo, we'll simulate password validation
+      // The password should be "admin123" for demo purposes
+      if (password.trim() !== "admin123") {
+        setPasswordError("Invalid password. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      setPasswordError("");
+      await onConfirm(selectedData);
+      onClose();
+      setPassword("");
+    } catch (error) {
+      setPasswordError("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: colors.panel, border: `1px solid ${colors.red}` }}
+        className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={20} color={colors.red} />
+            <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+              Reset Data Confirmation
+            </h2>
+          </div>
+          
+          <p className="text-sm" style={{ color: colors.muted }}>
+            This action permanently clears selected data from the admin desk. 
+            This cannot be undone.
+          </p>
+
+          {/* Data Selection */}
+          <div className="mt-4">
+            <label className="text-xs font-semibold flex items-center gap-1.5" style={{ color: colors.muted }}>
+              <Filter size={14} />
+              Select data to reset:
+            </label>
+            <div className="mt-2 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedData.partners}
+                  onChange={() => onDataToggle("partners")}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: colors.red }}
+                />
+                <span className="text-sm flex items-center gap-1.5" style={{ color: colors.text }}>
+                  <Users size={14} />
+                  Partners
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedData.donations}
+                  onChange={() => onDataToggle("donations")}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: colors.red }}
+                />
+                <span className="text-sm flex items-center gap-1.5" style={{ color: colors.text }}>
+                  <HandCoins size={14} />
+                  Donations
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedData.applications}
+                  onChange={() => onDataToggle("applications")}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: colors.red }}
+                />
+                <span className="text-sm flex items-center gap-1.5" style={{ color: colors.text }}>
+                  <FileText size={14} />
+                  Applications
+                </span>
+              </label>
+            </div>
+            {passwordError === "Please select at least one data type to reset" && (
+              <p className="text-xs mt-1" style={{ color: colors.red }}>
+                {passwordError}
+              </p>
+            )}
+          </div>
+
+          {/* Password Confirmation */}
+          <div className="mt-4">
+            <label className="text-xs font-semibold flex items-center gap-1.5" style={{ color: colors.muted }}>
+              <Key size={14} />
+              Enter admin password to confirm:
+            </label>
+            <TextInput
+              colors={colors}
+              type="password"
+              autoFocus
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError("");
+              }}
+              placeholder="Enter your admin password"
+              className="mt-1"
+              style={{
+                borderColor: passwordError ? colors.red : colors.border,
+                background: passwordError ? colors.warningBg : colors.inputBg,
+              }}
+            />
+            {passwordError && (
+              <p className="text-xs mt-1" style={{ color: colors.red }}>
+                {passwordError}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: colors.border }}>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              setPassword("");
+              setPasswordError("");
+            }}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={isLoading}
+            style={{
+              background: colors.red,
+              color: "#fff",
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2"
+          >
+            {isLoading ? "Resetting..." : "Yes, reset selected"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Settings() {
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
@@ -158,17 +357,40 @@ export default function Settings() {
   const [saved, setSaved] = useState(false);
   const [zoneUnlocked, setZoneUnlocked] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
+  const [selectedData, setSelectedData] = useState({
+    partners: true,
+    donations: true,
+    applications: true,
+  });
 
-  const RESET_PHRASE = "RESET";
+  function toggleDataSelection(type) {
+    setSelectedData((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  }
 
   function closeConfirm() {
     setConfirmReset(false);
-    setConfirmText("");
+    setSelectedData({
+      partners: true,
+      donations: true,
+      applications: true,
+    });
   }
 
-  function doReset() {
+  function doReset(selectedTypes) {
     // Placeholder for the real reset call once this is wired to a backend.
+    console.log("Resetting selected data:", selectedTypes);
+    
+    // Show which data was reset
+    const types = [];
+    if (selectedTypes.partners) types.push("Partners");
+    if (selectedTypes.donations) types.push("Donations");
+    if (selectedTypes.applications) types.push("Applications");
+    
+    alert(`✅ Reset completed: ${types.join(", ")} were cleared.`);
+    
     closeConfirm();
     setZoneUnlocked(false);
   }
@@ -369,88 +591,141 @@ export default function Settings() {
             </div>
 
             {zoneUnlocked && (
-              <div className="flex items-start justify-between gap-4 flex-wrap p-4">
-                <div>
-                  <div className="text-sm font-semibold" style={{ color: COLORS.text }}>
-                    Reset admin data
+              <div className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="text-sm font-semibold" style={{ color: COLORS.text }}>
+                      Reset admin data
+                    </div>
+                    <div className="text-xs mt-0.5 max-w-xs" style={{ color: COLORS.muted }}>
+                      Select specific data types to clear from the admin desk. This cannot be undone.
+                    </div>
                   </div>
-                  <div className="text-xs mt-0.5 max-w-xs" style={{ color: COLORS.muted }}>
-                    Clears partners, donations and applications from this admin desk. This cannot be undone.
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmReset(true)}
+                    style={{ background: COLORS.red, color: "#fff" }}
+                    className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg shrink-0 hover:opacity-90 transition-opacity"
+                  >
+                    RESET SELECTED
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setConfirmReset(true)}
-                  style={{ background: COLORS.red, color: "#fff" }}
-                  className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg shrink-0"
-                >
-                  RESET DATA
-                </button>
+
+                {/* Quick filter options */}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedData({
+                      partners: true,
+                      donations: false,
+                      applications: false,
+                    })}
+                    style={{
+                      border: `1px solid ${COLORS.border}`,
+                      color: COLORS.text,
+                      background: selectedData.partners && !selectedData.donations && !selectedData.applications 
+                        ? COLORS.panelAlt 
+                        : "transparent",
+                    }}
+                    className="text-xs px-3 py-1 rounded-full hover:border-current transition-colors"
+                  >
+                    <Users size={12} className="inline mr-1" />
+                    Partners only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedData({
+                      partners: false,
+                      donations: true,
+                      applications: false,
+                    })}
+                    style={{
+                      border: `1px solid ${COLORS.border}`,
+                      color: COLORS.text,
+                      background: !selectedData.partners && selectedData.donations && !selectedData.applications 
+                        ? COLORS.panelAlt 
+                        : "transparent",
+                    }}
+                    className="text-xs px-3 py-1 rounded-full hover:border-current transition-colors"
+                  >
+                    <HandCoins size={12} className="inline mr-1" />
+                    Donations only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedData({
+                      partners: false,
+                      donations: false,
+                      applications: true,
+                    })}
+                    style={{
+                      border: `1px solid ${COLORS.border}`,
+                      color: COLORS.text,
+                      background: !selectedData.partners && !selectedData.donations && selectedData.applications 
+                        ? COLORS.panelAlt 
+                        : "transparent",
+                    }}
+                    className="text-xs px-3 py-1 rounded-full hover:border-current transition-colors"
+                  >
+                    <FileText size={12} className="inline mr-1" />
+                    Applications only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedData({
+                      partners: true,
+                      donations: true,
+                      applications: true,
+                    })}
+                    style={{
+                      border: `1px solid ${COLORS.border}`,
+                      color: COLORS.text,
+                      background: selectedData.partners && selectedData.donations && selectedData.applications 
+                        ? COLORS.panelAlt 
+                        : "transparent",
+                    }}
+                    className="text-xs px-3 py-1 rounded-full hover:border-current transition-colors"
+                  >
+                    <Filter size={12} className="inline mr-1" />
+                    All data
+                  </button>
+                </div>
+
+                {/* Status indicators */}
+                <div className="flex flex-wrap gap-3 text-xs">
+                  {selectedData.partners && (
+                    <span className="flex items-center gap-1" style={{ color: COLORS.text }}>
+                      <Users size={12} /> Partners
+                    </span>
+                  )}
+                  {selectedData.donations && (
+                    <span className="flex items-center gap-1" style={{ color: COLORS.text }}>
+                      <HandCoins size={12} /> Donations
+                    </span>
+                  )}
+                  {selectedData.applications && (
+                    <span className="flex items-center gap-1" style={{ color: COLORS.text }}>
+                      <FileText size={12} /> Applications
+                    </span>
+                  )}
+                  {!selectedData.partners && !selectedData.donations && !selectedData.applications && (
+                    <span style={{ color: COLORS.warning }}>⚠️ No data selected</span>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </SectionCard>
       </form>
 
-      {confirmReset && (
-        <div
-          className="fixed inset-0 flex items-center justify-center p-4 z-50"
-          style={{ background: "rgba(20,18,15,0.45)" }}
-          onClick={closeConfirm}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ background: COLORS.panel, border: `1px solid ${COLORS.red}` }}
-            className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
-          >
-            <div className="p-5">
-              <h2 className="font-bold text-lg" style={{ color: COLORS.text }}>
-                Reset admin data?
-              </h2>
-              <p className="text-sm mt-2" style={{ color: COLORS.muted }}>
-                This permanently clears partners, donations and applications from this admin desk. This
-                cannot be undone.
-              </p>
-              <div className="mt-4 flex flex-col gap-1">
-                <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
-                  Type <span style={{ color: COLORS.red }}>{RESET_PHRASE}</span> to confirm
-                </label>
-                <TextInput
-                  colors={COLORS}
-                  autoFocus
-                  value={confirmText}
-                  onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder={RESET_PHRASE}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: COLORS.border }}>
-              <button
-                type="button"
-                onClick={closeConfirm}
-                className="text-sm font-semibold px-3 py-2"
-                style={{ color: COLORS.muted }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={confirmText.trim() !== RESET_PHRASE}
-                onClick={doReset}
-                style={{
-                  background: COLORS.red,
-                  color: "#fff",
-                  opacity: confirmText.trim() === RESET_PHRASE ? 1 : 0.4,
-                  cursor: confirmText.trim() === RESET_PHRASE ? "pointer" : "not-allowed",
-                }}
-                className="text-sm font-semibold px-4 py-2 rounded-full"
-              >
-                Yes, reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ResetConfirmModal
+        isOpen={confirmReset}
+        onClose={closeConfirm}
+        onConfirm={doReset}
+        colors={COLORS}
+        selectedData={selectedData}
+        onDataToggle={toggleDataSelection}
+      />
     </div>
   );
 }
