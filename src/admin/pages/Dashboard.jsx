@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { DollarSign, CalendarDays, UserPlus, Globe, MapPin } from 'lucide-react'
+import { DollarSign, CalendarDays, UserPlus, Globe, MapPin, ChevronRight } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import TrendBarChart from '../components/charts/TrendBarChart'
 import DonutChart from '../components/charts/DonutChart'
+import EventCalendar from '../components/EventCalendar'
 import { useAdminColors, initials, avatarColor } from '../theme'
 
 const donationTrend = [
@@ -23,10 +24,10 @@ const recentDonations = [
 ]
 
 const recentActivity = [
-  { text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', to: '/admin/registrations' },
-  { text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', to: '/admin/donations' },
-  { text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', to: '/admin/partners' },
-  { text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', to: '/admin/stories' },
+  { text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', to: '/admin/registrations', type: 'registration' },
+  { text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', to: '/admin/donations', type: 'donation' },
+  { text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', to: '/admin/partners', type: 'partnership' },
+  { text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', to: '/admin/stories', type: 'story' },
 ]
 
 const reach = [
@@ -37,25 +38,32 @@ const reach = [
   { country: 'South Africa', tag: 'Programme reach' },
 ]
 
-function Card({ title, action, children, colors }) {
+const upcomingEvents = [
+  { title: 'SEMA Anika Forum', date: '2026-08-30', time: '10:00 AM' },
+  { title: 'Open Mic: Air It Out', date: '2026-09-02', time: '6:00 PM' },
+  { title: 'Youth Poetry Workshop', date: '2026-09-06', time: '2:00 PM' },
+  { title: 'Community Broadcast Night', date: '2026-09-14', time: '7:00 PM' },
+]
+
+function Card({ title, action, children, colors, id, to }) {
+  const Tag = to ? Link : 'div'
+  const linkProps = to ? { to } : {}
+
   return (
-    <div style={{ background: colors.panel, border: `1px solid ${colors.border}` }} className="rounded-xl p-5">
+    <Tag
+      {...linkProps}
+      id={id}
+      style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
+      className={`block rounded-xl p-5 ${to ? 'transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''}`}
+    >
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold" style={{ color: colors.text }}>
           {title}
         </h2>
-        {action}
+        {action ?? (to && <ChevronRight size={16} style={{ color: colors.muted }} />)}
       </div>
       <div className="mt-4">{children}</div>
-    </div>
-  )
-}
-
-function LinkButton({ children, colors, ...props }) {
-  return (
-    <button {...props} className="text-xs font-bold tracking-wide" style={{ color: colors.text }}>
-      {children}
-    </button>
+    </Tag>
   )
 }
 
@@ -70,6 +78,13 @@ function Dashboard() {
     { label: 'Over 5,000', percent: 24, color: COLORS.blue },
   ]
 
+  const activityColor = {
+    registration: COLORS.red,
+    donation: COLORS.orange,
+    partnership: COLORS.green,
+    story: COLORS.blue,
+  }
+
   return (
     <div style={{ background: COLORS.bg, minHeight: '100%' }} className="rounded-lg p-6 font-sans">
       <div className="mb-6">
@@ -82,8 +97,22 @@ function Dashboard() {
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="TOTAL RAISED" value="KES 486K" sub="▲ 12% this month" icon={DollarSign} bg={COLORS.red} />
-        <StatCard label="UPCOMING EVENTS" value="4" sub="▲ 2 new this week" icon={CalendarDays} bg={COLORS.green} />
+        <StatCard
+          label="TOTAL RAISED"
+          value="KES 486K"
+          sub="▲ 12% this month"
+          icon={DollarSign}
+          bg={COLORS.red}
+          to="/admin/donations"
+        />
+        <StatCard
+          label="UPCOMING EVENTS"
+          value="4"
+          sub="▲ 2 new this week"
+          icon={CalendarDays}
+          bg={COLORS.green}
+          to="/admin/events"
+        />
         <StatCard
           label="NEW REGISTRATIONS"
           value="37"
@@ -91,19 +120,27 @@ function Dashboard() {
           icon={UserPlus}
           bg={COLORS.orange}
           textColor="#1c1a17"
+          to="/admin/registrations"
         />
-        <StatCard label="ACTIVE COUNTRIES" value="5" sub="KE · UG · RW · GH · ZA" icon={Globe} bg={COLORS.blue} />
+        <StatCard
+          label="ACTIVE COUNTRIES"
+          value="5"
+          sub="KE · UG · RW · GH · ZA"
+          icon={Globe}
+          bg={COLORS.blue}
+          to="#where-we-reach"
+        />
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr]">
-        <Card title="Donation trend" colors={COLORS} action={<LinkButton colors={COLORS}>REPORT</LinkButton>}>
+        <Card title="Donation trend" colors={COLORS} to="/admin/donations">
           <TrendBarChart data={donationTrend} colors={COLORS} />
           <p className="mt-3 text-xs" style={{ color: COLORS.muted }}>
             KES {totalDonationValue.toLocaleString()} · {totalContributions} contributions this period.
           </p>
         </Card>
 
-        <Card title="By gift size" colors={COLORS}>
+        <Card title="By gift size" colors={COLORS} to="/admin/donations">
           <DonutChart data={giftSize} centerValue={totalContributions} centerLabel="Gifts" colors={COLORS} />
           <ul className="mt-4 space-y-2">
             {giftSize.map((slice) => (
@@ -120,7 +157,7 @@ function Dashboard() {
           </ul>
         </Card>
 
-        <Card title="Recent donations" colors={COLORS} action={<LinkButton colors={COLORS}>ALL</LinkButton>}>
+        <Card title="Recent donations" colors={COLORS} to="/admin/donations">
           <ul className="space-y-3">
             {recentDonations.map((d) => (
               <li key={d.name} className="flex items-center gap-3 text-sm">
@@ -151,7 +188,7 @@ function Dashboard() {
                   to={item.to}
                   className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-black/5"
                 >
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: COLORS.blue }} />
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: activityColor[item.type] }} />
                   <div>
                     <p className="text-sm" style={{ color: COLORS.text }}>
                       {item.text}
@@ -167,6 +204,7 @@ function Dashboard() {
         </Card>
 
         <Card
+          id="where-we-reach"
           title="Where we reach"
           colors={COLORS}
           action={
@@ -194,6 +232,67 @@ function Dashboard() {
           <p className="mt-4 text-xs" style={{ color: COLORS.muted }}>
             Kenya HQ, with programme reach across {reach.length} African countries via the 2022 Fellowship.
           </p>
+        </Card>
+      </div>
+
+      <div className="mt-5">
+        <Card
+          title="Upcoming events"
+          colors={COLORS}
+          action={
+            <Link to="/admin/events" className="text-xs font-bold tracking-wide" style={{ color: COLORS.text }}>
+              ALL EVENTS
+            </Link>
+          }
+        >
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_1fr]">
+            <EventCalendar events={upcomingEvents} colors={COLORS} />
+            <ul className="space-y-3">
+              {upcomingEvents.map((e, i) => {
+                const d = new Date(e.date)
+                const featured = i === 0
+                return (
+                  <li key={e.title}>
+                    <Link
+                      to="/admin/events"
+                      style={{ background: featured ? COLORS.blue : COLORS.panelAlt }}
+                      className="flex items-center gap-4 rounded-xl p-3 transition-transform hover:-translate-y-0.5"
+                    >
+                      <div
+                        style={{
+                          background: featured ? 'rgba(255,255,255,0.2)' : COLORS.panel,
+                          color: featured ? '#fff' : COLORS.text,
+                        }}
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold"
+                      >
+                        {String(d.getDate()).padStart(2, '0')}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className="truncate text-sm font-bold"
+                          style={{ color: featured ? '#fff' : COLORS.text }}
+                        >
+                          {e.title}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{ color: featured ? 'rgba(255,255,255,0.75)' : COLORS.muted }}
+                        >
+                          {d.toLocaleDateString('en-GB', { weekday: 'long', month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <span
+                        className="shrink-0 text-sm font-semibold"
+                        style={{ color: featured ? '#fff' : COLORS.text }}
+                      >
+                        {e.time}
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         </Card>
       </div>
     </div>
