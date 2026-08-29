@@ -33,6 +33,7 @@ import AdminEvents from './admin/pages/Events'
 import AdminRegistrations from './admin/pages/Registrations'
 import WhatsAppBroadcast from './admin/pages/WhatsAppBroadcast'
 import WhatsAppInbox from './admin/pages/WhatsAppInbox'
+import WhatsAppAssistant from './admin/pages/WhatsAppAssistant'
 
 function SiteLayout() {
   return (
@@ -76,6 +77,7 @@ function App() {
           <Route path="gallery" element={<AdminGallery />} />
           <Route path="whatsapp/broadcast" element={<WhatsAppBroadcast />} />
           <Route path="whatsapp/inbox" element={<WhatsAppInbox />} />
+          <Route path="whatsapp/assistant" element={<WhatsAppAssistant />} />
           <Route path="messages" element={<AdminComingSoon title="Messages" />} />
           <Route path="donations" element={<Donations />} />
           <Route path="impact" element={<AdminComingSoon title="Impact" />} />

@@ -1,44 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 import {
   fetchEvents,
   addEvent as apiAddEvent,
   deleteEvent as apiDeleteEvent,
   updateEvent as apiUpdateEvent,
 } from "../../lib/api";
-
-const lightColors = {
-  bg: "#fafaf8",
-  border: "#e8e5df",
-  text: "#1c1a17",
-  muted: "#8c8579",
-  panel: "#ffffff",
-  green: "#3c8a4c",
-  red: "#d24a42",
-  orange: "#e2a63f",
-  blue: "#2f4a6b",
-  buttonBg: "#1c1a17",
-  buttonText: "#ffffff",
-  inputBg: "#ffffff",
-  inputPlaceholder: "#8c8579",
-};
-
-const darkColors = {
-  bg: "#1a1a1a",
-  border: "#3a3a3a",
-  text: "#f0f0f0",
-  muted: "#aaaaaa",
-  panel: "#2a2a2a",
-  green: "#4c9a5c",
-  red: "#d24a42",
-  orange: "#e2a63f",
-  blue: "#7c9ac4",
-  buttonBg: "#f0f0f0",
-  buttonText: "#1a1a1a",
-  inputBg: "#2a2a2a",
-  inputPlaceholder: "#aaaaaa",
-};
+import { useAdminColors } from "../theme";
 
 const STATUS_STYLE = {
   Live: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -50,11 +18,11 @@ const STATUS_STYLE = {
 const STATUSES = ["Live", "Draft", "Full", "Ended"];
 
 const PILLAR_COLORS = {
-  "Arts & Culture": "#2a4a6b",
-  "Youth & Migration": "#2d7a43",
-  Expressions: "#b3760c",
-  "Gender Equality": "#8a3a52",
-  Governance: "#4a4a4a",
+  "Arts & Culture": "#3A7599",
+  "Youth & Migration": "#389A51",
+  Expressions: "#E8A850",
+  "Gender Equality": "#EB4C47",
+  Governance: "#1A1208",
 };
 
 const SEED = [
@@ -71,7 +39,7 @@ const SEED = [
   },
   {
     id: 2,
-    title: "Try My Shoe — Youth Storytelling Lab",
+    title: "Try My Shoe: Youth Storytelling Lab",
     date: "Thu, 24 Sep 2026",
     time: "10:00 EAT",
     location: "Kilimani Creative Space, Nairobi",
@@ -82,7 +50,7 @@ const SEED = [
   },
   {
     id: 3,
-    title: "Griphon x ANIKA — Poetry & Beat Night",
+    title: "Griphon x ANIKA: Poetry & Beat Night",
     date: "Sat, 03 Oct 2026",
     time: "19:00 EAT",
     location: "The GoDown Arts Centre, Nairobi",
@@ -93,7 +61,7 @@ const SEED = [
   },
   {
     id: 4,
-    title: "Gaining Grip — Creative Expression & Healing Lab",
+    title: "Gaining Grip: Creative Expression & Healing Lab",
     date: "Sat, 17 Oct 2026",
     time: "09:00 EAT",
     location: "Karura Creative Space, Nairobi",
@@ -104,7 +72,7 @@ const SEED = [
   },
   {
     id: 5,
-    title: "Y-Talks — Citizens' Civic Art Forum",
+    title: "Y-Talks: Citizens' Civic Art Forum",
     date: "Sat, 07 Nov 2026",
     time: "14:00 EAT",
     location: "Nairobi City Hall Amphitheatre",
@@ -115,7 +83,7 @@ const SEED = [
   },
   {
     id: 6,
-    title: "Her Story — Open Mic & Healing Forum",
+    title: "Her Story: Open Mic & Healing Forum",
     date: "Sat, 21 Nov 2026",
     time: "16:00 EAT",
     location: "Kenya National Theatre, Nairobi",
@@ -326,12 +294,12 @@ function AddEventModal({ onClose, onAdd, colors }) {
   );
 }
 export default function AdminEvents() {
-  const { theme } = useOutletContext();
-  const COLORS = theme === "dark" ? darkColors : lightColors;
+  const COLORS = useAdminColors();
 
   const [events, setEvents] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     fetchEvents().then(({ rows }) => {
@@ -385,6 +353,7 @@ export default function AdminEvents() {
   function deleteEvent(id) {
     apiDeleteEvent(id);
     setEvents((prev) => prev.filter((ev) => ev.id !== id));
+    setConfirmDelete(null);
   }
 
   return (
@@ -472,7 +441,7 @@ export default function AdminEvents() {
                 </span>
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
-                {ev.capacity || "—"}
+                {ev.capacity || "-"}
               </div>
               <div>
                 <div className="text-sm font-bold" style={{ color: occupancyColor(ev) }}>
@@ -503,7 +472,7 @@ export default function AdminEvents() {
                 >
                   {ev.status === "Live" ? "End" : "Pub"}
                 </button>
-                <button onClick={() => deleteEvent(ev.id)} className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: "#b23b3b" }} title="Delete event">
+                <button onClick={() => setConfirmDelete(ev)} className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: "#b23b3b" }} title="Delete event">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -513,6 +482,46 @@ export default function AdminEvents() {
       </div>
 
       {modalOpen && <AddEventModal onClose={() => setModalOpen(false)} onAdd={addEvent} colors={COLORS} />}
+
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(20,18,15,0.45)" }}
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+            className="w-full max-w-sm rounded-2xl p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-bold text-lg" style={{ color: COLORS.text }}>
+              Delete this event?
+            </h3>
+            <p className="mt-2 text-sm leading-6" style={{ color: COLORS.muted }}>
+              <span style={{ color: COLORS.text, fontWeight: 600 }}>"{confirmDelete.title}"</span> will be
+              permanently removed, along with its registration count. This cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                className="text-sm font-semibold px-3 py-2 rounded-lg"
+                style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel, color: COLORS.text }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteEvent(confirmDelete.id)}
+                className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
+                style={{ background: "#EB4C47" }}
+              >
+                Delete event
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
