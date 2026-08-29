@@ -25,6 +25,7 @@ const KIND_COLLECTION = {
   event: 'events',
   whatsappInbox: 'whatsapp-inbox',
   whatsappBroadcast: 'whatsapp-broadcasts',
+  whatsappSettings: 'whatsapp-settings',
 };
 const COLLECTION_KIND = Object.fromEntries(
   Object.entries(KIND_COLLECTION).map(([k, v]) => [v, k])
@@ -56,6 +57,7 @@ const STORE_COLLECTION = {
   event: 'events',
   whatsappInbox: 'whatsAppInbox',
   whatsappBroadcast: 'whatsAppBroadcasts',
+  whatsappSettings: 'whatsAppSettings',
 };
 
 /** Fetch a collection from the API; fall back to the local store. */
@@ -139,6 +141,28 @@ export function deleteEvent(id) {
 }
 export function updateWhatsAppMessage(id, patch) {
   return patchRecord('whatsappInbox', id, patch);
+}
+
+export function fetchWhatsAppSettings() {
+  return fetchCollection('whatsappSettings');
+}
+export function addWhatsAppSettings(payload) {
+  return submit('whatsappSettings', payload);
+}
+export function updateWhatsAppSettings(id, patch) {
+  return patchRecord('whatsappSettings', id, patch);
+}
+
+/** Aggregate WhatsApp live-state (shared across Assistant / Inbox / Broadcast). */
+export async function fetchWhatsAppStats() {
+  const { rows } = await fetchCollection('whatsappInbox');
+  const list = Array.isArray(rows) ? rows : [];
+  return {
+    threads: list.length,
+    optedOut: list.filter((c) => c.optedOut).length,
+    escalated: list.filter((c) => c.intent === 'escalation' && !c.resolved).length,
+    unread: list.reduce((sum, c) => sum + (c.unread || 0), 0),
+  };
 }
 
 export function fetchRegistrations() {

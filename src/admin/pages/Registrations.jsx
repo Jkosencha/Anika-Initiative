@@ -1,23 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { X, Plus, Search } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 import {
   fetchRegistrations,
   submitRegistration,
   updateRegistration,
 } from "../../lib/api";
-
-const lightColors = {
-  bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
-  panel: "#ffffff", green: "#3c8a4c", red: "#d24a42", orange: "#e2a63f", blue: "#2f4a6b",
-  buttonBg: "#1c1a17", buttonText: "#ffffff", inputBg: "#ffffff", inputPlaceholder: "#8c8579",
-};
-
-const darkColors = {
-  bg: "#1a1a1a", border: "#3a3a3a", text: "#f0f0f0", muted: "#aaaaaa",
-  panel: "#2a2a2a", green: "#4c9a5c", red: "#d24a42", orange: "#e2a63f", blue: "#7c9ac4",
-  buttonBg: "#f0f0f0", buttonText: "#1a1a1a", inputBg: "#2a2a2a", inputPlaceholder: "#aaaaaa",
-};
+import { useAdminColors } from "../theme";
 
 const STATUS_STYLE = {
   Confirmed: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -39,13 +27,13 @@ function avatarColor(name) {
 
 const SEED = [
   { id: 1, name: "Jane Wanjiku", event: "Sema-Anika Community Dialogue Forum", phone: "+254 712 345 678", date: "Today 09:14", source: "Web", consent: true, status: "Confirmed" },
-  { id: 2, name: "Kofi Mensah", event: "Griphon x ANIKA — Poetry & Beat Night", phone: "+233 24 556 778", date: "Today 08:02", source: "WhatsApp", consent: true, status: "Confirmed" },
-  { id: 3, name: "Amina Hassan", event: "Her Story — Open Mic & Development Forum", phone: "+255 744 123 456", date: "Yesterday", source: "Web", consent: false, status: "Pending" },
-  { id: 4, name: "Brian Otieno", event: "Try My Shoe — Youth Storytelling Lab", phone: "+254 701 222 333", date: "Yesterday", source: "WhatsApp", consent: true, status: "Confirmed" },
+  { id: 2, name: "Kofi Mensah", event: "Griphon x ANIKA: Poetry & Beat Night", phone: "+233 24 556 778", date: "Today 08:02", source: "WhatsApp", consent: true, status: "Confirmed" },
+  { id: 3, name: "Amina Hassan", event: "Her Story: Open Mic & Development Forum", phone: "+255 744 123 456", date: "Yesterday", source: "Web", consent: false, status: "Pending" },
+  { id: 4, name: "Brian Otieno", event: "Try My Shoe: Youth Storytelling Lab", phone: "+254 701 222 333", date: "Yesterday", source: "WhatsApp", consent: true, status: "Confirmed" },
   { id: 5, name: "Sarah Ochieng", event: "Sema-Anika Community Dialogue Forum", phone: "+254 722 222 333", date: "2 days ago", source: "Web", consent: true, status: "Confirmed" },
-  { id: 6, name: "David Mensah", event: "Y-Talks — Citizens' Civic Art Forum", phone: "+233 24 555 666", date: "2 days ago", source: "WhatsApp", consent: true, status: "Waitlist" },
-  { id: 7, name: "Mariam Kiprop", event: "Gaining Grip — Healing Lab", phone: "+254 733 555 777", date: "3 days ago", source: "Web", consent: false, status: "Canceled" },
-  { id: 8, name: "Priya Shah", event: "Her Story — Open Mic & Development Forum", phone: "+44 7700 900123", date: "3 days ago", source: "Web", consent: true, status: "Pending" },
+  { id: 6, name: "David Mensah", event: "Y-Talks: Citizens' Civic Art Forum", phone: "+233 24 555 666", date: "2 days ago", source: "WhatsApp", consent: true, status: "Waitlist" },
+  { id: 7, name: "Mariam Kiprop", event: "Gaining Grip: Healing Lab", phone: "+254 733 555 777", date: "3 days ago", source: "Web", consent: false, status: "Canceled" },
+  { id: 8, name: "Priya Shah", event: "Her Story: Open Mic & Development Forum", phone: "+44 7700 900123", date: "3 days ago", source: "Web", consent: true, status: "Pending" },
 ];
 
 function toCSV(rows) {
@@ -139,8 +127,7 @@ function AddRegistrationModal({ onClose, onAdd, colors }) {
 }
 
 export default function AdminRegistrations() {
-  const { theme } = useOutletContext();
-  const COLORS = theme === "dark" ? darkColors : lightColors;
+  const COLORS = useAdminColors();
 
   const [rows, setRows] = useState(SEED);
   const [tab, setTab] = useState("All");

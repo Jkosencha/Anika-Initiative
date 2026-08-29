@@ -1,19 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Send, Check, Clock, Users, Zap } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast } from "../../lib/api";
+import { useAdminColors } from "../theme";
 
-const lightColors = {
-  bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
-  panel: "#ffffff", green: "#25D366", red: "#d24a42", orange: "#e2a63f", blue: "#2f4a6b",
-  buttonBg: "#1c1a17", buttonText: "#ffffff", inputBg: "#ffffff", inputPlaceholder: "#8c8579",
-};
 
-const darkColors = {
-  bg: "#1a1a1a", border: "#3a3a3a", text: "#f0f0f0", muted: "#aaaaaa",
-  panel: "#2a2a2a", green: "#25D366", red: "#d24a42", orange: "#e2a63f", blue: "#7c9ac4",
-  buttonBg: "#f0f0f0", buttonText: "#1a1a1a", inputBg: "#2a2a2a", inputPlaceholder: "#aaaaaa",
-};
 
 const STATUS_STYLE = {
   Delivered: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -23,11 +13,11 @@ const STATUS_STYLE = {
 };
 
 const SEED_HISTORY = [
-  { id: 1, title: "Event reminder — Sema-Anika Forum", audience: "Opted-in registrants", channel: "Web + WhatsApp", recipients: 98, date: "Today 09:00", status: "Sent" },
-  { id: 2, title: "Pan-African Arts Alliance — member call", audience: "Alliance contacts", channel: "WhatsApp", recipients: 214, date: "Yesterday 18:00", status: "Delivered" },
-  { id: 3, title: "Her Story open mic — talent invite", audience: "Nairobi artists", channel: "WhatsApp", recipients: 150, date: "Tomorrow 10:00", status: "Scheduled" },
+  { id: 1, title: "Event reminder: Sema-Anika Forum", audience: "Opted-in registrants", channel: "Web + WhatsApp", recipients: 98, date: "Today 09:00", status: "Sent" },
+  { id: 2, title: "Pan-African Arts Alliance member call", audience: "Alliance contacts", channel: "WhatsApp", recipients: 214, date: "Yesterday 18:00", status: "Delivered" },
+  { id: 3, title: "Her Story open mic: talent invite", audience: "Nairobi artists", channel: "WhatsApp", recipients: 150, date: "Tomorrow 10:00", status: "Scheduled" },
   { id: 4, title: "Funding intelligence newsletter", audience: "All opted-in", channel: "Email + WhatsApp", recipients: 402, date: "2 days ago", status: "Delivered" },
-  { id: 5, title: "Community broadcast — campaign dispatch", audience: "All opted-in", channel: "WhatsApp", recipients: 321, date: "3 days ago", status: "Failed" },
+  { id: 5, title: "Community broadcast: campaign dispatch", audience: "All opted-in", channel: "WhatsApp", recipients: 321, date: "3 days ago", status: "Failed" },
 ];
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
@@ -43,8 +33,7 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
 }
 
 export default function WhatsAppBroadcast() {
-  const { theme } = useOutletContext();
-  const COLORS = theme === "dark" ? darkColors : lightColors;
+  const COLORS = useAdminColors();
 
   const [history, setHistory] = useState(SEED_HISTORY);
   const [audience, setAudience] = useState("All opted-in");
