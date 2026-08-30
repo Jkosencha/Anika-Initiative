@@ -18,6 +18,7 @@ import WhatsAppInbox from '../pages/WhatsAppInbox';
 import WhatsAppAssistant from '../pages/WhatsAppAssistant';
 import AdminRegistrations from '../pages/Registrations';
 import AdminEvents from '../pages/Events'
+import Impact from '../pages/Impact';
 
 export default function AdminRoutes() {
   return (
@@ -36,7 +37,7 @@ export default function AdminRoutes() {
         <Route path="whatsapp/assistant" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappAssistant}><WhatsAppAssistant /></ProtectedRoute>} />
         <Route path="messages" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.messages}><ComingSoon title="Messages" /></ProtectedRoute>} />
         <Route path="donations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.donations}><Donations /></ProtectedRoute>} />
-        <Route path="impact" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.impact}><ComingSoon title="Impact" /></ProtectedRoute>} />
+        <Route path="impact" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.impact}><Impact /></ProtectedRoute>} />
         <Route path="reports" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.reports}><ComingSoon title="Reports" /></ProtectedRoute>} />
         <Route path="team" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.team}><Team /></ProtectedRoute>} />
         <Route path="settings" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.settings}><Settings /></ProtectedRoute>} />
