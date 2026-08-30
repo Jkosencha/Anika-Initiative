@@ -18,6 +18,7 @@ export const PAGE_ACCESS = {
   gallery: [LEADERSHIP, COMMS],
   whatsappBroadcast: [LEADERSHIP, COMMS],
   whatsappInbox: [LEADERSHIP, COMMS],
+  whatsappAssistant: [LEADERSHIP, COMMS],
   messages: [LEADERSHIP, COMMS, PROGRAMS],
   donations: [LEADERSHIP, MEL],
   impact: [LEADERSHIP, COMMS, MEL],
