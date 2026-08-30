@@ -13,6 +13,11 @@ import Stories from '../pages/stories/Stories';
 import Settings from '../pages/Settings';
 import ComingSoon from '../pages/ComingSoon';
 import { PAGE_ACCESS } from '../access';
+import WhatsAppBroadcast from '../pages/WhatsAppBroadcast';
+import WhatsAppInbox from '../pages/WhatsAppInbox';
+import WhatsAppAssistant from '../pages/WhatsAppAssistant';
+import AdminRegistrations from '../pages/Registrations';
+import AdminEvents from '../pages/Events'
 
 export default function AdminRoutes() {
   return (
@@ -21,13 +26,14 @@ export default function AdminRoutes() {
         <Route index element={<ProtectedRoute allowedRoles={PAGE_ACCESS.dashboard}><Dashboard /></ProtectedRoute>} />
         <Route path="contacts" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.contacts}><Contacts /></ProtectedRoute>} />
         <Route path="partners" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.partners}><Partners /></ProtectedRoute>} />
-        <Route path="events" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.events}><ComingSoon title="Events" /></ProtectedRoute>} />
-        <Route path="registrations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.registrations}><ComingSoon title="Registrations" /></ProtectedRoute>} />
+        <Route path="events" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.events}><AdminEvents /></ProtectedRoute>} />
+        <Route path="registrations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.registrations}><AdminRegistrations /></ProtectedRoute>} />
         <Route path="applications" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.applications}><Application /></ProtectedRoute>} />
         <Route path="stories" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.stories}><Stories /></ProtectedRoute>} />
         <Route path="gallery" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.gallery}><AdminGallery /></ProtectedRoute>} />
-        <Route path="whatsapp/broadcast" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappBroadcast}><ComingSoon title="WhatsApp Broadcast" /></ProtectedRoute>} />
-        <Route path="whatsapp/inbox" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappInbox}><ComingSoon title="WhatsApp Inbox" /></ProtectedRoute>} />
+        <Route path="whatsapp/broadcast" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappBroadcast}><WhatsAppBroadcast /></ProtectedRoute>} />
+        <Route path="whatsapp/inbox" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappInbox}><WhatsAppInbox /></ProtectedRoute>} />
+        <Route path="whatsapp/assistant" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappAssistant}><WhatsAppAssistant /></ProtectedRoute>} />
         <Route path="messages" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.messages}><ComingSoon title="Messages" /></ProtectedRoute>} />
         <Route path="donations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.donations}><Donations /></ProtectedRoute>} />
         <Route path="impact" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.impact}><ComingSoon title="Impact" /></ProtectedRoute>} />
