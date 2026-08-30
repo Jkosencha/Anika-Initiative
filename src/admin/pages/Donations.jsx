@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { fetchDonations } from "../../lib/api";
 
-// confgruyintg light an dark theme toggle color
+
+//configuring light adn dark teme toggling
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
@@ -25,7 +27,7 @@ const darkColors = {
   text: "#f0f0f0",
   muted: "#aaaaaa",
   panel: "#2a2a2a",
-  green: "#4c9a5c",   
+  green: "#4c9a5c",
   red: "#d24a42",
   orange: "#e2a63f",
   buttonBg: "#f0f0f0",
@@ -69,18 +71,17 @@ function maskPhone(phone) {
   return `+254 7•• ••• ${last3.padStart(3, "0")}`;
 }
 
+//added id for filtering through search
 const SEED = [
   { id: 1, donor: "Jennifer K", amount: 25000, phone: "+254 704239554", reference: "SGH7K2P9Q1", date: "Today 09:14", status: "Completed", month: "current" },
   { id: 2, donor: "James N.", amount: 10000, phone: "+254 799799220", reference: "SGH6M4T2LX", date: "Today 08:02", status: "Completed", month: "current" },
   { id: 3, donor: "Lynette M.", amount: 20000, phone: "+254 112544427", reference: "SGH5B9Q0RM", date: "Yesterday", status: "Completed", month: "current" },
   { id: 4, donor: "Brian E.", amount: 50000, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Completed", month: "current" },
   { id: 5, donor: "Daniel M.", amount: 10000, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
-  { id: 5, donor: "Anderson M.", amount: 500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "pending", month: "current" },
-  { id: 5, donor: "Levi M.", amount: 1500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
+  { id: 6, donor: "Anderson M.", amount: 500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "pending", month: "current" },
+  { id: 7, donor: "Levi M.", amount: 1500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
 ];
 
-// Baseline totals for prior months already banked in 2026, so "Total 2026"
-// and the average reflect the whole year, not just what's listed below.
 const PRIOR_MONTHS_TOTAL = 394000;
 const PRIOR_MONTHS_COUNT = 137;
 
@@ -255,12 +256,33 @@ function AddDonationModal({ onClose, onAdd, colors }) {
 }
 
 export default function Donations() {
-  // now lets get the current theme from AdminLayout via Outlet context
   const { theme } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
   const [donations, setDonations] = useState(SEED);
   const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // The API call is commented out because fetchDonations is not exported.
+  // If you later add the export, uncomment the import and this effect.
+  // useEffect(() => {
+  //   fetchDonations().then(({ rows }) => {
+  //     if (rows && rows.length && rows.some((d) => d.amount != null)) {
+  //       setDonations(
+  //         rows.map((d) => ({
+  //           id: d.id,
+  //           donor: d.name || d.donor || "Anonymous",
+  //           amount: d.amount || 0,
+  //           phone: d.phone || "+254 7•• ••• 000",
+  //           reference: d.reference || (d.method || "").toUpperCase() || "REF",
+  //           date: d.date || (d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"),
+  //           status: d.status ? d.status[0].toUpperCase() + d.status.slice(1).toLowerCase() : "Completed",
+  //           month: d.month || "current",
+  //         }))
+  //       );
+  //     }
+  //   });
+  // }, []);
 
   const stats = useMemo(() => {
     const currentMonth = donations.filter((d) => d.month === "current");
@@ -289,6 +311,13 @@ export default function Donations() {
     { name: "Over 5,000", value: stats.pctOver, color: COLORS.green },
   ];
 
+  // filter donations based on searchTerm
+  const filteredDonations = useMemo(() => {
+    if (!searchTerm.trim()) return donations;
+    const q = searchTerm.toLowerCase().trim();
+    return donations.filter((d) => d.donor.toLowerCase().includes(q));
+  }, [donations, searchTerm]);
+
   function addDonation(donation) {
     setDonations((prev) => [donation, ...prev]);
   }
@@ -310,7 +339,6 @@ export default function Donations() {
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
-      {/* Dynamic placeholder color for inputs */}
       <style>{`
         .donation-input::placeholder {
           color: ${COLORS.inputPlaceholder};
@@ -324,10 +352,23 @@ export default function Donations() {
             Donations
           </h1>
           <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
-            M-Pesa contributions to ANIKA.
+            Total contributions to ANIKA.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search donor..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-2 rounded-lg text-sm outline-none donation-input"
+            style={{
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.inputBg,
+              color: COLORS.text,
+              width: "180px",
+            }}
+          />
           <button
             onClick={() => setModalOpen(true)}
             style={{
@@ -352,6 +393,7 @@ export default function Donations() {
         </div>
       </div>
 
+      {/* //stats card showcase*/}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} textColor="#fff" />
         <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} textColor="#fff" />
@@ -383,6 +425,7 @@ export default function Donations() {
         </div>
       </div>
 
+      {/* displaying filtered donations upon seardh */}
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
           className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]"
@@ -396,7 +439,7 @@ export default function Donations() {
           <div>STATUS</div>
         </div>
 
-        {donations.map((d) => {
+        {filteredDonations.map((d) => {
           const s = STATUS_STYLE[d.status] || STATUS_STYLE.Pending;
           return (
             <div

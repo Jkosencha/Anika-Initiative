@@ -9,6 +9,7 @@ import {
   Image,
   Megaphone,
   Inbox,
+  Bot,
   MessagesSquare,
   DollarSign,
   BarChart3,

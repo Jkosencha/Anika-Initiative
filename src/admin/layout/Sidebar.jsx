@@ -23,18 +23,26 @@ function Sidebar({ open, onClose }) {
         />
       )}
 
+      <style>{`
+        .admin-nav { scrollbar-width: none; -ms-overflow-style: none; }
+        .admin-nav::-webkit-scrollbar { display: none; }
+      `}</style>
+
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-charcoal text-cream
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-charcoal text-cream
           transition-transform duration-200 lg:static lg:translate-x-0
           ${open ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="flex items-center justify-between px-5 pt-5">
-          <img src="/anika-logo.png" alt="Anika Initiative" className="h-14 w-auto object-contain" />
-          <button onClick={onClose} className="text-cream/70 hover:text-cream lg:hidden">
+        <div className="relative flex items-center justify-center px-5 pt-5">
+          <img src="/anika-logo.png" alt="Anika Initiative" className="h-32 w-auto object-contain" />
+          <button
+            onClick={onClose}
+            className="absolute right-5 top-5 text-cream/70 hover:text-cream lg:hidden"
+          >
             <X size={20} />
           </button>
         </div>
-        <p className="px-5 pb-4 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-cream/40">
+        <p className="px-6 pb-4 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-cream/40">
           Admin Desk
         </p>
 
@@ -52,9 +60,9 @@ function Sidebar({ open, onClose }) {
                       end={end}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                           isActive
-                            ? 'bg-coral text-white'
+                            ? 'bg-white text-coral'
                             : 'text-cream/70 hover:bg-white/5 hover:text-cream'
                         }`
                       }
