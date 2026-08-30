@@ -17,49 +17,50 @@ import {
   Settings,
   ShieldCheck,
 } from 'lucide-react'
+import { PAGE_ACCESS } from './access'
 
 export const navSections = [
   {
     label: 'Overview',
-    items: [{ label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true }],
+    items: [{ label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true, allowedRoles: PAGE_ACCESS.dashboard }],
   },
   {
     label: 'People',
-    items: [{ label: 'Contacts', to: '/admin/contacts', icon: Users }],
+    items: [{ label: 'Contacts', to: '/admin/contacts', icon: Users , allowedRoles: PAGE_ACCESS.contacts}],
   },
   {
     label: 'Programs',
     items: [
-      { label: 'Events', to: '/admin/events', icon: CalendarDays },
-      { label: 'Registrations', to: '/admin/registrations', icon: ClipboardList, badge: 37 },
-      { label: 'Applications', to: '/admin/applications', icon: FileText, badge: 6 },
-      { label: 'Partners', to: '/admin/partners', icon: Handshake },
+      { label: 'Events', to: '/admin/events', icon: CalendarDays, allowedRoles: PAGE_ACCESS.events },
+      { label: 'Registrations', to: '/admin/registrations', icon: ClipboardList, badge: 37, allowedRoles: PAGE_ACCESS.registrations },
+      { label: 'Applications', to: '/admin/applications', icon: FileText, badge: 6, allowedRoles: PAGE_ACCESS.applications },
+      { label: 'Partners', to: '/admin/partners', icon: Handshake, allowedRoles: PAGE_ACCESS.partners },
     ],
   },
   {
     label: 'Comms',
     items: [
-      { label: 'Stories', to: '/admin/stories', icon: BookOpen },
-      { label: 'Gallery', to: '/admin/gallery', icon: Image },
-      { label: 'WhatsApp broadcast', to: '/admin/whatsapp/broadcast', icon: Megaphone },
-      { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badge: 3, badgeAccent: true },
-      { label: 'Messages', to: '/admin/messages', icon: MessagesSquare, badge: 5, badgeAccent: true },
+      { label: 'Stories', to: '/admin/stories', icon: BookOpen, allowedRoles: PAGE_ACCESS.stories},
+      { label: 'Gallery', to: '/admin/gallery', icon: Image, allowedRoles: PAGE_ACCESS.gallery },
+      { label: 'WhatsApp broadcast', to: '/admin/whatsapp/broadcast', icon: Megaphone, allowedRoles: PAGE_ACCESS.whatsappBroadcast },
+      { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badge: 3, badgeAccent: true, allowedRoles: PAGE_ACCESS.whatsappInbox },
+      { label: 'Messages', to: '/admin/messages', icon: MessagesSquare, badge: 5, badgeAccent: true, allowedRoles: PAGE_ACCESS.messages },
     ],
   },
   {
     label: 'Insight',
     items: [
-      { label: 'Contributions', to: '/admin/donations', icon: DollarSign },
-      { label: 'Impact', to: '/admin/impact', icon: BarChart3 },
-      { label: 'Reports', to: '/admin/reports', icon: FileBarChart },
+      { label: 'Contributions', to: '/admin/donations', icon: DollarSign, allowedRoles: PAGE_ACCESS.donations },
+      { label: 'Impact', to: '/admin/impact', icon: BarChart3, allowedRoles: PAGE_ACCESS.impact },
+      { label: 'Reports', to: '/admin/reports', icon: FileBarChart, allowedRoles: PAGE_ACCESS.reports },
     ],
   },
   {
     label: 'Org',
     items: [
-      { label: 'Team', to: '/admin/team', icon: UserCog },
-      { label: 'Settings', to: '/admin/settings', icon: Settings },
-      { label: 'Roles & access', to: '/admin/roles', icon: ShieldCheck },
+      { label: 'Team', to: '/admin/team', icon: UserCog, allowedRoles: PAGE_ACCESS.team },
+      { label: 'Settings', to: '/admin/settings', icon: Settings, allowedRoles: PAGE_ACCESS.settings },
+      { label: 'Roles & access', to: '/admin/roles', icon: ShieldCheck, allowedRoles: PAGE_ACCESS.roles },
     ],
   },
 ]
