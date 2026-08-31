@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, ChevronDown, Trash2 } from "lucide-react";
+import { X, ChevronDown, Trash2, Search } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -111,7 +111,7 @@ function StatusBadge({ status }) {
   );
 }
 
-// ----- Delete Confirmation Modal -----
+
 function DeleteConfirmModal({ app, onClose, onConfirm, colors }) {
   if (!app) return null;
 
@@ -301,7 +301,7 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete, colors }) {
 }
 
 export default function Applications() {
-  // taking theme and searchquery from outlet context
+
   const { theme, searchQuery } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
@@ -310,7 +310,8 @@ export default function Applications() {
   const [loadError, setLoadError] = useState(null);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null); // for delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
 
   const tabs = ["All", "New", "Shortlisted", "Accepted"];
 
@@ -339,7 +340,7 @@ export default function Applications() {
     };
   }, []);
 
-  // filter ya search
+  // filter based on tab, global search (from context), and local search bar
   const filtered = useMemo(() => {
     let result = applications;
 
@@ -348,7 +349,7 @@ export default function Applications() {
       result = result.filter((a) => a.status === tab);
     }
 
-    // filter by search
+    // filter by global search (from context, e.g. from a main search)
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -358,8 +359,18 @@ export default function Applications() {
       );
     }
 
+    // filter by local search bar (on this page)
+    if (localSearchTerm.trim()) {
+      const q = localSearchTerm.toLowerCase().trim();
+      result = result.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          (a.programme || "").toLowerCase().includes(q)
+      );
+    }
+
     return result;
-  }, [applications, tab, searchQuery]);
+  }, [applications, tab, searchQuery, localSearchTerm]);
 
   async function updateStatus(id, status) {
     const previous = applications;
@@ -406,7 +417,27 @@ export default function Applications() {
             Volunteer, artist, partner and newsletter submissions from the Get Involved form.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{ color: COLORS.muted }}
+            />
+            <input
+              type="text"
+              placeholder="Search by name or programme..."
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              style={{
+                background: COLORS.inputBg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                paddingLeft: "2.5rem",
+              }}
+              className="w-48 md:w-64 rounded-lg border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#E6A15E]/50"
+            />
+          </div>
           <button
             onClick={() => downloadCSV(filtered, "applications.csv")}
             style={{
@@ -488,7 +519,7 @@ export default function Applications() {
                   {app.name}
                 </span>
               </div>
-              <div className="text-sm" style={{ color: "#2f4a6b" }}>
+              <div className="text-sm" style={{ color: COLORS.muted }}>
                 {app.programme}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
