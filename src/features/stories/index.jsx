@@ -9,16 +9,22 @@ import Reveal from "./components/Reveal.jsx";
 export default function Stories() {
   const [searchParams] = useSearchParams();
   const pillarParam = searchParams.get("pillar");
-  
+
   const [activePillar, setActivePillar] = useState(pillarParam ?? "all");
   const [publishedStories, setPublishedStories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadStories = () => {
+  const loadStories = async () => {
     setIsLoading(true);
-    const stories = storiesStore.getPublished();
-    setPublishedStories(stories);
-    setIsLoading(false);
+    try {
+      const stories = await storiesStore.getPublished();
+      setPublishedStories(stories);
+    } catch (error) {
+      console.error("Failed to load stories:", error);
+      setPublishedStories([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

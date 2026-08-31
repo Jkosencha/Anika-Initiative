@@ -51,13 +51,21 @@ function Stories() {
   const [editingStory, setEditingStory] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
+  const [error, setError] = useState(null)
 
-  // Load stories from store
-  const loadStories = () => {
+  // Load stories from the API
+  const loadStories = async () => {
     setIsLoading(true)
-    const allStories = storiesStore.getAll()
-    setStories(allStories)
-    setIsLoading(false)
+    try {
+      const allStories = await storiesStore.getAll()
+      setStories(allStories)
+      setError(null)
+    } catch (err) {
+      console.error('Failed to load stories:', err)
+      setError('Failed to load stories. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Initial load and subscribe to changes
@@ -77,21 +85,33 @@ function Stories() {
     setView('editor')
   }
 
-  function openEditStory(story) {
-    const fullStory = storiesStore.getById(story.id)
-    setEditingStory(fullStory)
-    setView('editor')
-  }
-
-  function handleDelete(id) {
-    if (window.confirm('Are you sure you want to delete this story?')) {
-      storiesStore.delete(id)
+  async function openEditStory(story) {
+    try {
+      const fullStory = await storiesStore.getById(story.id)
+      setEditingStory(fullStory)
+      setView('editor')
+    } catch (err) {
+      console.error('Failed to load story for editing:', err)
     }
   }
 
-  function handleSave(payload) {
-    storiesStore.save(payload)
-    setView('list')
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this story?')) return
+    try {
+      await storiesStore.delete(id)
+    } catch (err) {
+      console.error('Failed to delete story:', err)
+    }
+  }
+
+  async function handleSave(payload) {
+    try {
+      await storiesStore.save(payload)
+      setView('list')
+    } catch (err) {
+      console.error('Failed to save story:', err)
+      // Keep the editor open so the person doesn't lose their draft
+    }
   }
 
   const toggleExpand = (id) => {
@@ -136,6 +156,12 @@ function Stories() {
           <Plus size={14} /> NEW STORY
         </button>
       </div>
+
+      {error && (
+        <div className="mb-5 rounded-lg px-4 py-3 text-sm" style={{ background: '#b23b3b1a', color: '#b23b3b' }}>
+          {error}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-1 mb-5">
         {FILTERS.map((f) => {
