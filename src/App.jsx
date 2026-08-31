@@ -11,6 +11,7 @@ import Impact from './pages/Impact'
 import Stories from './pages/Stories'
 import StoryDetail from './pages/StoryDetail'
 import Gallery from './pages/Gallery'
+import DonationThankYou from './pages/DonationThankYou'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
 import AlliancePage from './pages/AlliancePage'
@@ -40,6 +41,7 @@ function SiteLayout() {
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/alliance" element={<AlliancePage />} />
+          <Route path="/donate/thank-you" element={<DonationThankYou />} />
         </Routes>
       </main>
       <Footer />
