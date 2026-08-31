@@ -15,6 +15,7 @@ from app.services.paystack import (
 )
 from app.utils.validation import load_json_or_400
 from app.schemas.donation_schema import create_donation_schema, update_donation_schema
+from app.utils.contact_utils import create_contact_from_data
 
 donations_bp = Blueprint("donations", __name__, url_prefix="/api/donations")
 
@@ -36,8 +37,8 @@ def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
         f"Reference: {reference}\n"
         "Your support keeps the rooms open."
     )
-    # willl replace with actual WhatsApp API call (Twilio, etc.)
-    print(f"📱 WhatsApp receipt to {phone}: {message}")
+    # will be replaced with actual WhatsApp API call (Twilio, etc.)
+    print(f" WhatsApp receipt to {phone}: {message}")
     logger.info(f"WhatsApp receipt sent to {phone} for reference {reference}")
 
 
@@ -71,56 +72,7 @@ def _apply_paystack_result(donation: Donation, data: dict) -> None:
 
 @donations_bp.post("")
 def create_donation():
-    """
-    Create a donation
-    ---
-    tags:
-      - Donations
-    description: >
-      Two modes:
-        * 'mpesa' or 'card' -> creates a Pending row and starts a Paystack
-          transaction. Response includes `authorization_url` – redirect the
-          browser there.
-        * 'manual' -> admin logs an offline/cash gift directly, no Paystack call.
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required: [amount, method]
-          properties:
-            donor_name:
-              type: string
-              example: "Jennifer K"
-            email:
-              type: string
-              example: "jennifer@example.com"
-            amount:
-              type: number
-              example: 1000
-            method:
-              type: string
-              enum: [mpesa, card, manual]
-              example: mpesa
-            phone:
-              type: string
-              example: "0712345678"
-            currency:
-              type: string
-              enum: [KES, USD]
-              example: KES
-            send_whatsapp_receipt:
-              type: boolean
-              example: false
-    responses:
-      201:
-        description: Donation created. For mpesa/card, includes `authorization_url`.
-      400:
-        description: Validation error.
-      502:
-        description: Paystack error.
-    """
+
     data, error = load_json_or_400(create_donation_schema)
     if error:
         logger.warning("Donation creation validation failed: %s", error)
@@ -144,6 +96,18 @@ def create_donation():
             paid_at=datetime.utcnow() if data["status"] == "Completed" else None,
         )
         db.session.add(donation)
+
+        create_contact_from_data(
+            name=donor_name,
+            email=data.get("email"),
+            phone=phone,
+            message=None,
+            source='donation',
+            subject=None,
+            country=None,
+            status='new'
+        )
+
         db.session.commit()
         logger.info("Manual donation recorded: ref=%s, amount=%s", donation.reference, amount)
         return jsonify(donation.to_dict()), 201
@@ -170,6 +134,18 @@ def create_donation():
         send_whatsapp_receipt=bool(data.get("send_whatsapp_receipt")),
     )
     db.session.add(donation)
+
+    create_contact_from_data(
+        name=donor_name,
+        email=email,
+        phone=phone,
+        message=None,
+        source='donation',
+        subject=None,
+        country=None,
+        status='new'
+    )
+
     db.session.commit()
 
     try:
@@ -203,29 +179,7 @@ def create_donation():
 
 @donations_bp.get("")
 def list_donations():
-    """
-    List donations
-    ---
-    tags:
-      - Donations
-    parameters:
-      - name: search
-        in: query
-        type: string
-        description: Filter by donor name (partial, case‑insensitive)
-      - name: status
-        in: query
-        type: string
-        enum: [Pending, Completed, Failed]
-        description: Filter by status
-    responses:
-      200:
-        description: Array of donations (newest first)
-        schema:
-          type: array
-          items:
-            type: object
-    """
+   
     query = Donation.query
     search = request.args.get("search", "").strip()
     status = request.args.get("status", "").strip()
@@ -242,39 +196,7 @@ def list_donations():
 
 @donations_bp.patch("/<int:donation_id>")
 def update_donation(donation_id):
-    """
-    Update a donation (e.g. change status)
-    ---
-    tags:
-      - Donations
-    parameters:
-      - name: donation_id
-        in: path
-        required: true
-        type: integer
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            status:
-              type: string
-              enum: [Pending, Completed, Failed]
-            donor_name:
-              type: string
-            phone:
-              type: string
-            amount:
-              type: number
-    responses:
-      200:
-        description: Updated donation object
-      400:
-        description: Validation error
-      404:
-        description: Donation not found
-    """
+    
     donation = Donation.query.get_or_404(donation_id)
     data, error = load_json_or_400(update_donation_schema)
     if error:
@@ -298,22 +220,7 @@ def update_donation(donation_id):
 
 @donations_bp.delete("/<int:donation_id>")
 def delete_donation(donation_id):
-    """
-    Delete a donation
-    ---
-    tags:
-      - Donations
-    parameters:
-      - name: donation_id
-        in: path
-        required: true
-        type: integer
-    responses:
-      200:
-        description: Deleted
-      404:
-        description: Donation not found
-    """
+    
     donation = Donation.query.get_or_404(donation_id)
     db.session.delete(donation)
     db.session.commit()
@@ -321,26 +228,12 @@ def delete_donation(donation_id):
     return jsonify({"deleted": True, "id": donation_id}), 200
 
 
-# ---------------------------------------------------------------------------
+
 # EXTRA ROUTES – PAYSTACK WEBHOOK & VERIFICATION
-# ---------------------------------------------------------------------------
 
 @donations_bp.post("/webhook")
 def paystack_webhook():
-    """
-    Paystack webhook receiver
-    ---
-    tags:
-      - Donations
-    description: >
-      Paystack sends POST requests here for `charge.success` and `charge.failed` events.
-      The request must include a valid `x-paystack-signature` header.
-    responses:
-      200:
-        description: Event processed or ignored.
-      400:
-        description: Invalid signature or malformed payload.
-    """
+    
     signature = request.headers.get("x-paystack-signature", "")
     if not verify_webhook_signature(request.get_data(), signature):
         logger.warning("Webhook signature verification failed")
@@ -392,24 +285,7 @@ def paystack_webhook():
 
 @donations_bp.get("/verify/<reference>")
 def verify_donation(reference):
-    """
-    Check a donation's status (used by the browser thank‑you page)
-    ---
-    tags:
-      - Donations
-    parameters:
-      - name: reference
-        in: path
-        required: true
-        type: string
-    responses:
-      200:
-        description: Current donation status and details.
-        schema:
-          type: object
-      404:
-        description: Unknown reference.
-    """
+    
     donation = Donation.query.filter_by(reference=reference).first()
     if not donation:
         logger.warning("Verify called for unknown reference %s", reference)
@@ -430,32 +306,7 @@ def verify_donation(reference):
 
 @donations_bp.get("/stats")
 def donation_stats():
-    """
-    Aggregate donation stats for the dashboard cards
-    ---
-    tags:
-      - Donations
-    responses:
-      200:
-        description: Statistics including monthly/yearly totals, average gift, and pie-chart percentages.
-        schema:
-          type: object
-          properties:
-            thisMonthTotal:
-              type: number
-            totalThisYear:
-              type: number
-            avgGift:
-              type: number
-            totalGifts:
-              type: integer
-            pctUnder:
-              type: integer
-            pctMid:
-              type: integer
-            pctOver:
-              type: integer
-    """
+    
     completed = Donation.query.filter_by(status="Completed").all()
 
     now = datetime.utcnow()

@@ -13,7 +13,37 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
-import { submitApplication } from '../lib/api'; // adjust this path if your project structure differs
+import { submitApplication } from '../lib/api';
+
+// validation for email and phone helpers
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) return { valid: false, message: "Email is required." };
+  if (!re.test(email)) return { valid: false, message: "Please enter a valid email address (e.g., name@domain.com)." };
+  return { valid: true };
+};
+
+const validatePhone = (phone) => {
+  if (!phone) return { valid: false, message: "Phone number is required." };
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return { valid: true, normalized: '0' + cleaned };
+  }
+  if (cleaned.length === 10 && cleaned.startsWith('0')) {
+    return { valid: true, normalized: cleaned };
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('254')) {
+    return { valid: true, normalized: cleaned };
+  }
+  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
+};
+
+// stripping phone number
+const formatPhoneInput = (value) => {
+  const digits = value.replace(/[^0-9]/g, '');
+  return digits.slice(0, 12);
+};
+
 
 const roles = [
   {
@@ -103,7 +133,7 @@ const GetInvolved = () => {
     phone: "",
     organisation: "",
     country: "",
-    subject: "artist", // matches the default selectedRole below
+    subject: "artist",
     message: "",
   });
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
@@ -140,20 +170,45 @@ const GetInvolved = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone") {
+      const cleaned = formatPhoneInput(value);
+      setFormData((prev) => ({ ...prev, [name]: cleaned }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // validating email
+    const emailResult = validateEmail(formData.email);
+    if (!emailResult.valid) {
+      toast.error(emailResult.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validating phone number if it aint  newsletterr
+    if (!isNewsletter) {
+      const phone = formData.phone;
+      const result = validatePhone(phone);
+      if (!result.valid) {
+        toast.error(result.message);
+        setIsSubmitting(false);
+        return;
+      }
+      if (result.normalized) {
+        formData.phone = result.normalized;
+      }
+    }
+
     const loadingToast = toast.loading(
       isNewsletter ? "Subscribing you..." : "Sending your message...",
     );
 
     try {
-      // submitApplication is API-first with a transparent local-store fallback,
-      // so this resolves even if the backend is unreachable (demo mode).
       await submitApplication({
         name: formData.name,
         email: formData.email,
@@ -279,7 +334,6 @@ const GetInvolved = () => {
             </div>
 
             <div className="mb-8">
-             
               <div className="flex flex-wrap gap-6 justify-center md:justify-start">
                 {roles.map((role) => {
                   const Icon = role.icon;
@@ -375,10 +429,14 @@ const GetInvolved = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+254 712345678"
+                        placeholder="0712345678 or +254712345678"
+                        maxLength="12"  // additional guard
                         required
                         className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
                       />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Format: 0712345678 or +254712345678 (max 12 digits)
+                      </p>
                     </div>
 
                     <div>

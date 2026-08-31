@@ -16,8 +16,7 @@ SUBJECT_LABELS = {
 
 
 class Application(db.Model):
-    """A single Get Involved form submission (volunteer / artist / partner / newsletter)."""
-
+    
     __tablename__ = "applications"
 
     id = db.Column(db.Integer, primary_key=True)
