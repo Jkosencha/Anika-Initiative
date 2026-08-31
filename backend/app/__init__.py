@@ -6,6 +6,7 @@ from flask import Flask, jsonify
 
 from config import Config, BASE_DIR
 from app.extensions import db, cors, swagger, mail
+from app.utils.cloudinary_config import init_cloudinary   # Cloudinary SDK setup
 
 SWAGGER_TEMPLATE = {
     "swagger": "2.0",
@@ -28,7 +29,6 @@ SWAGGER_CONFIG = {
     "specs_route": "/api/docs/",
 }
 
-
 def create_app(config_class=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
@@ -42,6 +42,9 @@ def create_app(config_class=Config):
     swagger.template = SWAGGER_TEMPLATE
     swagger.init_app(app)
     mail.init_app(app)
+
+    # ----- Cloudinary (for gallery image storage) -----
+    init_cloudinary(app)   # configures cloudinary with CLOUDINARY_* env vars
 
     # ----- LOGGING CONFIGURATION -----
     if not app.debug:
@@ -67,13 +70,16 @@ def create_app(config_class=Config):
 
    
     from app.models.donation import Donation
-    from app.models.application import Application  # ensure table creation
+    from app.models.application import Application
+    from app.models.gallery import GalleryImage
 
-    from app.routes import health_bp, donations_bp,applications_bp
+
+    from app.routes import health_bp, donations_bp, applications_bp, gallery_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
     app.register_blueprint(applications_bp)
+    app.register_blueprint(gallery_bp)
 
     with app.app_context():
         db.create_all()

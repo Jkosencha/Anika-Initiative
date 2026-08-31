@@ -9,6 +9,7 @@ flask-sqlalchemy = "*"
 flask-cors = "*"
 python-dotenv = "*"
 flask-mail = "*"
+cloudinary = "*"
 
 [dev-packages]
 

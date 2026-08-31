@@ -11,14 +11,23 @@ const Gallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await fetch("/gallery-data.json");
+        // --- CHANGE: fetch from the API instead of static JSON ---
+        const response = await fetch("/api/gallery");
         if (!response.ok) {
           throw new Error("Hey mehn failed to load gallery");
         }
         const data = await response.json();
-        setAllImages(Array.isArray(data) ? data : []);
+        // The API returns objects with { id, caption, src, upload_date }
+        // We'll map 'caption' to 'alt' for consistency with the existing UI
+        const mapped = data.map(img => ({
+          src: img.src,
+          alt: img.caption,
+          id: img.id,
+        }));
+        setAllImages(mapped);
       } catch (error) {
         console.error("Howdy! Error loading gallery:", error);
+        // Fallback: you can keep the hardcoded images or leave empty
         setAllImages([
           { src: "/anika team.jpg", alt: "Anika Team" },
           { src: "/jaaziya.jpg", alt: "Jaaziya" },

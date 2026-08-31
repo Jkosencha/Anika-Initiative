@@ -1,6 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { X, Trash2, Pencil, Check, Upload } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { toast } from "sonner";
 
 // configuring light and dark theme
 const lightColors = {
@@ -13,7 +14,7 @@ const lightColors = {
   overlay: "rgba(0,0,0,0.45)",
   buttonBg: "#1c1a17",
   buttonText: "#ffffff",
-  dragBg: "#e8e5df",      
+  dragBg: "#e8e5df",
 };
 
 const darkColors = {
@@ -26,19 +27,10 @@ const darkColors = {
   overlay: "rgba(0,0,0,0.75)",
   buttonBg: "#f0f0f0",
   buttonText: "#1a1a1a",
-  dragBg: "#3a3a3a",      
+  dragBg: "#3a3a3a",
 };
 
-const SEED = [
-  { id: 1, caption: "ANIKA team", src: "/anika team.jpg" },
-  { id: 2, caption: "Jaaziya", src: "/jaaziya.jpg" },
-  { id: 3, caption: "KWAJ", src: "/KWAJ.jpg" },
-  { id: 4, caption: "PHYL", src: "/PHYL.jpg" },
-  { id: 5, caption: "RAYA1", src: "/RAYA1.jpg" },
-  { id: 6, caption: "Jojo", src: "/jojo.jpg" },
-];
-
-// ----- Delete Confirmation Modal (new) -----
+// ----- Delete Confirmation Modal -----
 function DeleteConfirmModal({ item, onClose, onConfirm, colors }) {
   if (!item) return null;
 
@@ -161,7 +153,7 @@ function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors, onDelet
             <Pencil size={13} color={colors.text} />
           </button>
           <button
-            onClick={() => onDeleteClick(item)}   
+            onClick={() => onDeleteClick(item)}
             className="p-1.5 rounded-full"
             style={{
               background: colors.panel,
@@ -245,36 +237,135 @@ export default function Gallery() {
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
 
-  const [items, setItems] = useState(SEED);
-  const [selected, setSelected] = useState(null); 
-  const [deleteTarget, setDeleteTarget] = useState(null); 
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const fileInputRef = useRef(null);
+  const [dragOver, setDragOver] = useState(false);
 
+  // Fetch images from API on mount
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const fetchImages = async () => {
+    try {
+      const res = await fetch("/api/gallery");
+      if (!res.ok) throw new Error("Failed to fetch gallery");
+      const data = await res.json();
+      setImages(data);
+    } catch (err) {
+      console.error("Error loading gallery:", err);
+      setError(err.message);
+      toast.error("Failed to load gallery images");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Upload a single file – field name MUST be "image" (matches backend)
+  const uploadFile = async (file, caption = "") => {
+    if (!file || !(file instanceof File)) {
+      console.error("Invalid file object:", file);
+      toast.error("Invalid file – please select an image.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);   // <--- CRITICAL: field name = "image"
+    if (caption) formData.append("caption", caption);
+
+    try {
+      const res = await fetch("/api/gallery", {
+        method: "POST",
+        body: formData,
+        // No manual Content-Type header
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Upload failed (${res.status}): ${errorText}`);
+      }
+
+      const newImage = await res.json();
+      setImages((prev) => [newImage, ...prev]);
+      toast.success(`"${newImage.caption}" uploaded successfully`);
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error(`Upload failed: ${err.message}`);
+    }
+  };
+
+  // Handle multiple files from input or drop
   function handleFiles(fileList) {
     const files = Array.from(fileList || []);
-    files.forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
-      const url = URL.createObjectURL(file);
-      setItems((prev) => [
-        ...prev,
-        { id: Date.now() + Math.random(), caption: file.name.replace(/\.[^/.]+$/, "") || "Untitled", src: url },
-      ]);
-    });
+    if (files.length === 0) return;
+    let uploadedCount = 0;
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) continue;
+      const caption = file.name.replace(/\.[^/.]+$/, "") || "Untitled";
+      uploadFile(file, caption);
+      uploadedCount++;
+    }
+    if (uploadedCount === 0) {
+      toast.warning("No valid image files selected");
+    }
   }
 
-  function onDelete(id) {
-    setItems((prev) => {
-      const target = prev.find((i) => i.id === id);
-      if (target && target.src) URL.revokeObjectURL(target.src);
-      return prev.filter((i) => i.id !== id);
-    });
+  // Delete an image
+  const performDelete = async (id) => {
+    try {
+      const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      setImages((prev) => prev.filter((img) => img.id !== id));
+      toast.success("Image deleted successfully");
+    } catch (err) {
+      console.error("Delete error:", err);
+      toast.error(`Delete failed: ${err.message}`);
+    }
+  };
+
+  // Update caption
+  const updateCaption = async (id, newCaption) => {
+    try {
+      const res = await fetch(`/api/gallery/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ caption: newCaption }),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      const updated = await res.json();
+      setImages((prev) => prev.map((img) => (img.id === id ? updated : img)));
+      toast.success("Caption updated");
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error(`Update failed: ${err.message}`);
+    }
+  };
+
+//loading ya gallery
+  if (loading) {
+    return (
+      <div
+        style={{ background: COLORS.bg, minHeight: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "2rem" }}
+      >
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
+          <p className="mt-2 text-sm" style={{ color: COLORS.muted }}>Loading gallery...</p>
+        </div>
+      </div>
+    );
   }
 
-  function onCaptionChange(id, caption) {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, caption } : i)));
+  if (error) {
+    return (
+      <div style={{ background: COLORS.bg, minHeight: "100%", padding: "2rem" }}>
+        <p style={{ color: "red" }}>Error: {error}</p>
+      </div>
+    );
   }
-
-  const [dragOver, setDragOver] = useState(false);
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans">
@@ -335,7 +426,7 @@ export default function Gallery() {
         </span>
       </div>
 
-      {items.length === 0 ? (
+      {images.length === 0 ? (
         <div
           style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel }}
           className="rounded-xl p-14 text-center"
@@ -349,29 +440,27 @@ export default function Gallery() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((item) => (
+          {images.map((item) => (
             <Tile
               key={item.id}
               item={item}
-              onDelete={onDelete}               
-              onCaptionChange={onCaptionChange}
+              onDelete={performDelete}
+              onCaptionChange={updateCaption}
               onOpen={setSelected}
               colors={COLORS}
-              onDeleteClick={setDeleteTarget}   
+              onDeleteClick={setDeleteTarget}
             />
           ))}
         </div>
       )}
 
-  
       <ImageModal item={selected} onClose={() => setSelected(null)} colors={COLORS} />
-
 
       {deleteTarget && (
         <DeleteConfirmModal
           item={deleteTarget}
           onClose={() => setDeleteTarget(null)}
-          onConfirm={onDelete}
+          onConfirm={performDelete}
           colors={COLORS}
         />
       )}
