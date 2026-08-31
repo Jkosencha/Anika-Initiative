@@ -13,7 +13,31 @@ REQUIRED_FIELDS = ["name", "email", "subject"]
 
 @applications_bp.get("")
 def list_applications():
-    
+    """
+    List all Get Involved applications
+    ---
+    tags:
+      - Applications
+    summary: Get all applications (admin)
+    parameters:
+      - name: status
+        in: query
+        type: string
+        enum: [New, Shortlisted, Accepted, Rejected]
+        description: Filter by status
+      - name: subject
+        in: query
+        type: string
+        enum: [volunteer, partnership, artist, newsletter, event, other]
+        description: Filter by subject
+    responses:
+      200:
+        description: List of applications, newest first
+        schema:
+          type: array
+          items:
+            type: object
+    """
     query = Application.query
     status = request.args.get("status")
     subject = request.args.get("subject")
@@ -32,7 +56,51 @@ def list_applications():
 
 @applications_bp.post("")
 def create_application():
-    
+    """
+    Submit a Get Involved form entry
+    ---
+    tags:
+      - Applications
+    summary: Submit a new application (public)
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [name, email, subject]
+          properties:
+            name:
+              type: string
+              example: "Joan Mueni"
+            email:
+              type: string
+              example: "joan@example.com"
+            phone:
+              type: string
+              example: "+254712345678"
+            organisation:
+              type: string
+              example: "Kayole Youth Collective"
+            country:
+              type: string
+              example: "Kenya"
+            subject:
+              type: string
+              enum: [volunteer, partnership, artist, newsletter, event, other]
+              example: volunteer
+            message:
+              type: string
+              example: "I'd like to help run workshops."
+            whatsapp_opt_in:
+              type: boolean
+              example: true
+    responses:
+      201:
+        description: Application created. Triggers emails.
+      400:
+        description: Validation error
+    """
     data = request.get_json(silent=True) or {}
 
     missing = [f for f in REQUIRED_FIELDS if not data.get(f)]
@@ -96,7 +164,36 @@ def create_application():
 
 @applications_bp.patch("/<int:app_id>")
 def update_application(app_id):
-    
+    """
+    Update an application's status (e.g. Shortlisted, Accepted, Rejected)
+    ---
+    tags:
+      - Applications
+    summary: Update application status (admin)
+    parameters:
+      - name: app_id
+        in: path
+        required: true
+        type: integer
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [status]
+          properties:
+            status:
+              type: string
+              enum: [New, Shortlisted, Accepted, Rejected]
+              example: Shortlisted
+    responses:
+      200:
+        description: Updated application
+      400:
+        description: Invalid status
+      404:
+        description: Application not found
+    """
     entry = Application.query.get_or_404(app_id)
     data = request.get_json(silent=True) or {}
     status = data.get("status")
@@ -122,7 +219,23 @@ def update_application(app_id):
 
 @applications_bp.delete("/<int:app_id>")
 def delete_application(app_id):
-    
+    """
+    Delete an application
+    ---
+    tags:
+      - Applications
+    summary: Delete an application (admin)
+    parameters:
+      - name: app_id
+        in: path
+        required: true
+        type: integer
+    responses:
+      204:
+        description: Deleted
+      404:
+        description: Application not found
+    """
     entry = Application.query.get_or_404(app_id)
     db.session.delete(entry)
     db.session.commit()
