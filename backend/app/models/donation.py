@@ -4,11 +4,7 @@ from app.extensions import db
 
 
 class Donation(db.Model):
-    """
-    One donation attempt. Created as 'Pending' the moment a Paystack
-    transaction is initialized, then flipped to 'Completed' / 'Failed'
-    by the webhook (or by an admin recording an offline gift directly).
-    """
+
 
     __tablename__ = "donations"
 

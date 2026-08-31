@@ -10,8 +10,8 @@ class Contact(db.Model):
     phone = db.Column(db.String(20), nullable=True)
     message = db.Column(db.Text, nullable=True)
     source = db.Column(db.String(20), nullable=False)          # 'donation' or 'getinvolved'
-    subject = db.Column(db.String(50), nullable=True)          # e.g. 'artist', 'volunteer'
-    country = db.Column(db.String(100), nullable=True)         # user's country
+    subject = db.Column(db.String(50), nullable=True)          #  'artist', 'volunteer' ama any based on getinvolved
+    country = db.Column(db.String(100), nullable=True)         # anika user country
     status = db.Column(db.String(20), default='new')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

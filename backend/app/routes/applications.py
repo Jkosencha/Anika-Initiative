@@ -13,26 +13,7 @@ REQUIRED_FIELDS = ["name", "email", "subject"]
 
 @applications_bp.get("")
 def list_applications():
-    """
-    List applications
-    ---
-    tags:
-      - Applications
-    parameters:
-      - name: status
-        in: query
-        type: string
-        required: false
-        description: Filter by status (New, Shortlisted, Accepted, Rejected)
-      - name: subject
-        in: query
-        type: string
-        required: false
-        description: Filter by subject/role (volunteer, partnership, artist, newsletter, event, other)
-    responses:
-      200:
-        description: List of applications, newest first
-    """
+    
     query = Application.query
     status = request.args.get("status")
     subject = request.args.get("subject")
@@ -51,36 +32,7 @@ def list_applications():
 
 @applications_bp.post("")
 def create_application():
-    """
-    Submit a Get Involved form entry (volunteer / artist / partner / newsletter)
-    ---
-    tags:
-      - Applications
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required: [name, email, subject]
-          properties:
-            name: {type: string, example: "Joan Mueni"}
-            email: {type: string, example: "joan@example.com"}
-            phone: {type: string, example: "+254712345678"}
-            organisation: {type: string, example: "Kayole Youth Collective"}
-            country: {type: string, example: "Kenya"}
-            subject:
-              type: string
-              example: volunteer
-              enum: [volunteer, partnership, artist, newsletter, event, other]
-            message: {type: string, example: "I'd like to help run workshops."}
-            whatsapp_opt_in: {type: boolean, example: true}
-    responses:
-      201:
-        description: Application created. Triggers an org notification email and a user confirmation email.
-      400:
-        description: Validation error
-    """
+    
     data = request.get_json(silent=True) or {}
 
     missing = [f for f in REQUIRED_FIELDS if not data.get(f)]
@@ -144,32 +96,7 @@ def create_application():
 
 @applications_bp.patch("/<int:app_id>")
 def update_application(app_id):
-    """
-    Update an application's status (e.g. Shortlisted, Accepted, Rejected)
-    ---
-    tags:
-      - Applications
-    parameters:
-      - name: app_id
-        in: path
-        type: integer
-        required: true
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required: [status]
-          properties:
-            status: {type: string, example: "Shortlisted"}
-    responses:
-      200:
-        description: Updated application
-      400:
-        description: Invalid status
-      404:
-        description: Application not found
-    """
+    
     entry = Application.query.get_or_404(app_id)
     data = request.get_json(silent=True) or {}
     status = data.get("status")
@@ -195,22 +122,7 @@ def update_application(app_id):
 
 @applications_bp.delete("/<int:app_id>")
 def delete_application(app_id):
-    """
-    Delete (withdraw) an application
-    ---
-    tags:
-      - Applications
-    parameters:
-      - name: app_id
-        in: path
-        type: integer
-        required: true
-    responses:
-      204:
-        description: Deleted
-      404:
-        description: Application not found
-    """
+    
     entry = Application.query.get_or_404(app_id)
     db.session.delete(entry)
     db.session.commit()

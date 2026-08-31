@@ -46,7 +46,6 @@ function getContactType(source, subject) {
   return 'Volunteer';
 }
 
-// Style for each type
 const TYPE_STYLE = {
   Donor: { bg: "#dcefe0", text: "#2d7a43" },
   Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
@@ -101,7 +100,7 @@ function getSourceLabel(source) {
   return source;
 }
 
-// CSV export
+// CSV exporting
 function toCSV(rows) {
   const header = [
     "Name",
@@ -160,7 +159,7 @@ function Pill({ active, children, onClick, colors }) {
   );
 }
 
-// Type badge
+// type of getinvolved anataka
 function TypeBadge({ type }) {
   const s = TYPE_STYLE[type] || TYPE_STYLE.Volunteer;
   return (
@@ -174,7 +173,7 @@ function TypeBadge({ type }) {
   );
 }
 
-// View Contact Modal
+// View Contact Modal designed
 function ViewContactModal({ contact, onClose, colors }) {
   if (!contact) return null;
 
@@ -469,7 +468,7 @@ export default function Contacts() {
     downloadCSV(filtered, "contacts.csv");
   };
 
-  // Helper to truncate text
+  //  truncate text
   const truncate = (text, maxLen = 50) => {
     if (!text) return '—';
     return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;

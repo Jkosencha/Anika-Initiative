@@ -7,47 +7,7 @@ contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
 
 @contacts_bp.route('', methods=['POST'])
 def create_contact():
-    """
-    Create a new contact (for internal use or admin)
-    ---
-    tags:
-      - Contacts
-    summary: Create a contact
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required: [name, email, source]
-          properties:
-            name:
-              type: string
-              example: "John Doe"
-            email:
-              type: string
-              example: "john@example.com"
-            phone:
-              type: string
-              example: "+254712345678"
-            message:
-              type: string
-            source:
-              type: string
-              enum: [donation, getinvolved]
-            subject:
-              type: string
-            country:
-              type: string
-            status:
-              type: string
-              default: new
-    responses:
-      201:
-        description: Contact created
-      400:
-        description: Validation error
-    """
+    
     data = request.get_json()
     if not data:
         return jsonify({'error': 'No JSON data provided'}), 400
@@ -76,49 +36,7 @@ def create_contact():
 
 @contacts_bp.route('', methods=['GET'])
 def list_contacts():
-    """
-    List contacts with pagination and optional filters
-    ---
-    tags:
-      - Contacts
-    summary: List all contacts
-    parameters:
-      - name: page
-        in: query
-        type: integer
-        default: 1
-      - name: per_page
-        in: query
-        type: integer
-        default: 20
-        maximum: 100
-      - name: source
-        in: query
-        type: string
-        enum: [donation, getinvolved]
-      - name: status
-        in: query
-        type: string
-        enum: [new, contacted, converted]
-    responses:
-      200:
-        description: Paginated list
-        schema:
-          type: object
-          properties:
-            contacts:
-              type: array
-              items:
-                type: object
-            total:
-              type: integer
-            page:
-              type: integer
-            per_page:
-              type: integer
-            pages:
-              type: integer
-    """
+   
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 20, type=int), 100)
     source = request.args.get('source')
@@ -143,62 +61,13 @@ def list_contacts():
 
 @contacts_bp.route('/<int:contact_id>', methods=['GET'])
 def get_contact(contact_id):
-    """
-    Get a single contact by ID
-    ---
-    tags:
-      - Contacts
-    summary: Retrieve a contact
-    parameters:
-      - name: contact_id
-        in: path
-        required: true
-        type: integer
-    responses:
-      200:
-        description: Contact object
-      404:
-        description: Not found
-    """
+   
     contact = Contact.query.get_or_404(contact_id)
     return jsonify(contact.to_dict()), 200
 
 @contacts_bp.route('/<int:contact_id>', methods=['PUT'])
 def update_contact(contact_id):
-    """
-    Update a contact
-    ---
-    tags:
-      - Contacts
-    summary: Update a contact
-    parameters:
-      - name: contact_id
-        in: path
-        required: true
-        type: integer
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            name:
-              type: string
-            email:
-              type: string
-            phone:
-              type: string
-            message:
-              type: string
-            status:
-              type: string
-              enum: [new, contacted, converted]
-    responses:
-      200:
-        description: Updated contact
-      404:
-        description: Not found
-    """
+    
     contact = Contact.query.get_or_404(contact_id)
     data = request.get_json() or {}
     allowed = ['name', 'email', 'phone', 'message', 'status']
@@ -211,28 +80,7 @@ def update_contact(contact_id):
 
 @contacts_bp.route('/<int:contact_id>', methods=['DELETE'])
 def delete_contact(contact_id):
-    """
-    Delete a contact
-    ---
-    tags:
-      - Contacts
-    summary: Delete a contact
-    parameters:
-      - name: contact_id
-        in: path
-        required: true
-        type: integer
-    responses:
-      200:
-        description: Deleted
-        schema:
-          type: object
-          properties:
-            message:
-              type: string
-      404:
-        description: Not found
-    """
+    
     contact = Contact.query.get_or_404(contact_id)
     db.session.delete(contact)
     db.session.commit()

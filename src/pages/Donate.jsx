@@ -15,6 +15,36 @@ import Reveal from "../components/Reveal";
 import Counter from "../components/Counter";
 import { submitDonation } from "../lib/api";
 
+// ---------- VALIDATION HELPERS ----------
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) return { valid: false, message: "Email is required." };
+  if (!re.test(email)) return { valid: false, message: "Please enter a valid email address (e.g., name@domain.com)." };
+  return { valid: true };
+};
+
+const validatePhone = (phone) => {
+  if (!phone) return { valid: false, message: "Phone number is required." };
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return { valid: true, normalized: '0' + cleaned };
+  }
+  if (cleaned.length === 10 && cleaned.startsWith('0')) {
+    return { valid: true, normalized: cleaned };
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('254')) {
+    return { valid: true, normalized: cleaned };
+  }
+  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
+};
+
+// Phone input formatter striping non-digits, limit to 12 digits
+const formatPhoneInput = (value) => {
+  const digits = value.replace(/[^0-9]/g, '');
+  return digits.slice(0, 12);
+};
+
+
 const DonationPage = () => {
   const [donorName, setDonorName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,6 +76,11 @@ const DonationPage = () => {
     if (value) setDonationAmount(Number(value));
   };
 
+  const handlePhoneChange = (e) => {
+    const cleaned = formatPhoneInput(e.target.value);
+    setPhoneNumber(cleaned);
+  };
+
   const handleDonate = async () => {
     if (isSubmitting) return;
 
@@ -53,9 +88,27 @@ const DonationPage = () => {
       toast.error("Please choose or enter a donation amount.");
       return;
     }
-    if (donationMethod === "mpesa" && (!phoneNumber || phoneNumber.length < 9)) {
-      toast.error("Please enter a valid M-Pesa phone number.");
-      return;
+
+    //validating email if provided
+    if (email) {
+      const emailResult = validateEmail(email);
+      if (!emailResult.valid) {
+        toast.error(emailResult.message);
+        return;
+      }
+    }
+
+    //validating phone only ya mpesa
+    if (donationMethod === "mpesa") {
+      const phone = phoneNumber;
+      const result = validatePhone(phone);
+      if (!result.valid) {
+        toast.error(result.message);
+        return;
+      }
+      if (result.normalized) {
+        setPhoneNumber(result.normalized);
+      }
     }
 
     setIsSubmitting(true);
@@ -65,16 +118,28 @@ const DonationPage = () => {
         : "Setting up your secure card payment…"
     );
 
-    
     const currency = donationMethod === "mpesa" ? "KES" : "USD";
+
+    // Normalize phone for submission remove leading 0, add 254 if needed
+    let normalizedPhone = phoneNumber;
+    if (donationMethod === "mpesa") {
+      const cleaned = phoneNumber.replace(/[^0-9]/g, '');
+      if (cleaned.startsWith('0')) {
+        normalizedPhone = '254' + cleaned.slice(1);
+      } else if (cleaned.length === 9) {
+        normalizedPhone = '254' + cleaned;
+      } else if (cleaned.startsWith('254')) {
+        normalizedPhone = cleaned;
+      }
+    }
 
     const { ok, source, record } = await submitDonation({
       donor_name: donorName || "Anonymous",
       email: email || undefined,
       amount: donationAmount,
       method: donationMethod,
-      currency: currency,     
-      phone: donationMethod === "mpesa" ? `254${phoneNumber.replace(/^0+/, "")}` : undefined,
+      currency: currency,
+      phone: donationMethod === "mpesa" ? normalizedPhone : undefined,
       send_whatsapp_receipt: sendWhatsApp,
     });
 
@@ -89,7 +154,6 @@ const DonationPage = () => {
     }
 
     if (source === "local") {
-      // API was unreachable -- saved to the local demo store instead of a real charge.
       toast.info(
         <div>
           <p className="font-semibold">Saved (demo mode)</p>
@@ -134,7 +198,6 @@ const DonationPage = () => {
       return;
     }
 
-    // Shouldn't normally get here for mpesa/card, but just in case.
     toast.success("Thank you for your donation!");
     setIsSubmitting(false);
   };
@@ -303,10 +366,14 @@ const DonationPage = () => {
                       type="tel"
                       placeholder="712345678"
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      onChange={handlePhoneChange}
+                      maxLength="12"
                       className="w-full p-3 pl-2 outline-none bg-cream/95"
                     />
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Format: 0712345678 or 712345678 (max 12 digits)
+                  </p>
                   <label className="flex items-center gap-2 mt-3 text-sm text-gray-600">
                     <input
                       type="checkbox"
