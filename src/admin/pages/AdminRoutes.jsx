@@ -17,8 +17,9 @@ import WhatsAppBroadcast from '../pages/WhatsAppBroadcast';
 import WhatsAppInbox from '../pages/WhatsAppInbox';
 import WhatsAppAssistant from '../pages/WhatsAppAssistant';
 import AdminRegistrations from '../pages/Registrations';
-import AdminEvents from '../pages/Events'
+import AdminEvents from '../pages/Events';
 import Impact from '../pages/Impact';
+import Reports from '../pages/Reports';
 
 export default function AdminRoutes() {
   return (
@@ -38,7 +39,7 @@ export default function AdminRoutes() {
         <Route path="messages" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.messages}><ComingSoon title="Messages" /></ProtectedRoute>} />
         <Route path="donations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.donations}><Donations /></ProtectedRoute>} />
         <Route path="impact" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.impact}><Impact /></ProtectedRoute>} />
-        <Route path="reports" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.reports}><ComingSoon title="Reports" /></ProtectedRoute>} />
+        <Route path="reports" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.reports}><Reports /></ProtectedRoute>} />
         <Route path="team" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.team}><Team /></ProtectedRoute>} />
         <Route path="settings" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.settings}><Settings /></ProtectedRoute>} />
         <Route path="roles" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.roles}><RolesAccess /></ProtectedRoute>} />
