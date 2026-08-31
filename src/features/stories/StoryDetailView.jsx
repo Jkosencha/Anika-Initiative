@@ -9,11 +9,17 @@ export default function StoryDetailView() {
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadStory = () => {
+  const loadStory = async () => {
     setIsLoading(true);
-    const found = storiesStore.getBySlug(slug);
-    setStory(found);
-    setIsLoading(false);
+    try {
+      const found = await storiesStore.getBySlug(slug);
+      setStory(found);
+    } catch (error) {
+      console.error("Failed to load story:", error);
+      setStory(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {

@@ -72,14 +72,17 @@ def create_app(config_class=Config):
     from app.models.donation import Donation
     from app.models.application import Application
     from app.models.gallery import GalleryImage
+    from app.models.story import Story
+    from app.models.story import Story
 
 
-    from app.routes import health_bp, donations_bp, applications_bp, gallery_bp
+    from app.routes import health_bp, donations_bp, applications_bp, gallery_bp, stories_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
     app.register_blueprint(applications_bp)
     app.register_blueprint(gallery_bp)
+    app.register_blueprint(stories_bp)
 
     with app.app_context():
         db.create_all()
