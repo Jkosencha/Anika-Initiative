@@ -333,10 +333,19 @@ export default function Donations() {
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]"
-          style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          style={{
+            color: COLORS.muted,
+            borderColor: COLORS.border,
+            gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",
+          }}
         >
-          <div>DONOR</div><div>AMOUNT</div><div>PHONE</div><div>REFERENCE</div><div>DATE (Local)</div><div>STATUS</div>
+          <div>DONOR</div>
+          <div>AMOUNT</div>
+          <div>PHONE</div>
+          <div>REFERENCE</div>
+          <div>DATE (Local)</div>
+          <div>STATUS</div>
         </div>
 
         {loading && (
@@ -352,8 +361,11 @@ export default function Donations() {
           return (
             <div
               key={d.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[760px]"
-              style={{ borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              style={{
+                borderColor: COLORS.border,
+                gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",
+              }}
             >
               <div className="flex items-center gap-3">
                 <div style={{ background: avatarColor(d.donor) }} className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
@@ -364,9 +376,10 @@ export default function Donations() {
               <div className="text-sm font-bold" style={{ color: COLORS.text }}>
                 {d.currency || "KES"} {Number(d.amount || 0).toLocaleString()}
               </div>
-              <div className="text-sm" style={{ color: COLORS.text }}>{d.phone}</div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {d.phone}
+              </div>
               <div className="text-sm font-mono" style={{ color: COLORS.text }}>{d.reference}</div>
-              {/* --- FIXED: display created_at in local time --- */}
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {formatLocalDate(d.created_at)}
               </div>

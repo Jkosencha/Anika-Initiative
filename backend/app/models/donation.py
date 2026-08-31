@@ -34,7 +34,7 @@ class Donation(db.Model):
     gateway_response = db.Column(db.String(255), nullable=True)
     send_whatsapp_receipt = db.Column(db.Boolean, nullable=False, default=False)
 
-    recorded_by_id = db.Column(db.Integer, nullable=True)   
+    recorded_by_id = db.Column(db.Integer, nullable=True)
 
     paid_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -54,7 +54,7 @@ class Donation(db.Model):
             "amount": float(self.amount),
             "currency": self.currency,
             "method": self.method,
-            "phone": self.mask_phone(),
+            "phone": self.phone or "", 
             "reference": self.reference,
             "status": self.status,
             "paystack_channel": self.paystack_channel,
@@ -62,6 +62,19 @@ class Donation(db.Model):
             "paid_at": self.paid_at.isoformat() if self.paid_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "month": "current" if self._is_current_month() else "prior",
+        }
+
+    def to_public_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "donor": self.donor_name,
+            "amount": float(self.amount),
+            "currency": self.currency,
+            "phone": self.mask_phone(),  
+            "reference": self.reference,
+            "status": self.status,
+            "date": self.created_at.strftime("%d %b %Y, %H:%M") if self.created_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
     def _is_current_month(self) -> bool:
