@@ -12,7 +12,7 @@ SWAGGER_TEMPLATE = {
     "info": {
         "title": "ANIKA API",
         "description": (
-            "Backend for the ANIKA dashboard, public donation form, and (later) the "
+            "Backend for the ANIKA dashboard, public donation form, stories, and (later) the "
             "WhatsApp assistant. Donations are processed through Paystack. "
             "Auth is not implemented yet -- all routes are currently open."
         ),
@@ -42,7 +42,7 @@ def create_app(config_class=Config):
     swagger.template = SWAGGER_TEMPLATE
     swagger.init_app(app)
 
-    # ----- LOGGING CONFIGURATION -----
+    # LOGGING CONFIGURATION 
     if not app.debug:
         app.logger.setLevel(logging.INFO)
         log_dir = os.path.join(BASE_DIR, "logs")
@@ -64,13 +64,15 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
-    # ----- IMPORT MODELS -----
+    # IMPORT MODELS 
     from app.models.donation import Donation  # ensure table creation
+    from app.models.story import Story  # ensure table creation
 
-    from app.routes import health_bp, donations_bp
+    from app.routes import health_bp, donations_bp, stories_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
+    app.register_blueprint(stories_bp)
 
     with app.app_context():
         db.create_all()
