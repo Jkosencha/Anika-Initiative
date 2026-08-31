@@ -11,8 +11,10 @@ and re-protect the admin routes in app/routes/donations.py.
 """
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_mail import Mail
 from flasgger import Swagger
 
 db = SQLAlchemy()
 cors = CORS()
 swagger = Swagger()
+mail = Mail()

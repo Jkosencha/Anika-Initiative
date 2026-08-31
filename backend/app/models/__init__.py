@@ -1,4 +1,5 @@
 from .user import User
-from app.models.donation import Donation   # adjust the import path if needed
+from app.models.donation import Donation  
+from .application import Application
 
-__all__ = ["User", "Donation"]
+__all__ = ["User", "Donation", "Application"]

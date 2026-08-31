@@ -23,6 +23,19 @@ class Config:
     DONATION_CALLBACK_URL = os.environ.get(
         "DONATION_CALLBACK_URL", "http://localhost:5173/donate/thank-you"
     )
+    # Flask-Mail
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', '1', 'yes']
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', '1', 'yes']
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@anika.org')
+
+    # Custom emails
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'dannymuthui118@gmail.com')
+    ORG_NOTIFICATION_EMAIL = os.environ.get('ORG_NOTIFICATION_EMAIL', ADMIN_EMAIL)
+    CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'mumod758@gmail.com')
 
     CORS_ORIGINS = [
         o.strip()

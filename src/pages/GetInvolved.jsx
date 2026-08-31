@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
+import { submitApplication } from '../lib/api'; // adjust this path if your project structure differs
 
 const roles = [
   {
@@ -102,7 +103,7 @@ const GetInvolved = () => {
     phone: "",
     organisation: "",
     country: "",
-    subject: "",
+    subject: "artist", // matches the default selectedRole below
     message: "",
   });
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
@@ -142,7 +143,7 @@ const GetInvolved = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -150,9 +151,21 @@ const GetInvolved = () => {
       isNewsletter ? "Subscribing you..." : "Sending your message...",
     );
 
-    setTimeout(() => {
+    try {
+      // submitApplication is API-first with a transparent local-store fallback,
+      // so this resolves even if the backend is unreachable (demo mode).
+      await submitApplication({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        organisation: formData.organisation || undefined,
+        country: formData.country || undefined,
+        subject: formData.subject || currentRole.subject,
+        message: formData.message || undefined,
+        whatsapp_opt_in: whatsappOptIn,
+      });
+
       toast.dismiss(loadingToast);
-      setIsSubmitting(false);
 
       const roleLabel = currentRole.label;
 
@@ -173,7 +186,7 @@ const GetInvolved = () => {
           <p className="text-xs text-gray-500 mt-1">
             {isNewsletter
               ? "You'll hear from us with stories, events and campaign updates."
-              : "We will get back to you within 48 hours."}
+              : "We will get back to you within 48 hours. Check your inbox for a confirmation email."}
           </p>
         </div>,
         {
@@ -188,11 +201,16 @@ const GetInvolved = () => {
         phone: "",
         organisation: "",
         country: "",
-        subject: "",
+        subject: currentRole.subject,
         message: "",
       });
       setWhatsappOptIn(false);
-    }, 2000);
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -261,9 +279,7 @@ const GetInvolved = () => {
             </div>
 
             <div className="mb-8">
-              <p className="text-sm font-semibold text-gray-700 mb-4">
-                I am joining as:
-              </p>
+             
               <div className="flex flex-wrap gap-6 justify-center md:justify-start">
                 {roles.map((role) => {
                   const Icon = role.icon;

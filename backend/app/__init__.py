@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, jsonify
 
 from config import Config, BASE_DIR
-from app.extensions import db, cors, swagger
+from app.extensions import db, cors, swagger, mail
 
 SWAGGER_TEMPLATE = {
     "swagger": "2.0",
@@ -41,6 +41,7 @@ def create_app(config_class=Config):
     app.config["SWAGGER"] = SWAGGER_CONFIG
     swagger.template = SWAGGER_TEMPLATE
     swagger.init_app(app)
+    mail.init_app(app)
 
     # ----- LOGGING CONFIGURATION -----
     if not app.debug:
@@ -64,13 +65,15 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
-    # ----- IMPORT MODELS -----
-    from app.models.donation import Donation  # ensure table creation
+   
+    from app.models.donation import Donation
+    from app.models.application import Application  # ensure table creation
 
-    from app.routes import health_bp, donations_bp
+    from app.routes import health_bp, donations_bp,applications_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
+    app.register_blueprint(applications_bp)
 
     with app.app_context():
         db.create_all()
