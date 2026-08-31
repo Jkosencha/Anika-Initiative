@@ -2,8 +2,8 @@ import { useState } from "react";
 import {
   Heart,
   Phone,
-  MessageCircle,
   CheckCircle,
+  XCircle,
   Gift,
   Users,
   Mic,
@@ -11,104 +11,135 @@ import {
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
-import Reveal from '../components/Reveal';
-import Counter from '../components/Counter';
+import Reveal from "../components/Reveal";
+import Counter from "../components/Counter";
+import { submitDonation } from "../lib/api";
 
 const DonationPage = () => {
+  const [donorName, setDonorName] = useState("");
+  const [email, setEmail] = useState("");
   const [donationAmount, setDonationAmount] = useState(500);
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [sendWhatsApp, setSendWhatsApp] = useState(false);
   const [donationMethod, setDonationMethod] = useState("mpesa");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
   const impactStats = [
-    {
-      icon: Users,
-      label: "ARTISTS SUPPORTED",
-      value: 150,
-      suffix: "+",
-      color: "text-[#eb4c47]",
-    },
-    {
-      icon: Mic,
-      label: "EVENTS HELD",
-      value: 100,
-      suffix: "+",
-      color: "text-[#389a51]",
-    },
-    {
-      icon: Globe,
-      label: "AFRICAN COUNTRIES",
-      value: 14,
-      suffix: "",
-      color: "text-[#e8a850]",
-    },
-    {
-      icon: Heart,
-      label: "LIVES IMPACTED",
-      value: 2500,
-      suffix: "+",
-      color: "text-[#3a7599]",
-    },
+    { icon: Users, label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-[#eb4c47]" },
+    { icon: Mic, label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
+    { icon: Globe, label: "AFRICAN COUNTRIES", value: 14, suffix: "", color: "text-[#e8a850]" },
+    { icon: Heart, label: "LIVES IMPACTED", value: 2500, suffix: "+", color: "text-[#3a7599]" },
   ];
 
   const handleAmountSelect = (amount) => {
     setDonationAmount(amount);
     setCustomAmount("");
   };
+
   const handleCustomAmount = (e) => {
     const value = e.target.value;
     setCustomAmount(value);
-    if (value) {
-      setDonationAmount(Number(value));
-    }
-  };
-  const handleDonate = () => {
-    if (donationMethod === "mpesa") {
-      if (!phoneNumber || phoneNumber.length < 9) {
-        toast.error("Howdy! Please enter a valid M-Pesa phone number.");
-        return;
-      }
-      const loadingToastId = toast.loading(
-        "Processing your M-Pesa donation..."
-      );
-      setTimeout(() => {
-        toast.dismiss(loadingToastId);
-        toast.success(
-          <div>
-            <p className="font-semibold">Thank You!</p>
-            <p className="text-sm">
-              Your donation of KES {donationAmount.toLocaleString()} was
-              successful.
-            </p>
-            <p className="text-xs mt-1">Receipt sent to your phone.</p>
-          </div>,
-          {
-            duration: 3000,
-            icon: <CheckCircle className="w-5 h-5 text-green-500" />,
-          }
-        );
-      }, 2000);
-    } else {
-      toast.info(
-        <div>
-          <p className="font-semibold">Redirecting to secure payment...</p>
-          <p className="text-sm">You will be taken to our USD payment page.</p>
-          <p className="text-xs mt-1">Amount: ${donationAmount.toFixed(2)}</p>
-        </div>,
-        {
-          duration: 3000,
-          icon: <CreditCard className="w-5 h-5 text-[#E6A15E]" />,
-        }
-      );
-    }
+    if (value) setDonationAmount(Number(value));
   };
 
-  const presetAmounts =
-    donationMethod === "mpesa" ? presetAmountsKES : presetMethodsUSD;
+  const handleDonate = async () => {
+    if (isSubmitting) return;
+
+    if (!donationAmount || donationAmount <= 0) {
+      toast.error("Please choose or enter a donation amount.");
+      return;
+    }
+    if (donationMethod === "mpesa" && (!phoneNumber || phoneNumber.length < 9)) {
+      toast.error("Please enter a valid M-Pesa phone number.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const loadingToastId = toast.loading(
+      donationMethod === "mpesa"
+        ? "Setting up your M-Pesa donation…"
+        : "Setting up your secure card payment…"
+    );
+
+    // --- FIX: explicitly set currency based on payment method ---
+    const currency = donationMethod === "mpesa" ? "KES" : "USD";
+
+    const { ok, source, record } = await submitDonation({
+      donor_name: donorName || "Anonymous",
+      email: email || undefined,
+      amount: donationAmount,
+      method: donationMethod, // 'mpesa' | 'card'
+      currency: currency,     // <-- now sending currency
+      phone: donationMethod === "mpesa" ? `254${phoneNumber.replace(/^0+/, "")}` : undefined,
+      send_whatsapp_receipt: sendWhatsApp,
+    });
+
+    toast.dismiss(loadingToastId);
+
+    if (!ok) {
+      toast.error("Something went wrong starting your donation. Please try again.", {
+        icon: <XCircle className="w-5 h-5 text-red-500" />,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (source === "local") {
+      // API was unreachable -- saved to the local demo store instead of a real charge.
+      toast.info(
+        <div>
+          <p className="font-semibold">Saved (demo mode)</p>
+          <p className="text-sm">
+            We couldn't reach the payment server, so this was saved locally instead of
+            actually charging you. Try again once the backend is running.
+          </p>
+        </div>,
+        { duration: 5000 }
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (record?.error) {
+      toast.error(
+        <div>
+          <p className="font-semibold">Couldn't start your donation</p>
+          <p className="text-sm">{record.error}</p>
+        </div>,
+        { duration: 5000, icon: <XCircle className="w-5 h-5 text-red-500" /> }
+      );
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (record?.authorization_url) {
+      toast.success(
+        <div>
+          <p className="font-semibold">Redirecting you to Paystack…</p>
+          <p className="text-sm">
+            Reference <span className="font-mono">{record.reference}</span> — complete{" "}
+            {donationMethod === "mpesa" ? "the STK push on your phone" : "your card details"} on
+            the next screen.
+          </p>
+        </div>,
+        { duration: 3000, icon: <CheckCircle className="w-5 h-5 text-green-500" /> }
+      );
+      setTimeout(() => {
+        window.location.href = record.authorization_url;
+      }, 900);
+      return;
+    }
+
+    // Shouldn't normally get here for mpesa/card, but just in case.
+    toast.success("Thank you for your donation!");
+    setIsSubmitting(false);
+  };
+
+  const presetAmounts = donationMethod === "mpesa" ? presetAmountsKES : presetMethodsUSD;
   const currencySymbol = donationMethod === "mpesa" ? "KES" : "USD";
   const currencyLabel = donationMethod === "mpesa" ? "KES" : "$";
 
@@ -123,18 +154,14 @@ const DonationPage = () => {
             className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
           />
           <div className="relative z-10 mx-auto max-w-6xl px-6">
-            <h1 className="text-5xl md:text-6xl font-display">
-              SUPPORT OUR WORK
-            </h1>
+            <h1 className="text-5xl md:text-6xl font-display">SUPPORT OUR WORK</h1>
             <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
-              Your gift keeps the rooms open, the mics on and the conversation
-              going
+              Your gift keeps the rooms open, the mics on and the conversation going
             </p>
           </div>
         </section>
       </Reveal>
 
-    
       <section className="py-12 bg-charcoal">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal className="max-w-5xl text-left">
@@ -147,16 +174,9 @@ const DonationPage = () => {
                       <Icon className={`w-6 h-6 ${stat.color}`} />
                     </div>
                     <div className={`text-2xl md:text-3xl font-display ${stat.color}`}>
-                      <Counter
-                        from={0}
-                        to={stat.value}
-                        duration={2}
-                        suffix={stat.suffix}
-                      />
+                      <Counter from={0} to={stat.value} duration={2} suffix={stat.suffix} />
                     </div>
-                    <div className={`mt-1 font-body text-xs text-cream/60`}>
-                      {stat.label}
-                    </div>
+                    <div className="mt-1 font-body text-xs text-cream/60">{stat.label}</div>
                   </div>
                 );
               })}
@@ -183,32 +203,24 @@ const DonationPage = () => {
                       <Gift className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-bold">
-                        Your support makes a direct impact
-                      </h4>
+                      <h4 className="font-bold">Your support makes a direct impact</h4>
                       <p className="text-sm text-gray-600">
-                        100% of your donation goes to programs, venues, artist
-                        stipends and safe spaces.
+                        100% of your donation goes to programs, venues, artist stipends and safe
+                        spaces.
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex items-center justify-center text-[#8a8074] overflow-hidden">
-                  <img
-                    src="/image6.jpg"
-                    alt="Spoken word"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src="/image6.jpg" alt="Spoken word" className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
 
             <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
               <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Choose your amount and preferred method.
-              </p>
+              <p className="text-sm text-gray-500 mb-6">Choose your amount and preferred method.</p>
 
               <div className="flex gap-2 mb-6 bg-gray-50 p-1 rounded-xl">
                 <button
@@ -222,15 +234,32 @@ const DonationPage = () => {
                   M-Pesa
                 </button>
                 <button
-                  onClick={() => setDonationMethod("usd")}
+                  onClick={() => setDonationMethod("card")}
                   className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                    donationMethod === "usd"
+                    donationMethod === "card"
                       ? "bg-[#E6A15E] text-[#1E1A18] shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  USD (Card / PayPal)
+                  USD (Card)
                 </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <input
+                  type="text"
+                  value={donorName}
+                  onChange={(e) => setDonorName(e.target.value)}
+                  placeholder="Your name (optional)"
+                  className="col-span-2 px-4 py-2 border-2 border-gray-200 rounded-xl outline-none focus:border-[#E6A15E] bg-cream/95"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email (for your receipt)"
+                  className="col-span-2 px-4 py-2 border-2 border-gray-200 rounded-xl outline-none focus:border-[#E6A15E] bg-cream/95"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-4">
@@ -264,55 +293,61 @@ const DonationPage = () => {
               </div>
 
               {donationMethod === "mpesa" && (
-                <>
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      M-PESA Phone Number
-                    </label>
-                    <div className="flex items-center border-2 border-gray-200 rounded-xl focus-within:border-[#E6A15E] focus-within:ring-2 focus-within:ring-[#E6A15E]/20 transition-all">
-                      <span className="pl-4 text-gray-500 font-medium">+254</span>
-                      <input
-                        type="tel"
-                        placeholder="712345678"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full p-3 pl-2 outline-none bg-cream/95"
-                      />
-                    </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    M-PESA Phone Number
+                  </label>
+                  <div className="flex items-center border-2 border-gray-200 rounded-xl focus-within:border-[#E6A15E] focus-within:ring-2 focus-within:ring-[#E6A15E]/20 transition-all">
+                    <span className="pl-4 text-gray-500 font-medium">+254</span>
+                    <input
+                      type="tel"
+                      placeholder="712345678"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full p-3 pl-2 outline-none bg-cream/95"
+                    />
                   </div>
-                </>
+                  <label className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={sendWhatsApp}
+                      onChange={(e) => setSendWhatsApp(e.target.checked)}
+                    />
+                    Send my receipt on WhatsApp too
+                  </label>
+                </div>
               )}
 
-              {donationMethod === "usd" && (
+              {donationMethod === "card" && (
                 <div className="mb-6 p-4 bg-[#FDF6EE] rounded-xl border border-[#E6DED5]">
                   <p className="text-sm text-gray-700">
-                    You will be redirected to our secure payment page to complete
-                    your USD donation.
+                    You'll be redirected to Paystack's secure checkout to complete your USD
+                    donation.
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    Amount: ${donationAmount.toFixed(2)} USD
+                    Amount: ${Number(donationAmount).toFixed(2)} USD
                   </p>
                 </div>
               )}
+
               <button
                 onClick={handleDonate}
-                className="w-full py-4 bg-[#1E1A18] hover:bg-[#3D3530] text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-[#1E1A18] hover:bg-[#3D3530] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
               >
                 {donationMethod === "mpesa" ? (
                   <>
-                    <Phone className="w-5 h-5" /> Donate KES{" "}
-                    {donationAmount.toLocaleString()}
+                    <Phone className="w-5 h-5" /> Donate KES {Number(donationAmount).toLocaleString()}
                   </>
                 ) : (
                   <>
-                    <CreditCard className="w-5 h-5" /> Donate $
-                    {donationAmount.toFixed(2)}
+                    <CreditCard className="w-5 h-5" /> Donate ${Number(donationAmount).toFixed(2)}
                   </>
                 )}
               </button>
               {donationMethod === "mpesa" && (
                 <p className="text-xs text-center text-gray-400 mt-3">
-                  STK push sent to your phone confirm.
+                  You'll get an STK push prompt on your phone to confirm.
                 </p>
               )}
             </div>
@@ -327,9 +362,7 @@ const DonationPage = () => {
               <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
                 Impact Stories
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold mt-2">
-                Where your support goes
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -339,8 +372,7 @@ const DonationPage = () => {
                 </div>
                 <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
                 <p className="text-sm text-gray-600">
-                  Monthly events where artists air the unsaid. Your support keeps
-                  the stage open.
+                  Monthly events where artists air the unsaid. Your support keeps the stage open.
                 </p>
               </div>
 
@@ -350,8 +382,7 @@ const DonationPage = () => {
                 </div>
                 <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
                 <p className="text-sm text-gray-600">
-                  Cross-border collaborations that bring African artists together
-                  to create.
+                  Cross-border collaborations that bring African artists together to create.
                 </p>
               </div>
 
@@ -361,8 +392,7 @@ const DonationPage = () => {
                 </div>
                 <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
                 <p className="text-sm text-gray-600">
-                  Therapy workshops and forums where hard conversations finally
-                  happen.
+                  Therapy workshops and forums where hard conversations finally happen.
                 </p>
               </div>
             </div>
