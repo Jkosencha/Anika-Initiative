@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { X, Search, Trash2, Pencil } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { X, Search, Trash2, Pencil, Eye } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 
-//configuring light adn dark teme toggling
+// Light/dark theme colors
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
@@ -29,12 +29,33 @@ const darkColors = {
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
+// Map source + subject to display type
+function getContactType(source, subject) {
+  if (source === 'donation') return 'Donor';
+  if (source === 'getinvolved') {
+    const map = {
+      'artist': 'Artist',
+      'volunteer': 'Volunteer',
+      'partnership': 'Partner',
+      'newsletter': 'Newsletter',
+      'event': 'Event Participant',
+      'other': 'Other'
+    };
+    return map[subject] || 'Volunteer';
+  }
+  return 'Volunteer';
+}
+
+// Style for each type
 const TYPE_STYLE = {
-  Artist: { bg: "#f6d9d9", text: "#b23b3b" },
   Donor: { bg: "#dcefe0", text: "#2d7a43" },
+  Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
+  Artist: { bg: "#f6d9d9", text: "#b23b3b" },
   Partner: { bg: "#dbe6f5", text: "#2f4a6b" },
   Youth: { bg: "#fbe6c8", text: "#b3760c" },
-  Volunteer: { bg: "#e3dcf0", text: "#6b4a8a" },
+  Newsletter: { bg: "#dbeaf5", text: "#2a6b8a" },
+  'Event Participant': { bg: "#f5e6d3", text: "#8a6b2a" },
+  Other: { bg: "#e8e8e8", text: "#666666" },
 };
 
 const MANUAL_SOURCES = [
@@ -61,75 +82,50 @@ function avatarColor(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-//dummy data seeed
-const SEED = [
-  {
-    id: 1,
-    name: "Daniel Muthui",
-    phone: "+254 712 345678",  
-    type: "Artist",
-    interest: "Arts & Culture",
-    country: "Kenya",
-    lastEngagement: "Registered · today",
-    source: "Website form",
-  },
-  {
-    id: 2,
-    name: "Brian Edward",
-    phone: "+254 723 456789",
-    type: "Donor",
-    interest: "General",
-    country: "Kenya",
-    lastEngagement: "Donated · 2 days ago",
-    source: "M-Pesa",
-  },
-  {
-    id: 3,
-    name: "Jennifer Kosencha",
-    phone: "+254 734 567890",
-    type: "Partner",
-    interest: "Arts & Culture",
-    country: "Kenya",
-    lastEngagement: "Enquiry · 3 hours ago",
-    source: "Website form",
-  },
-  {
-    id: 4,
-    name: "Lynette Murathimi",
-    phone: "+254 745 678901",
-    type: "Youth",
-    interest: "Youth & Migration",
-    country: "Uganda",
-    lastEngagement: "Registered · today",
-    source: "WhatsApp",
-  },
-  {
-    id: 6,
-    name: "James Nzuki",
-    phone: "+254 756 789012",
-    type: "Volunteer",
-    interest: "Governance",
-    country: "Kenya",
-    lastEngagement: "Enquiry · 2 days ago",
-    source: "Website form",
-  },
-];
+// Format date to "Registered · X days ago"
+function formatEngagement(dateStr) {
+  if (!dateStr) return "Registered";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  return `${diffDays} days ago`;
+}
 
-//csv int bttn
+// Get source label
+function getSourceLabel(source) {
+  if (source === "donation") return "Donation";
+  if (source === "getinvolved") return "Get Involved";
+  return source;
+}
+
+// CSV export
 function toCSV(rows) {
   const header = [
     "Name",
-    "Phone",                 
+    "Phone",
+    "Email",
     "Type",
-    "Interest",
-    "Country",
-    "Last engagement",
     "Source",
+    "Status",
+    "Registered",
+    "Country",
   ];
   const lines = rows.map((r) =>
-    [r.name, r.phone, r.type, r.interest, r.country, r.lastEngagement, r.source]
+    [
+      r.name,
+      r.phone || "",
+      r.email || "",
+      r.type,
+      r.source,
+      r.status || "",
+      r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
+      r.country || "",
+    ]
       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-      .join(","),
+      .join(",")
   );
   return [header.join(","), ...lines].join("\n");
 }
@@ -147,7 +143,7 @@ function downloadCSV(rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-// Pill now receives colors as a prop
+// Pill component
 function Pill({ active, children, onClick, colors }) {
   return (
     <button
@@ -164,6 +160,7 @@ function Pill({ active, children, onClick, colors }) {
   );
 }
 
+// Type badge
 function TypeBadge({ type }) {
   const s = TYPE_STYLE[type] || TYPE_STYLE.Volunteer;
   return (
@@ -171,19 +168,146 @@ function TypeBadge({ type }) {
       style={{ background: s.bg, color: s.text }}
       className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
     >
-      <span
-        style={{ background: s.text }}
-        className="w-1.5 h-1.5 rounded-full"
-      />
+      <span style={{ background: s.text }} className="w-1.5 h-1.5 rounded-full" />
       {type}
     </span>
   );
 }
 
-
-function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
+// View Contact Modal
+function ViewContactModal({ contact, onClose, colors }) {
   if (!contact) return null;
 
+  const dateStr = contact.created_at
+    ? new Date(contact.created_at).toLocaleString()
+    : "Unknown";
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+        }}
+        className="w-full max-w-lg rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div
+          className="flex items-center justify-between p-5 border-b"
+          style={{ borderColor: colors.border }}
+        >
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+            Contact Details
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-black/5"
+          >
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <div
+              style={{ background: avatarColor(contact.name) }}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+            >
+              {initials(contact.name)}
+            </div>
+            <div>
+              <div className="font-bold" style={{ color: colors.text }}>
+                {contact.name}
+              </div>
+              <div className="text-sm" style={{ color: colors.muted }}>
+                {contact.type}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Email:
+              </span>
+              <div style={{ color: colors.text }}>{contact.email || "—"}</div>
+            </div>
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Phone:
+              </span>
+              <div style={{ color: colors.text }}>{contact.phone || "—"}</div>
+            </div>
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Source:
+              </span>
+              <div style={{ color: colors.text }}>{contact.source}</div>
+            </div>
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Subject:
+              </span>
+              <div style={{ color: colors.text }}>{contact.subject || "—"}</div>
+            </div>
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Country:
+              </span>
+              <div style={{ color: colors.text }}>{contact.country || "—"}</div>
+            </div>
+            <div>
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Status:
+              </span>
+              <div style={{ color: colors.text }}>{contact.status || "new"}</div>
+            </div>
+            <div className="col-span-2">
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Registered:
+              </span>
+              <div style={{ color: colors.text }}>{dateStr}</div>
+            </div>
+            <div className="col-span-2">
+              <span className="font-semibold" style={{ color: colors.muted }}>
+                Message / Interest:
+              </span>
+              <div style={{ color: colors.text }} className="whitespace-pre-wrap">
+                {contact.interest || "—"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex justify-end p-4 border-t"
+          style={{ borderColor: colors.border }}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: colors.buttonBg,
+              color: colors.buttonText,
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Delete confirmation modal
+function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
+  if (!contact) return null;
   return (
     <div
       className="fixed inset-0 flex items-center justify-center p-4 z-50"
@@ -213,14 +337,12 @@ function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
             <X size={18} color={colors.muted} />
           </button>
         </div>
-
         <div className="p-5">
           <p style={{ color: colors.text }}>
             Are you sure you want to delete <strong>{contact.name}</strong>?
             This action cannot be undone.
           </p>
         </div>
-
         <div
           className="flex justify-end gap-2 p-4 border-t"
           style={{ borderColor: colors.border }}
@@ -239,10 +361,7 @@ function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
               onConfirm(contact.id);
               onClose();
             }}
-            style={{
-              background: "#b23b3b",
-              color: "#ffffff",
-            }}
+            style={{ background: "#b23b3b", color: "#ffffff" }}
             className="text-sm font-semibold px-4 py-2 rounded-full"
           >
             Delete
@@ -253,243 +372,79 @@ function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
   );
 }
 
-const emptyForm = {
-  name: "",
-  phone: "",   
-  type: "Artist",
-  interest: "",
-  country: "",
-  source: MANUAL_SOURCES[0],
-};
-
-// form for adding evvent
-function ContactModal({ initialValue, onClose, onSave, colors }) {
-  const [form, setForm] = useState(initialValue || emptyForm);
-  const isEdit = Boolean(initialValue);
-
-  function submit(e) {
-    e.preventDefault();
-    if (!form.name.trim()) return;
-    onSave({ ...form, id: initialValue ? initialValue.id : Date.now() });
-    onClose();
-  }
-
-  return (
-    <div
-      className="fixed inset-0 flex items-center justify-center p-4 z-50"
-      style={{ background: "rgba(20,18,15,0.45)" }}
-      onClick={onClose}
-    >
-      <form
-        onSubmit={submit}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: colors.panel,
-          border: `1px solid ${colors.border}`,
-        }}
-        className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
-      >
-        <div
-          className="flex items-center justify-between p-5 border-b"
-          style={{ borderColor: colors.border }}
-        >
-          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
-            {isEdit ? "Edit contact" : "Add contact"}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-black/5"
-          >
-            <X size={18} color={colors.muted} />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-3">
-          <div className="flex flex-col gap-1">
-            <label
-              className="text-xs font-semibold"
-              style={{ color: colors.muted }}
-            >
-              Name
-            </label>
-            <input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
-              placeholder="Full name or organisation"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label
-              className="text-xs font-semibold"
-              style={{ color: colors.muted }}
-            >
-              Phone
-            </label>
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
-              placeholder="+254 7XX XXX XXX"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label
-                className="text-xs font-semibold"
-                style={{ color: colors.muted }}
-              >
-                Type
-              </label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="px-3 py-2 rounded-lg text-sm outline-none"
-                style={{
-                  border: `1px solid ${colors.border}`,
-                  background: colors.inputBg,
-                  color: colors.text,
-                }}
-              >
-                {Object.keys(TYPE_STYLE).map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label
-                className="text-xs font-semibold"
-                style={{ color: colors.muted }}
-              >
-                Country
-              </label>
-              <input
-                value={form.country}
-                onChange={(e) => setForm({ ...form, country: e.target.value })}
-                className="px-3 py-2 rounded-lg text-sm outline-none"
-                style={{
-                  border: `1px solid ${colors.border}`,
-                  background: colors.inputBg,
-                  color: colors.text,
-                }}
-                placeholder="Kenya"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label
-              className="text-xs font-semibold"
-              style={{ color: colors.muted }}
-            >
-              Interest
-            </label>
-            <input
-              value={form.interest}
-              onChange={(e) => setForm({ ...form, interest: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
-              placeholder="Arts & Culture"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label
-              className="text-xs font-semibold"
-              style={{ color: colors.muted }}
-            >
-              Source
-            </label>
-            <select
-              value={form.source}
-              onChange={(e) => setForm({ ...form, source: e.target.value })}
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
-            >
-              {MANUAL_SOURCES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <span className="text-xs mt-0.5" style={{ color: colors.muted }}>
-              Event and WhatsApp contacts are captured automatically and aren't
-              logged here.
-            </span>
-          </div>
-        </div>
-
-        <div
-          className="flex justify-end gap-2 p-4 border-t"
-          style={{ borderColor: colors.border }}
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-sm font-semibold px-3 py-2"
-            style={{ color: colors.muted }}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            style={{
-              background: colors.buttonBg,
-              color: colors.buttonText,
-            }}
-            className="text-sm font-semibold px-4 py-2 rounded-full"
-          >
-            {isEdit ? "Save changes" : "Add contact"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
+// Main component
 export default function Contacts() {
-  // Get the current theme from AdminLayout via Outlet context
   const { theme } = useOutletContext();
-  const COLORS = theme === 'dark' ? darkColors : lightColors;
+  const COLORS = theme === "dark" ? darkColors : lightColors;
 
-  const [contacts, setContacts] = useState(SEED);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
-  // const [modalOpen, setModalOpen] = useState(false);   
-  // const [editing, setEditing] = useState(null);        
-  const [deleteTarget, setDeleteTarget] = useState(null);   
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewTarget, setViewTarget] = useState(null);
 
-  const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers"];
+  const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers", "Newsletter"];
   const tabToType = {
     Artists: "Artist",
     Youth: "Youth",
     Donors: "Donor",
     Partners: "Partner",
     Volunteers: "Volunteer",
+    Newsletter: "Newsletter",
+  };
+
+  // Fetch contacts
+  const fetchContacts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/contacts?per_page=100");
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      const data = await response.json();
+      const fetched = data.contacts || [];
+      const mapped = fetched.map((c) => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone || "",
+        email: c.email || "",
+        type: getContactType(c.source, c.subject),
+        interest: c.message || "",
+        country: c.country || "",
+        subject: c.subject || "",
+        source: getSourceLabel(c.source),
+        status: c.status || "new",
+        created_at: c.created_at,
+        lastEngagement: c.created_at
+          ? `Registered · ${formatEngagement(c.created_at)}`
+          : "Registered",
+      }));
+      setContacts(mapped);
+    } catch (err) {
+      console.error(err);
+      setError("Could not load contacts. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const deleteContact = async (id) => {
+    try {
+      const response = await fetch(`/api/contacts/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      setContacts((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete contact.");
+    }
   };
 
   const filtered = useMemo(() => {
@@ -500,35 +455,31 @@ export default function Contacts() {
       rows = rows.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
-          c.phone.toLowerCase().includes(q) ||  
+          (c.phone && c.phone.toLowerCase().includes(q)) ||
           c.interest.toLowerCase().includes(q) ||
-          c.country.toLowerCase().includes(q),
+          c.country.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q)
       );
     }
     return rows;
   }, [contacts, tab, query]);
 
-  // function saveContact(contact) {   
-  //   setContacts((prev) => {
-  //     const exists = prev.some((c) => c.id === contact.id);
-  //     if (exists)
-  //       return prev.map((c) =>
-  //         c.id === contact.id ? { ...c, ...contact } : c,
-  //       );
-  //     return [{ ...contact, lastEngagement: "Added · today" }, ...prev];
-  //   });
-  // }
+  const handleExport = () => {
+    if (filtered.length === 0) return;
+    downloadCSV(filtered, "contacts.csv");
+  };
 
-  function deleteContact(id) {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
-  }
+  // Helper to truncate text
+  const truncate = (text, maxLen = 50) => {
+    if (!text) return '—';
+    return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+  };
 
   return (
     <div
       style={{ background: COLORS.bg, minHeight: "100%" }}
       className="p-6 font-sans rounded-lg"
     >
-      {/* Added dynamic placeholder color for search input */}
       <style>{`
         .search-input::placeholder {
           color: ${COLORS.inputPlaceholder};
@@ -542,29 +493,12 @@ export default function Contacts() {
             Contacts
           </h1>
           <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
-            Everyone who registered, donated, applied or messaged ANIKA.
-            Searchable, filterable, exportable.
+            Everyone who donated, applied, or messaged ANIKA.
           </p>
         </div>
         <div className="flex gap-2">
-          {/* lets disale add btn */}
-          {/*
           <button
-            onClick={() => {
-              setEditing(null);
-              setModalOpen(true);
-            }}
-            style={{
-              background: COLORS.buttonBg,
-              color: COLORS.buttonText,
-            }}
-            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
-          >
-            + ADD CONTACT
-          </button>
-          */}
-          <button
-            onClick={() => downloadCSV(filtered, "contacts.csv")}
+            onClick={handleExport}
             style={{
               border: `1px solid ${COLORS.border}`,
               background: COLORS.panel,
@@ -580,7 +514,12 @@ export default function Contacts() {
       <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
         <div className="flex gap-2 flex-wrap">
           {tabs.map((t) => (
-            <Pill key={t} active={tab === t} onClick={() => setTab(t)} colors={COLORS}>
+            <Pill
+              key={t}
+              active={tab === t}
+              onClick={() => setTab(t)}
+              colors={COLORS}
+            >
               {t}
             </Pill>
           ))}
@@ -604,119 +543,125 @@ export default function Contacts() {
         </div>
       </div>
 
-      <div
-        style={{
-          background: COLORS.panel,
-          border: `1px solid ${COLORS.border}`,
-        }}
-        className="rounded-xl overflow-hidden overflow-x-auto"
-      >
-        <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[920px]"
-          style={{
-            color: COLORS.muted,
-            borderColor: COLORS.border,
-            gridTemplateColumns: "1.6fr 1.2fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
-          }}
-        >
-          <div>NAME</div>
-          <div>PHONE</div>        
-          <div>TYPE</div>
-          <div>INTEREST</div>
-          <div>COUNTRY</div>
-          <div>LAST ENGAGEMENT</div>
-          <div>SOURCE</div>
-          <div></div>
+      {loading && (
+        <div className="text-center py-10" style={{ color: COLORS.muted }}>
+          Loading contacts...
         </div>
+      )}
+      {error && (
+        <div className="text-center py-10 text-red-500">{error}</div>
+      )}
 
-        {filtered.length === 0 && (
+      {!loading && !error && (
+        <div
+          style={{
+            background: COLORS.panel,
+            border: `1px solid ${COLORS.border}`,
+          }}
+          className="rounded-xl overflow-hidden overflow-x-auto"
+        >
           <div
-            className="px-5 py-10 text-center text-sm"
-            style={{ color: COLORS.muted }}
-          >
-            No contacts match this view.
-          </div>
-        )}
-
-        {filtered.map((c) => (
-          <div
-            key={c.id}
-            className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[920px]"
+            className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[920px]"
             style={{
+              color: COLORS.muted,
               borderColor: COLORS.border,
               gridTemplateColumns: "1.6fr 1.2fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
             }}
           >
-            <div className="flex items-center gap-3">
-              <div
-                style={{ background: avatarColor(c.name) }}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-              >
-                {initials(c.name)}
-              </div>
-              <span
-                className="font-semibold text-sm"
-                style={{ color: COLORS.text }}
-              >
-                {c.name}
-              </span>
-            </div>
-            <div className="text-sm" style={{ color: COLORS.text }}>
-              {c.phone}
-            </div>
-            <div>
-              <TypeBadge type={c.type} />
-            </div>
-            <div className="text-sm" style={{ color: COLORS.text }}>
-              {c.interest}
-            </div>
-            <div className="text-sm" style={{ color: COLORS.text }}>
-              {c.country}
-            </div>
-            <div className="text-sm" style={{ color: "#2f4a6b" }}>
-              {c.lastEngagement}
-            </div>
-            <div className="text-sm" style={{ color: COLORS.text }}>
-              {c.source}
-            </div>
-            <div className="flex items-center justify-end gap-2">
-              {/* Edit and Delete buttons remain – edit button would try to open modal, but modal is disabled, so we keep them but they won't work, or we could comment them out too. But I'll keep them as is. */}
-              <button
-                onClick={() => {
-                  // setEditing(c);
-                  // setModalOpen(true);
-                  // If you want to completely disable editing, you can comment or show a toast.
-                  // I'll just leave a no-op for safety.
-                }}
-                className="p-1.5 rounded-lg hover:bg-black/5"
-                title="Edit (disabled)"
-              >
-                <Pencil size={14} color={COLORS.muted} />
-              </button>
-              <button
-                onClick={() => setDeleteTarget(c)}   // open delete confirmation
-                className="p-1.5 rounded-lg hover:bg-black/5"
-                title="Delete"
-              >
-                <Trash2 size={14} color="#b23b3b" />
-              </button>
-            </div>
+            <div>NAME</div>
+            <div>PHONE</div>
+            <div>TYPE</div>
+            <div>INTEREST</div>
+            <div>COUNTRY</div>
+            <div>LAST ENGAGEMENT</div>
+            <div>SOURCE</div>
+            <div></div>
           </div>
-        ))}
-      </div>
 
-      {/* Modal disabled
-      {modalOpen && (
-        <ContactModal
-          initialValue={editing}
-          onClose={() => setModalOpen(false)}
-          onSave={saveContact}
+          {filtered.length === 0 && (
+            <div
+              className="px-5 py-10 text-center text-sm"
+              style={{ color: COLORS.muted }}
+            >
+              No contacts match this view.
+            </div>
+          )}
+
+          {filtered.map((c) => (
+            <div
+              key={c.id}
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[920px]"
+              style={{
+                borderColor: COLORS.border,
+                gridTemplateColumns:
+                  "1.6fr 1.2fr 1fr 1.3fr 1fr 1.5fr 1fr 0.9fr",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  style={{ background: avatarColor(c.name) }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+                >
+                  {initials(c.name)}
+                </div>
+                <span
+                  className="font-semibold text-sm"
+                  style={{ color: COLORS.text }}
+                >
+                  {c.name}
+                </span>
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {c.phone}
+              </div>
+              <div>
+                <TypeBadge type={c.type} />
+              </div>
+              <div
+                className="text-sm"
+                style={{ color: COLORS.text }}
+                title={c.interest || ''}
+              >
+                {truncate(c.interest, 50)}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {c.country || "—"}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {c.lastEngagement}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {c.source}
+              </div>
+              <div className="flex items-center justify-end gap-1">
+                <button
+                  onClick={() => setViewTarget(c)}
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  title="View details"
+                >
+                  <Eye size={14} color={COLORS.muted} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(c)}
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  title="Delete"
+                >
+                  <Trash2 size={14} color="#b23b3b" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {viewTarget && (
+        <ViewContactModal
+          contact={viewTarget}
+          onClose={() => setViewTarget(null)}
           colors={COLORS}
         />
       )}
-      */}
 
-      {/* Delete confirmation modal */}
       {deleteTarget && (
         <DeleteConfirmModal
           contact={deleteTarget}

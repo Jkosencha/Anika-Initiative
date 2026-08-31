@@ -6,7 +6,7 @@ from flask import Flask, jsonify
 
 from config import Config, BASE_DIR
 from app.extensions import db, cors, swagger, mail
-from app.utils.cloudinary_config import init_cloudinary   # Cloudinary SDK setup
+from app.utils.cloudinary_config import init_cloudinary
 
 SWAGGER_TEMPLATE = {
     "swagger": "2.0",
@@ -43,10 +43,8 @@ def create_app(config_class=Config):
     swagger.init_app(app)
     mail.init_app(app)
 
-    # ----- Cloudinary (for gallery image storage) -----
-    init_cloudinary(app)   # configures cloudinary with CLOUDINARY_* env vars
+    init_cloudinary(app)
 
-    # ----- LOGGING CONFIGURATION -----
     if not app.debug:
         app.logger.setLevel(logging.INFO)
         log_dir = os.path.join(BASE_DIR, "logs")
@@ -68,21 +66,27 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
-   
     from app.models.donation import Donation
     from app.models.application import Application
     from app.models.gallery import GalleryImage
     from app.models.story import Story
-    from app.models.story import Story
+    from app.models.contact import Contact
 
-
-    from app.routes import health_bp, donations_bp, applications_bp, gallery_bp, stories_bp
+    from app.routes import (
+        health_bp,
+        donations_bp,
+        applications_bp,
+        gallery_bp,
+        stories_bp,
+        contacts_bp,
+    )
 
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
     app.register_blueprint(applications_bp)
     app.register_blueprint(gallery_bp)
     app.register_blueprint(stories_bp)
+    app.register_blueprint(contacts_bp)
 
     with app.app_context():
         db.create_all()

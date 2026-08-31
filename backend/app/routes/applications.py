@@ -4,6 +4,7 @@ from ..extensions import db
 from ..models import Application
 from ..models.application import STATUSES, SUBJECTS
 from ..utils.email import send_org_notification, send_user_confirmation, send_status_update_email
+from ..utils.contact_utils import create_contact_from_data
 
 applications_bp = Blueprint("applications", __name__, url_prefix="/api/applications")
 
@@ -105,13 +106,25 @@ def create_application():
     )
 
     db.session.add(entry)
+
+    # Create a contact record for the CRM (non‑blocking)
+    create_contact_from_data(
+        name=entry.name,
+        email=entry.email,
+        phone=entry.phone,
+        message=entry.message,
+        source='getinvolved',
+        subject=entry.subject,
+        country=entry.country,
+        status='new'
+    )
+
     db.session.commit()
     current_app.logger.info(
         "New application #%s created (email=%s, subject=%s)", entry.id, entry.email, subject
     )
 
-    # Email failures should never break the submission itself — the record is
-    # already saved and will show up on the dashboard regardless.
+    # Email failures should never break the submission itself
     try:
         send_org_notification(entry)
     except Exception:

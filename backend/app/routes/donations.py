@@ -15,6 +15,7 @@ from app.services.paystack import (
 )
 from app.utils.validation import load_json_or_400
 from app.schemas.donation_schema import create_donation_schema, update_donation_schema
+from app.utils.contact_utils import create_contact_from_data
 
 donations_bp = Blueprint("donations", __name__, url_prefix="/api/donations")
 
@@ -36,7 +37,7 @@ def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
         f"Reference: {reference}\n"
         "Your support keeps the rooms open."
     )
-    # willl replace with actual WhatsApp API call (Twilio, etc.)
+    # will be replaced with actual WhatsApp API call (Twilio, etc.)
     print(f"📱 WhatsApp receipt to {phone}: {message}")
     logger.info(f"WhatsApp receipt sent to {phone} for reference {reference}")
 
@@ -144,6 +145,18 @@ def create_donation():
             paid_at=datetime.utcnow() if data["status"] == "Completed" else None,
         )
         db.session.add(donation)
+
+        create_contact_from_data(
+            name=donor_name,
+            email=data.get("email"),
+            phone=phone,
+            message=None,
+            source='donation',
+            subject=None,
+            country=None,
+            status='new'
+        )
+
         db.session.commit()
         logger.info("Manual donation recorded: ref=%s, amount=%s", donation.reference, amount)
         return jsonify(donation.to_dict()), 201
@@ -170,6 +183,18 @@ def create_donation():
         send_whatsapp_receipt=bool(data.get("send_whatsapp_receipt")),
     )
     db.session.add(donation)
+
+    create_contact_from_data(
+        name=donor_name,
+        email=email,
+        phone=phone,
+        message=None,
+        source='donation',
+        subject=None,
+        country=None,
+        status='new'
+    )
+
     db.session.commit()
 
     try:
