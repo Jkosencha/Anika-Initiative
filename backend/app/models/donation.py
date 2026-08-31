@@ -34,7 +34,7 @@ class Donation(db.Model):
     gateway_response = db.Column(db.String(255), nullable=True)
     send_whatsapp_receipt = db.Column(db.Boolean, nullable=False, default=False)
 
-    recorded_by_id = db.Column(db.Integer, nullable=True)   # no foreign key
+    recorded_by_id = db.Column(db.Integer, nullable=True)   
 
     paid_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)

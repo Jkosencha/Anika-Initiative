@@ -36,7 +36,7 @@ def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
         f"Reference: {reference}\n"
         "Your support keeps the rooms open."
     )
-    # Replace with actual WhatsApp API call (Twilio, etc.)
+    # willl replace with actual WhatsApp API call (Twilio, etc.)
     print(f"📱 WhatsApp receipt to {phone}: {message}")
     logger.info(f"WhatsApp receipt sent to {phone} for reference {reference}")
 
@@ -68,10 +68,6 @@ def _apply_paystack_result(donation: Donation, data: dict) -> None:
     else:
         donation.status = "Pending"
 
-
-# ---------------------------------------------------------------------------
-# COLLECTION ROUTES
-# ---------------------------------------------------------------------------
 
 @donations_bp.post("")
 def create_donation():

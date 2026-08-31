@@ -65,15 +65,15 @@ const DonationPage = () => {
         : "Setting up your secure card payment…"
     );
 
-    // --- FIX: explicitly set currency based on payment method ---
+    
     const currency = donationMethod === "mpesa" ? "KES" : "USD";
 
     const { ok, source, record } = await submitDonation({
       donor_name: donorName || "Anonymous",
       email: email || undefined,
       amount: donationAmount,
-      method: donationMethod, // 'mpesa' | 'card'
-      currency: currency,     // <-- now sending currency
+      method: donationMethod,
+      currency: currency,     
       phone: donationMethod === "mpesa" ? `254${phoneNumber.replace(/^0+/, "")}` : undefined,
       send_whatsapp_receipt: sendWhatsApp,
     });

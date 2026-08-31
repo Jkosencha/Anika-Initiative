@@ -4,12 +4,6 @@ import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE } from "../lib/api";
 
-// Route this at whatever path matches DONATION_CALLBACK_URL in the backend .env,
-// e.g. <Route path="/donate/thank-you" element={<DonationThankYou />} />
-//
-// This calls GET /api/donations/verify/<reference> directly rather than through
-// the generic api.js helpers, since it's a Paystack-specific route, not one of
-// the standard collection endpoints (POST/GET/PATCH/DELETE /api/donations).
 
 export default function DonationThankYou() {
   const [searchParams] = useSearchParams();

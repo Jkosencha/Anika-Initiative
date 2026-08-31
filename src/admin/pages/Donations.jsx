@@ -3,8 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-// Adjust this path to wherever lib/api.js actually lives relative to this file
-// (it was "../../lib/api" in the original component).
+
 import { fetchDonations, submitDonation, updateDonation } from "../../lib/api";
 
 const lightColors = {
