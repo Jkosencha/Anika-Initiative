@@ -4,7 +4,8 @@ import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 
-import { fetchDonations, submitDonation, updateDonation } from "../../lib/api";
+// We only need fetchDonations and submitDonation now – no updateDonation
+import { fetchDonations, submitDonation } from "../../lib/api";
 
 const lightColors = {
   bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
@@ -251,20 +252,6 @@ export default function Donations() {
     }
   }
 
-  async function cycleStatus(id) {
-    const current = donations.find((d) => d.id === id);
-    if (!current) return;
-    const order = ["Pending", "Completed", "Failed"];
-    const next = order[(order.indexOf(current.status) + 1) % order.length];
-
-    const { ok, record } = await updateDonation(id, { status: next });
-    if (ok && record && !record.error) {
-      setDonations((prev) => prev.map((d) => (d.id === id ? record : d)));
-    } else {
-      toast.error("Couldn't update that donation's status.");
-    }
-  }
-
   function fmt(n) {
     return `KES ${Number(n || 0).toLocaleString()}`;
   }
@@ -383,15 +370,14 @@ export default function Donations() {
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {formatLocalDate(d.created_at)}
               </div>
-              <button
-                onClick={() => cycleStatus(d.id)}
+              {/* ---- STATUS BADGE – STATIC, NO CLICK ---- */}
+              <div
                 style={{ background: s.bg, color: s.text }}
                 className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                title="Click to change status"
               >
                 <span style={{ background: s.text }} className="w-1.5 h-1.5 rounded-full" />
                 {d.status}
-              </button>
+              </div>
             </div>
           );
         })}
