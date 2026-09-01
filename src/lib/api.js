@@ -26,6 +26,7 @@ const KIND_COLLECTION = {
   whatsappInbox: 'whatsapp-inbox',
   whatsappBroadcast: 'whatsapp-broadcasts',
   whatsappSettings: 'whatsapp-settings',
+  team: 'team',
 };
 const COLLECTION_KIND = Object.fromEntries(
   Object.entries(KIND_COLLECTION).map(([k, v]) => [v, k])
@@ -58,6 +59,7 @@ const STORE_COLLECTION = {
   whatsappInbox: 'whatsAppInbox',
   whatsappBroadcast: 'whatsAppBroadcasts',
   whatsappSettings: 'whatsAppSettings',
+  team: 'team',
 };
 
 /** Fetch a collection from the API; fall back to the local store. */
@@ -193,6 +195,37 @@ export function updateDonation(id, patch) {
 }
 export function deleteDonation(id) {
   return removeRecord('donation', id);
+}
+
+/**
+ * The real backend (Donation.to_dict) and the local fallback seed use different
+ * field names (donor/created_at vs name/createdAt, and only the backend has a
+ * status). This gives callers one consistent shape regardless of source.
+ */
+export function normalizeDonation(d) {
+  return {
+    id: d.id,
+    name: d.donor ?? d.name ?? 'Anonymous',
+    amount: Number(d.amount) || 0,
+    currency: d.currency ?? 'KES',
+    method: d.method ?? 'manual',
+    status: d.status ?? 'Completed',
+    createdAt: d.created_at ?? d.createdAt ?? null,
+  };
+}
+
+// --- Team --------------------------------------------------------------------
+export function fetchTeam() {
+  return fetchCollection('team');
+}
+export function addTeamMember(payload) {
+  return submit('team', payload);
+}
+export function updateTeamMember(id, patch) {
+  return patchRecord('team', id, patch);
+}
+export function deleteTeamMember(id) {
+  return removeRecord('team', id);
 }
 
 export async function fetchMetrics() {
