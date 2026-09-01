@@ -11,7 +11,6 @@ import AdminGallery from '../pages/AdminGallery';
 import Partners from '../pages/Partners';
 import Stories from '../pages/stories/Stories';
 import Settings from '../pages/Settings';
-import ComingSoon from '../pages/ComingSoon';
 import { PAGE_ACCESS } from '../access';
 import WhatsAppBroadcast from '../pages/WhatsAppBroadcast';
 import WhatsAppInbox from '../pages/WhatsAppInbox';
@@ -36,7 +35,6 @@ export default function AdminRoutes() {
         <Route path="whatsapp/broadcast" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappBroadcast}><WhatsAppBroadcast /></ProtectedRoute>} />
         <Route path="whatsapp/inbox" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappInbox}><WhatsAppInbox /></ProtectedRoute>} />
         <Route path="whatsapp/assistant" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.whatsappAssistant}><WhatsAppAssistant /></ProtectedRoute>} />
-        <Route path="messages" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.messages}><ComingSoon title="Messages" /></ProtectedRoute>} />
         <Route path="donations" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.donations}><Donations /></ProtectedRoute>} />
         <Route path="impact" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.impact}><Impact /></ProtectedRoute>} />
         <Route path="reports" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.reports}><Reports /></ProtectedRoute>} />

@@ -10,7 +10,6 @@ import {
   Megaphone,
   Inbox,
   Bot,
-  MessagesSquare,
   DollarSign,
   BarChart3,
   FileBarChart,
@@ -45,7 +44,6 @@ export const navSections = [
       { label: 'Gallery', to: '/admin/gallery', icon: Image, allowedRoles: PAGE_ACCESS.gallery },
       { label: 'WhatsApp broadcast', to: '/admin/whatsapp/broadcast', icon: Megaphone, allowedRoles: PAGE_ACCESS.whatsappBroadcast },
       { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badge: 3, badgeAccent: true, allowedRoles: PAGE_ACCESS.whatsappInbox },
-      { label: 'Messages', to: '/admin/messages', icon: MessagesSquare, badge: 5, badgeAccent: true, allowedRoles: PAGE_ACCESS.messages },
     ],
   },
   {

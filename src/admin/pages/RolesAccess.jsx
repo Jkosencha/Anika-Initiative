@@ -26,7 +26,6 @@ const LABEL_TO_KEY = {
   Gallery: 'gallery',
   'WhatsApp broadcast': 'whatsappBroadcast',
   'WhatsApp inbox': 'whatsappInbox',
-  Messages: 'messages',
   Contributions: 'donations',
   Impact: 'impact',
   Reports: 'reports',

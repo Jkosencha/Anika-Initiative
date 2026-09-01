@@ -21,7 +21,6 @@ export const DEFAULT_PAGE_ACCESS = {
   whatsappBroadcast: [LEADERSHIP, COMMS],
   whatsappInbox: [LEADERSHIP, COMMS],
   whatsappAssistant: [LEADERSHIP, COMMS],
-  messages: [LEADERSHIP, COMMS, PROGRAMS],
   donations: [LEADERSHIP, MEL],
   impact: [LEADERSHIP, COMMS, MEL],
   reports: [LEADERSHIP, MEL],
