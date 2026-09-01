@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, ChevronDown, Trash2 } from "lucide-react";
+import { X, ChevronDown, Trash2, Search } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import { fetchApplications } from "../../lib/api";
+import { toast } from "sonner";
+import {
+  fetchApplications,
+  updateApplication,
+  deleteApplication,
+} from "../../lib/api";
 
 // configuring light and dark theme
 const lightColors = {
@@ -54,50 +59,11 @@ function avatarColor(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-const SEED = [
-  {
-    id: 1,
-    name: "Joan Mueni",
-    programme: "Gaining Grip (Enterprise)",
-    submitted: "Today",
-    status: "New",
-    email: "joan.mueni@example.com",
-    phone: "+254 7•• ••• 214",
-    summary:
-      "Requesting enterprise support to scale a handmade leather-goods workshop that currently employs three young women in Kayole.",
-    experience: "3 years running an informal shoe-repair and leatherwork stall.",
-  },
-  {
-    id: 2,
-    name: "Sam Kariuki",
-    programme: "Try My Shoe (Scripts)",
-    submitted: "Yesterday",
-    status: "Shortlisted",
-    email: "sam.kariuki@example.com",
-    phone: "+254 7•• ••• 887",
-    summary:
-      "Submitted a short film script exploring youth unemployment in Mathare, seeking script development support.",
-    experience: "Wrote and directed two short films screened at local festivals.",
-  },
-  {
-    id: 3,
-    name: "Amina Wanjiru",
-    programme: "Art Therapy Facilitation",
-    submitted: "3 days ago",
-    status: "Accepted",
-    email: "amina.wanjiru@example.com",
-    phone: "+254 7•• ••• 043",
-    summary:
-      "Trained facilitator applying to run weekly art-therapy sessions for displaced youth across two counties.",
-    experience: "Certified art therapist, 5 years facilitating community workshops.",
-  },
-];
-
 function toCSV(rows) {
   const header = ["Applicant", "Programme", "Submitted", "Status", "Email", "Phone"];
   const lines = rows.map((r) =>
     [r.name, r.programme, r.submitted, r.status, r.email, r.phone]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
       .join(",")
   );
   return [header.join(","), ...lines].join("\n");
@@ -145,7 +111,7 @@ function StatusBadge({ status }) {
   );
 }
 
-// ----- Delete Confirmation Modal (new) -----
+
 function DeleteConfirmModal({ app, onClose, onConfirm, colors }) {
   if (!app) return null;
 
@@ -335,20 +301,46 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete, colors }) {
 }
 
 export default function Applications() {
-  // taking theme and searchquery from outlet context
+
   const { theme, searchQuery } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
-  const [applications, setApplications] = useState(SEED);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [tab, setTab] = useState("All");
   const [reviewing, setReviewing] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);   // for delete confirmation
-  // const [showNewForm, setShowNewForm] = useState(false);   // <-- commented out
-  // const [form, setForm] = useState({ name: "", programme: "" }); // <-- commented out
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
 
   const tabs = ["All", "New", "Shortlisted", "Accepted"];
 
-  // filter ya search
+  // Load applications from the backend on mount.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        // fetchApplications() is API-first with a local-store fallback, so
+        // this resolves { ok, source, rows } — source is 'api' or 'local'.
+        const { rows } = await fetchApplications();
+        if (!cancelled) setApplications(rows || []);
+      } catch (err) {
+        if (!cancelled) setLoadError(err.message || "Failed to load applications.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // filter based on tab, global search (from context), and local search bar
   const filtered = useMemo(() => {
     let result = applications;
 
@@ -357,46 +349,55 @@ export default function Applications() {
       result = result.filter((a) => a.status === tab);
     }
 
-    // filter by searcg
+    // filter by global search (from context, e.g. from a main search)
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
         (a) =>
           a.name.toLowerCase().includes(q) ||
-          a.programme.toLowerCase().includes(q)
+          (a.programme || "").toLowerCase().includes(q)
+      );
+    }
+
+    // filter by local search bar (on this page)
+    if (localSearchTerm.trim()) {
+      const q = localSearchTerm.toLowerCase().trim();
+      result = result.filter(
+        (a) =>
+          a.name.toLowerCase().includes(q) ||
+          (a.programme || "").toLowerCase().includes(q)
       );
     }
 
     return result;
-  }, [applications, tab, searchQuery]);
+  }, [applications, tab, searchQuery, localSearchTerm]);
 
-  function updateStatus(id, status) {
+  async function updateStatus(id, status) {
+    const previous = applications;
+    // optimistic update
     setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
     setReviewing((prev) => (prev && prev.id === id ? { ...prev, status } : prev));
+
+    // updateApplication() is API-first with a local-store fallback, so it
+    // resolves { ok, source, record } rather than throwing.
+    const result = await updateApplication(id, { status });
+    if (!result?.ok) {
+      setApplications(previous); // roll back on failure
+      toast.error("Failed to update status.");
+    }
   }
 
-  function deleteApp(id) {
+  async function deleteApp(id) {
+    const previous = applications;
+    // optimistic update
     setApplications((prev) => prev.filter((a) => a.id !== id));
-  }
 
-  // function addApplication(e) {  
-  //   e.preventDefault();
-  //   if (!form.name.trim() || !form.programme.trim()) return;
-  //   const newApp = {
-  //     id: Date.now(),
-  //     name: form.name.trim(),
-  //     programme: form.programme.trim(),
-  //     submitted: "Today",
-  //     status: "New",
-  //     email: "-",
-  //     phone: "-",
-  //     summary: "No summary submitted yet.",
-  //     experience: "-",
-  //   };
-  //   setApplications((prev) => [newApp, ...prev]);
-  //   setForm({ name: "", programme: "" });
-  //   setShowNewForm(false);
-  // }
+    const result = await deleteApplication(id);
+    if (!result?.ok) {
+      setApplications(previous); // roll back on failure
+      toast.error("Failed to delete application.");
+    }
+  }
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
@@ -413,22 +414,30 @@ export default function Applications() {
             Applications
           </h1>
           <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
-            Artist, workshop and fellowship applications to review.
+            Volunteer, artist, partner and newsletter submissions from the Get Involved form.
           </p>
         </div>
-        <div className="flex gap-2">
-          {/* application button removed
-          <button
-            onClick={() => setShowNewForm((v) => !v)}
-            style={{
-              background: COLORS.buttonBg,
-              color: COLORS.buttonText,
-            }}
-            className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
-          >
-            + NEW APPLICATION
-          </button>
-          */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{ color: COLORS.muted }}
+            />
+            <input
+              type="text"
+              placeholder="Search by name or programme..."
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
+              style={{
+                background: COLORS.inputBg,
+                color: COLORS.text,
+                border: `1px solid ${COLORS.border}`,
+                paddingLeft: "2.5rem",
+              }}
+              className="w-48 md:w-64 rounded-lg border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#E6A15E]/50"
+            />
+          </div>
           <button
             onClick={() => downloadCSV(filtered, "applications.csv")}
             style={{
@@ -442,67 +451,6 @@ export default function Applications() {
           </button>
         </div>
       </div>
-
-      {/* commenting out applicationn form
-      {showNewForm && (
-        <form
-          onSubmit={addApplication}
-          style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
-          className="rounded-xl p-4 mb-5 flex flex-wrap gap-3 items-end"
-        >
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
-              Applicant name
-            </label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="app-input px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${COLORS.border}`,
-                background: COLORS.inputBg,
-                color: COLORS.text,
-              }}
-              placeholder="e.g. Peter Otieno"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: COLORS.muted }}>
-              Programme
-            </label>
-            <input
-              value={form.programme}
-              onChange={(e) => setForm({ ...form, programme: e.target.value })}
-              className="app-input px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${COLORS.border}`,
-                background: COLORS.inputBg,
-                color: COLORS.text,
-              }}
-              placeholder="e.g. Gaining Grip (Enterprise)"
-            />
-          </div>
-          <button
-            type="submit"
-            style={{
-              background: COLORS.buttonBg,
-              color: COLORS.buttonText,
-            }}
-            className="text-sm font-semibold px-4 py-2 rounded-lg"
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowNewForm(false)}
-            className="text-sm font-semibold px-3 py-2"
-            style={{ color: COLORS.muted }}
-          >
-            Cancel
-          </button>
-        </form>
-      )}
-      */}
 
       <div className="flex gap-2 mb-5 flex-wrap">
         {tabs.map((t) => (
@@ -534,61 +482,74 @@ export default function Applications() {
           <div></div>
         </div>
 
-        {filtered.length === 0 && (
+        {loading && (
+          <div className="px-5 py-10 text-center text-sm" style={{ color: COLORS.muted }}>
+            Loading applications...
+          </div>
+        )}
+
+        {!loading && loadError && (
+          <div className="px-5 py-10 text-center text-sm" style={{ color: "#b23b3b" }}>
+            {loadError} — is the backend running on localhost:5000?
+          </div>
+        )}
+
+        {!loading && !loadError && filtered.length === 0 && (
           <div className="px-5 py-10 text-center text-sm" style={{ color: COLORS.muted }}>
             No applications match the current filter.
           </div>
         )}
 
-        {filtered.map((app) => (
-          <div
-            key={app.id}
-            className="grid items-center px-5 py-4 border-b last:border-b-0"
-            style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 2fr 1fr 1fr 0.8fr" }}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                style={{ background: avatarColor(app.name) }}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-              >
-                {initials(app.name)}
+        {!loading &&
+          !loadError &&
+          filtered.map((app) => (
+            <div
+              key={app.id}
+              className="grid items-center px-5 py-4 border-b last:border-b-0"
+              style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 2fr 1fr 1fr 0.8fr" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  style={{ background: avatarColor(app.name) }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+                >
+                  {initials(app.name)}
+                </div>
+                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                  {app.name}
+                </span>
               </div>
-              <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
-                {app.name}
-              </span>
+              <div className="text-sm" style={{ color: COLORS.muted }}>
+                {app.programme}
+              </div>
+              <div className="text-sm" style={{ color: COLORS.text }}>
+                {app.submitted}
+              </div>
+              <div>
+                <StatusBadge status={app.status} />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setReviewing(app)}
+                  style={{
+                    border: `1px solid ${COLORS.border}`,
+                    background: COLORS.panel,
+                    color: COLORS.text,
+                  }}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                >
+                  Review
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(app)}
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  title="Delete application"
+                >
+                  <Trash2 size={14} color="#b23b3b" />
+                </button>
+              </div>
             </div>
-            <div className="text-sm" style={{ color: "#2f4a6b" }}>
-              {app.programme}
-            </div>
-            <div className="text-sm" style={{ color: COLORS.text }}>
-              {app.submitted}
-            </div>
-            <div>
-              <StatusBadge status={app.status} />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setReviewing(app)}
-                style={{
-                  border: `1px solid ${COLORS.border}`,
-                  background: COLORS.panel,
-                  color: COLORS.text,
-                }}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-              >
-                Review
-              </button>
-              {/* Delete icon – opens confirmation modal */}
-              <button
-                onClick={() => setDeleteTarget(app)}
-                className="p-1.5 rounded-lg hover:bg-black/5"
-                title="Delete application"
-              >
-                <Trash2 size={14} color="#b23b3b" />
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       <ReviewModal
@@ -599,7 +560,6 @@ export default function Applications() {
         colors={COLORS}
       />
 
-      {/* Delete confirmation modal */}
       {deleteTarget && (
         <DeleteConfirmModal
           app={deleteTarget}

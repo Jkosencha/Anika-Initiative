@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import Reveal from './Reveal';
 import { 
   Calendar as CalendarIcon, 
   Clock as ClockIcon, 
@@ -137,29 +138,32 @@ export default function EventsList() {
     <div className="bg-[#FFF] min-h-screen text-gray-900 font-sans">
       
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
-        <img
-          src="/anika-blue-blob.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 object-contain opacity-80 md:h-80 md:w-80"
-        />
-        <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6">
-          <div>
-            <h1 className="font-display text-5xl uppercase md:text-6xl">
-              EVENTS
-            </h1>
-            <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
-              Performances, forums, workshops, spaces where things that have been waiting to be said, get said.
-            </p>
+      <Reveal>
+        <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
+          <img
+            src="/anika-blue-blob.png"
+            alt=""
+            aria-hidden="true"
+            className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
+          />
+          <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6">
+            <div>
+              <h1 className="font-display text-5xl uppercase md:text-6xl">
+                EVENTS
+              </h1>
+              <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
+                Performances, forums, workshops, spaces where things that have been waiting to be said, get said.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Reveal>
 
       {/* 2. MAIN CONTAINER */}
       <main className="mx-auto max-w-6xl space-y-12 px-6 py-12">
 
         {/* 2A. UPCOMING FEATURED EVENT */}
+        <Reveal>
         <section>
           <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block mb-3">
             UPCOMING EVENT
@@ -211,9 +215,11 @@ export default function EventsList() {
             </div>
           )}
         </section>
+        </Reveal>
 
 
         {/* 2B. OTHER EVENTS SECTION */}
+        <Reveal>
         <section className="space-y-6">
           <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block">
             OTHER EVENTS
@@ -312,6 +318,7 @@ export default function EventsList() {
           </div>
 
         </section>
+        </Reveal>
 
       </main>
     </div>

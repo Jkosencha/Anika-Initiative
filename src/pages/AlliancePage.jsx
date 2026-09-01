@@ -31,18 +31,18 @@ export default function AlliancePage() {
 
   return (
     <main className="min-h-screen bg-cream">
-      <section className="relative overflow-hidden bg-charcoal py-16 text-cream md:py-24">
+      <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
         <img
           src="/anika-blue-blob.png"
           alt=""
           aria-hidden="true"
           className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
         />
-        <Reveal className='relative z-10 mx-auto max-w-6xl px-6'>
-          <h1 className="mt-4 max-w-3xl font-display text-5xl uppercase leading-[0.95] sm:text-7xl">
+        <Reveal className="relative z-10 mx-auto max-w-6xl px-6">
+          <h1 className="font-display text-5xl uppercase leading-tight sm:text-6xl">
             Pan-African Arts Alliance
           </h1>
-          <p className="font-editorial italic text-gold mt-4 max-w-md text-lg">
+          <p className="mt-4 max-w-md font-editorial text-lg italic text-gold">
             A living network for artists, cultural organisations, enablers and institutions
             building work that crosses borders.
           </p>

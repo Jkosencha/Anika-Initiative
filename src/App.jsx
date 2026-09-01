@@ -11,28 +11,17 @@ import Impact from './pages/Impact'
 import Stories from './pages/Stories'
 import StoryDetail from './pages/StoryDetail'
 import Gallery from './pages/Gallery'
+import DonationThankYou from './pages/DonationThankYou'
 import GetInvolved from './pages/GetInvolved'
 import Donate from './pages/Donate'
 import AlliancePage from './pages/AlliancePage'
 import {Toaster} from "sonner";
 import ScrollToTop from './components/ScrollToTop'
 import WhatsAppFab from './components/WhatsAppFab'
-import AdminLayout from './admin/layout/AdminLayout'
-import AdminDashboard from './admin/pages/Dashboard'
-import AdminTeam from './admin/pages/Team'
-import AdminRolesAccess from './admin/pages/RolesAccess'
-import AdminComingSoon from './admin/pages/ComingSoon'
-import Contacts from './admin/pages/Contacts';
-import Application from './admin/pages/Application'
-import Donations from './admin/pages/Donations'
-import AdminGallery from './admin/pages/AdminGallery'
-import Partners from './admin/pages/Partners'
-import StoriesAdmin from './admin/pages/stories/Stories'
-import Settings from './admin/pages/Settings'
-import AdminEvents from './admin/pages/Events'
-import AdminRegistrations from './admin/pages/Registrations'
-import WhatsAppBroadcast from './admin/pages/WhatsAppBroadcast'
-import WhatsAppInbox from './admin/pages/WhatsAppInbox'
+import { AuthProvider } from './admin/auth/AuthContext'
+import Login from './admin/pages/Login'
+import ProtectedRoute from './admin/auth/ProtectedRoute'
+import AdminRoutes from './admin/pages/AdminRoutes'
 
 function SiteLayout() {
   return (
@@ -52,6 +41,7 @@ function SiteLayout() {
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/donate" element={<Donate />} />
           <Route path="/alliance" element={<AlliancePage />} />
+          <Route path="/donate/thank-you" element={<DonationThankYou />} />
         </Routes>
       </main>
       <Footer />
@@ -62,32 +52,24 @@ function SiteLayout() {
 
 function App() {
   return (
-    <PartnerProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="contacts" element={<Contacts/>} />
-          <Route path="partners" element={<Partners />} />
-          <Route path="events" element={<AdminEvents />} />
-          <Route path="registrations" element={<AdminRegistrations />} />
-          <Route path="applications" element={<Application />} />
-          <Route path="stories" element={<StoriesAdmin />} />
-          <Route path="gallery" element={<AdminGallery />} />
-          <Route path="whatsapp/broadcast" element={<WhatsAppBroadcast />} />
-          <Route path="whatsapp/inbox" element={<WhatsAppInbox />} />
-          <Route path="messages" element={<AdminComingSoon title="Messages" />} />
-          <Route path="donations" element={<Donations />} />
-          <Route path="impact" element={<AdminComingSoon title="Impact" />} />
-          <Route path="reports" element={<AdminComingSoon title="Reports" />} />
-          <Route path="team" element={<AdminTeam />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="roles" element={<AdminRolesAccess />} />
-        </Route>
-        <Route path="/*" element={<SiteLayout />} />
-      </Routes>
-      <Toaster richColors position="top-right" />
-    </PartnerProvider>
+    <AuthProvider>
+      <PartnerProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/admin/login" element={<Login />} />
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute>
+                <AdminRoutes />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/*" element={<SiteLayout />} />
+        </Routes>
+        <Toaster richColors position="top-right" />
+      </PartnerProvider>
+    </AuthProvider>
   )
 }
 

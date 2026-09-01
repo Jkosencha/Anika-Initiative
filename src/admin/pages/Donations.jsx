@@ -2,37 +2,20 @@ import React, { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import { fetchDonations } from "../../lib/api";
+import { toast } from "sonner";
 
-//configuring light adn dark teme toggling
+import { fetchDonations, submitDonation, updateDonation } from "../../lib/api";
+
 const lightColors = {
-  bg: "#fafaf8",
-  border: "#e8e5df",
-  text: "#1c1a17",
-  muted: "#8c8579",
-  panel: "#ffffff",
-  green: "#3c8a4c",
-  red: "#d24a42",
-  orange: "#e2a63f",
-  buttonBg: "#1c1a17",
-  buttonText: "#ffffff",
-  inputBg: "#ffffff",
-  inputPlaceholder: "#8c8579",
+  bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
+  panel: "#ffffff", green: "#3c8a4c", red: "#d24a42", orange: "#e2a63f",
+  buttonBg: "#1c1a17", buttonText: "#ffffff", inputBg: "#ffffff", inputPlaceholder: "#8c8579",
 };
 
 const darkColors = {
-  bg: "#1a1a1a",
-  border: "#3a3a3a",
-  text: "#f0f0f0",
-  muted: "#aaaaaa",
-  panel: "#2a2a2a",
-  green: "#4c9a5c",
-  red: "#d24a42",
-  orange: "#e2a63f",
-  buttonBg: "#f0f0f0",
-  buttonText: "#1a1a1a",
-  inputBg: "#2a2a2a",
-  inputPlaceholder: "#aaaaaa",
+  bg: "#1a1a1a", border: "#3a3a3a", text: "#f0f0f0", muted: "#aaaaaa",
+  panel: "#2a2a2a", green: "#4c9a5c", red: "#d24a42", orange: "#e2a63f",
+  buttonBg: "#f0f0f0", buttonText: "#1a1a1a", inputBg: "#2a2a2a", inputPlaceholder: "#aaaaaa",
 };
 
 const STATUS_STYLE = {
@@ -42,7 +25,7 @@ const STATUS_STYLE = {
 };
 
 function initials(name) {
-  return name
+  return (name || "?")
     .split(" ")
     .map((p) => p[0])
     .join("")
@@ -53,42 +36,15 @@ function initials(name) {
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 function avatarColor(name) {
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < (name || "").length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
-
-function genRef() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
-  let ref = "SGH";
-  for (let i = 0; i < 6; i++) ref += chars[Math.floor(Math.random() * chars.length)];
-  return ref;
-}
-
-function maskPhone(phone) {
-  const digits = phone.replace(/\D/g, "");
-  const last3 = digits.slice(-3);
-  return `+254 7•• ••• ${last3.padStart(3, "0")}`;
-}
-
-//added id for filtering through search
-const SEED = [
-  { id: 1, donor: "Jennifer K", amount: 25000, phone: "+254 704239554", reference: "SGH7K2P9Q1", date: "Today 09:14", status: "Completed", month: "current" },
-  { id: 2, donor: "James N.", amount: 10000, phone: "+254 799799220", reference: "SGH6M4T2LX", date: "Today 08:02", status: "Completed", month: "current" },
-  { id: 3, donor: "Lynette M.", amount: 20000, phone: "+254 112544427", reference: "SGH5B9Q0RM", date: "Yesterday", status: "Completed", month: "current" },
-  { id: 4, donor: "Brian E.", amount: 50000, phone: "+254 797063573", reference: "SGH4P1W7ZC", date: "Yesterday", status: "Completed", month: "current" },
-  { id: 5, donor: "Daniel M.", amount: 10000, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
-  { id: 6, donor: "Anderson M.", amount: 500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "pending", month: "current" },
-  { id: 7, donor: "Levi M.", amount: 1500, phone: "+254 740063099", reference: "SGH3D8H5KV", date: "2 days ago", status: "Completed", month: "current" },
-];
-
-const PRIOR_MONTHS_TOTAL = 394000;
-const PRIOR_MONTHS_COUNT = 137;
 
 function toCSV(rows) {
   const header = ["Donor", "Amount (KES)", "Phone", "Reference", "Date", "Status"];
   const lines = rows.map((r) =>
     [r.donor, r.amount, r.phone, r.reference, r.date, r.status]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
       .join(",")
   );
   return [header.join(","), ...lines].join("\n");
@@ -110,24 +66,16 @@ function downloadCSV(rows, filename) {
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
     <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
-      <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">
-        {label}
-      </div>
+      <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
-        <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">
-          {value}
-        </div>
-        {sub && (
-          <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-semibold mt-1">
-            {sub}
-          </div>
-        )}
+        <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
+        {sub && <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-semibold mt-1">{sub}</div>}
       </div>
     </div>
   );
 }
 
-function AddDonationModal({ onClose, onAdd, colors }) {
+function AddDonationModal({ onClose, onAdd, colors, saving }) {
   const [donor, setDonor] = useState("");
   const [amount, setAmount] = useState("");
   const [phone, setPhone] = useState("");
@@ -137,17 +85,7 @@ function AddDonationModal({ onClose, onAdd, colors }) {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!donor.trim() || !amt || amt <= 0) return;
-    onAdd({
-      id: Date.now(),
-      donor: donor.trim(),
-      amount: amt,
-      phone: phone.trim() ? maskPhone(phone) : "+254 7•• ••• 000",
-      reference: genRef(),
-      date: "Today " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      status,
-      month: "current",
-    });
-    onClose();
+    onAdd({ donor_name: donor.trim(), amount: amt, phone: phone.trim() || undefined, status });
   }
 
   return (
@@ -159,85 +97,47 @@ function AddDonationModal({ onClose, onAdd, colors }) {
         className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
       >
         <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
-          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
-            Record M-Pesa donation
-          </h2>
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>Record M-Pesa donation</h2>
           <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
             <X size={18} color={colors.muted} />
           </button>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
-              Donor name
-            </label>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>Donor name</label>
             <input
-              required
-              value={donor}
-              onChange={(e) => setDonor(e.target.value)}
+              required value={donor} onChange={(e) => setDonor(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
+              style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               placeholder="e.g. Peter O."
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
-              Amount (KES)
-            </label>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>Amount (KES)</label>
             <input
-              required
-              type="number"
-              min="1"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              required type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
+              style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               placeholder="1000"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
-              Phone number
-            </label>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>Phone number</label>
             <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={phone} onChange={(e) => setPhone(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
+              style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               placeholder="0712345678"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
-              Status
-            </label>
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>Status</label>
             <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              value={status} onChange={(e) => setStatus(e.target.value)}
               className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={{
-                border: `1px solid ${colors.border}`,
-                background: colors.inputBg,
-                color: colors.text,
-              }}
+              style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
             >
-              {Object.keys(STATUS_STYLE).map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
+              {Object.keys(STATUS_STYLE).map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
@@ -245,8 +145,12 @@ function AddDonationModal({ onClose, onAdd, colors }) {
           <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: colors.muted }}>
             Cancel
           </button>
-          <button type="submit" style={{ background: colors.buttonBg, color: colors.buttonText }} className="text-sm font-semibold px-4 py-2 rounded-full">
-            Add donation
+          <button
+            type="submit" disabled={saving}
+            style={{ background: colors.buttonBg, color: colors.buttonText }}
+            className="text-sm font-semibold px-4 py-2 rounded-full disabled:opacity-60"
+          >
+            {saving ? "Saving…" : "Add donation"}
           </button>
         </div>
       </form>
@@ -254,53 +158,72 @@ function AddDonationModal({ onClose, onAdd, colors }) {
   );
 }
 
+// ---- Helper to format UTC timestamp to local time (Africa/Nairobi) ----
+function formatLocalDate(utcString) {
+  if (!utcString) return "—";
+  return new Date(utcString).toLocaleString('en-KE', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 export default function Donations() {
   const { theme } = useOutletContext();
-  const COLORS = theme === 'dark' ? darkColors : lightColors;
+  const COLORS = theme === "dark" ? darkColors : lightColors;
 
-  const [donations, setDonations] = useState(SEED);
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Load persisted donations from the store/API when available.
-  useEffect(() => {
-    fetchDonations().then(({ rows }) => {
-      if (rows && rows.length && rows.some((d) => d.amount != null)) {
-        setDonations(
-          rows.map((d) => ({
-            id: d.id,
-            donor: d.name || d.donor || "Anonymous",
-            amount: d.amount || 0,
-            phone: d.phone || "+254 7•• ••• 000",
-            reference: d.reference || (d.method || "").toUpperCase() || "REF",
-            date: d.date || (d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"),
-            status: d.status ? d.status[0].toUpperCase() + d.status.slice(1).toLowerCase() : "Completed",
-            month: d.month || "current",
-          }))
-        );
+  async function loadDonations() {
+    setLoading(true);
+    const { ok, source, rows } = await fetchDonations();
+    if (ok) {
+      setDonations(Array.isArray(rows) ? rows : []);
+      if (source === "local") {
+        toast.info("Showing locally saved donations — the payment API isn't reachable right now.");
       }
-    });
+    } else {
+      toast.error("Couldn't load donations.");
+    }
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadDonations();
   }, []);
 
   const stats = useMemo(() => {
-    const currentMonth = donations.filter((d) => d.month === "current");
-    const thisMonthTotal = currentMonth.reduce((sum, d) => sum + d.amount, 0);
-    const total2026 = PRIOR_MONTHS_TOTAL + thisMonthTotal;
-    const totalGifts = PRIOR_MONTHS_COUNT + donations.length;
-    const avgGift = totalGifts ? Math.round(total2026 / totalGifts) : 0;
+    const completed = donations.filter((d) => d.status === "Completed");
+    const now = new Date();
+    const thisMonthTotal = completed
+      .filter((d) => d.created_at && new Date(d.created_at).getMonth() === now.getMonth() && new Date(d.created_at).getFullYear() === now.getFullYear())
+      .reduce((sum, d) => sum + Number(d.amount || 0), 0);
+    const yearTotal = completed
+      .filter((d) => d.created_at && new Date(d.created_at).getFullYear() === now.getFullYear())
+      .reduce((sum, d) => sum + Number(d.amount || 0), 0);
+    const totalGifts = completed.length;
+    const avgGift = totalGifts ? Math.round(yearTotal / totalGifts) : 0;
 
     const brackets = { under: 0, mid: 0, over: 0 };
-    donations.forEach((d) => {
-      if (d.amount < 1000) brackets.under += 1;
-      else if (d.amount <= 5000) brackets.mid += 1;
+    completed.forEach((d) => {
+      const amt = Number(d.amount || 0);
+      if (amt < 1000) brackets.under += 1;
+      else if (amt <= 5000) brackets.mid += 1;
       else brackets.over += 1;
     });
-    const total = donations.length || 1;
+    const total = totalGifts || 1;
     const pctUnder = Math.round((brackets.under / total) * 100);
     const pctMid = Math.round((brackets.mid / total) * 100);
     const pctOver = 100 - pctUnder - pctMid;
 
-    return { thisMonthTotal, total2026, avgGift, totalGifts, pctUnder, pctMid, pctOver };
+    return { thisMonthTotal, yearTotal, avgGift, totalGifts, pctUnder, pctMid, pctOver };
   }, [donations]);
 
   const pieData = [
@@ -309,75 +232,71 @@ export default function Donations() {
     { name: "Over 5,000", value: stats.pctOver, color: COLORS.green },
   ];
 
-  function addDonation(donation) {
-    setDonations((prev) => [donation, ...prev]);
+  const filteredDonations = useMemo(() => {
+    if (!searchTerm.trim()) return donations;
+    const q = searchTerm.toLowerCase().trim();
+    return donations.filter((d) => (d.donor || "").toLowerCase().includes(q));
+  }, [donations, searchTerm]);
+
+  async function addDonation(payload) {
+    setSaving(true);
+    const { ok, record } = await submitDonation({ ...payload, method: "manual" });
+    setSaving(false);
+    if (ok && record && !record.error) {
+      setDonations((prev) => [record, ...prev]);
+      toast.success(`Recorded ${payload.donor_name}'s donation.`);
+      setModalOpen(false);
+    } else {
+      toast.error(record?.error || "Couldn't record that donation.");
+    }
   }
 
-  function cycleStatus(id) {
-    setDonations((prev) =>
-      prev.map((d) => {
-        if (d.id !== id) return d;
-        const order = ["Pending", "Completed", "Failed"];
-        const next = order[(order.indexOf(d.status) + 1) % order.length];
-        return { ...d, status: next };
-      })
-    );
+  async function cycleStatus(id) {
+    const current = donations.find((d) => d.id === id);
+    if (!current) return;
+    const order = ["Pending", "Completed", "Failed"];
+    const next = order[(order.indexOf(current.status) + 1) % order.length];
+
+    const { ok, record } = await updateDonation(id, { status: next });
+    if (ok && record && !record.error) {
+      setDonations((prev) => prev.map((d) => (d.id === id ? record : d)));
+    } else {
+      toast.error("Couldn't update that donation's status.");
+    }
   }
 
   function fmt(n) {
-    return `KES ${n.toLocaleString()}`;
+    return `KES ${Number(n || 0).toLocaleString()}`;
   }
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
       <style>{`
-        .donation-input::placeholder {
-          color: ${COLORS.inputPlaceholder};
-          opacity: 1;
-        }
+        .donation-input::placeholder { color: ${COLORS.inputPlaceholder}; opacity: 1; }
       `}</style>
 
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-            Donations
-          </h1>
-          <p className="text-sm mt-1" style={{ color: COLORS.muted }}>
-          Total contributions to ANIKA.
-          </p>
+          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Donations</h1>
+          <p className="text-sm mt-1" style={{ color: COLORS.muted }}>Total contributions to ANIKA.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-         
           <input
-            type="text"
-            placeholder="Search donor..."
-            value={searchTerm}
+            type="text" placeholder="Search donor..." value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 rounded-lg text-sm outline-none donation-input"
-            style={{
-              border: `1px solid ${COLORS.border}`,
-              background: COLORS.inputBg,
-              color: COLORS.text,
-              width: "180px",
-            }}
+            style={{ border: `1px solid ${COLORS.border}`, background: COLORS.inputBg, color: COLORS.text, width: "180px" }}
           />
           <button
             onClick={() => setModalOpen(true)}
-            style={{
-              background: COLORS.buttonBg,
-              color: COLORS.buttonText,
-            }}
+            style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
             className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
           >
             <Plus size={14} /> RECORD DONATION
           </button>
           <button
             onClick={() => downloadCSV(donations, "donations.csv")}
-            style={{
-              border: `1px solid ${COLORS.border}`,
-              background: COLORS.panel,
-              color: COLORS.text,
-            }}
+            style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel, color: COLORS.text }}
             className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg"
           >
             EXPORT CSV
@@ -385,27 +304,22 @@ export default function Donations() {
         </div>
       </div>
 
-     {/* //stats card showcase*/}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard label="THIS MONTH" value={fmt(stats.thisMonthTotal)} sub="Updates as gifts come in" bg={COLORS.green} textColor="#fff" />
-        <StatCard label="TOTAL 2026" value={fmt(stats.total2026)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} textColor="#fff" />
+        <StatCard label="TOTAL THIS YEAR" value={fmt(stats.yearTotal)} sub={`${stats.totalGifts} gifts`} bg={COLORS.red} textColor="#fff" />
         <StatCard label="AVG GIFT" value={stats.avgGift.toLocaleString()} sub="KES" bg={COLORS.orange} textColor="#1c1a17" />
         <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl p-4 flex items-center gap-4">
           <div style={{ width: 84, height: 84 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={pieData} dataKey="value" innerRadius={26} outerRadius={40} startAngle={90} endAngle={-270}>
-                  {pieData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="none" />
-                  ))}
+                  {pieData.map((entry, i) => <Cell key={i} fill={entry.color} stroke="none" />)}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="flex-1">
-            <div className="text-xs font-bold mb-1.5" style={{ color: COLORS.text }}>
-              By gift size
-            </div>
+            <div className="text-xs font-bold mb-1.5" style={{ color: COLORS.text }}>By gift size</div>
             {pieData.map((d) => (
               <div key={d.name} className="flex items-center gap-1.5 text-xs mb-1" style={{ color: COLORS.text }}>
                 <span style={{ background: d.color }} className="w-2 h-2 rounded-sm shrink-0" />
@@ -417,50 +331,57 @@ export default function Donations() {
         </div>
       </div>
 
-      {/* displaying filtered donations upon seardh */}
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]"
-          style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          style={{
+            color: COLORS.muted,
+            borderColor: COLORS.border,
+            gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",
+          }}
         >
           <div>DONOR</div>
           <div>AMOUNT</div>
           <div>PHONE</div>
           <div>REFERENCE</div>
-          <div>DATE</div>
+          <div>DATE (Local)</div>
           <div>STATUS</div>
         </div>
 
-        {filteredDonations.map((d) => {
+        {loading && (
+          <div className="px-5 py-8 text-sm text-center" style={{ color: COLORS.muted }}>Loading donations…</div>
+        )}
+
+        {!loading && filteredDonations.length === 0 && (
+          <div className="px-5 py-8 text-sm text-center" style={{ color: COLORS.muted }}>No donations yet.</div>
+        )}
+
+        {!loading && filteredDonations.map((d) => {
           const s = STATUS_STYLE[d.status] || STATUS_STYLE.Pending;
           return (
             <div
               key={d.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[760px]"
-              style={{ borderColor: COLORS.border, gridTemplateColumns: "1.4fr 1fr 1.3fr 1.3fr 1fr 1fr" }}
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              style={{
+                borderColor: COLORS.border,
+                gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",
+              }}
             >
               <div className="flex items-center gap-3">
-                <div
-                  style={{ background: avatarColor(d.donor) }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-                >
+                <div style={{ background: avatarColor(d.donor) }} className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
                   {initials(d.donor)}
                 </div>
-                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
-                  {d.donor}
-                </span>
+                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>{d.donor}</span>
               </div>
               <div className="text-sm font-bold" style={{ color: COLORS.text }}>
-                KES {d.amount.toLocaleString()}
+                {d.currency || "KES"} {Number(d.amount || 0).toLocaleString()}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {d.phone}
               </div>
-              <div className="text-sm font-mono" style={{ color: COLORS.text }}>
-                {d.reference}
-              </div>
+              <div className="text-sm font-mono" style={{ color: COLORS.text }}>{d.reference}</div>
               <div className="text-sm" style={{ color: COLORS.text }}>
-                {d.date}
+                {formatLocalDate(d.created_at)}
               </div>
               <button
                 onClick={() => cycleStatus(d.id)}
@@ -477,11 +398,7 @@ export default function Donations() {
       </div>
 
       {modalOpen && (
-        <AddDonationModal
-          onClose={() => setModalOpen(false)}
-          onAdd={addDonation}
-          colors={COLORS}
-        />
+        <AddDonationModal onClose={() => setModalOpen(false)} onAdd={addDonation} colors={COLORS} saving={saving} />
       )}
     </div>
   );

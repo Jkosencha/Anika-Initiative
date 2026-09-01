@@ -1,19 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Send, Search, Check } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 import { fetchWhatsAppInbox, updateWhatsAppMessage } from "../../lib/api";
+import { useAdminColors } from "../theme";
 
-const lightColors = {
-  bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
-  panel: "#ffffff", green: "#25D366", red: "#d24a42", orange: "#e2a63f", blue: "#2f4a6b",
-  buttonBg: "#1c1a17", buttonText: "#ffffff", inputBg: "#ffffff", inputPlaceholder: "#8c8579",
-};
 
-const darkColors = {
-  bg: "#1a1a1a", panel: "#232323", text: "#f0f0f0", muted: "#aaaaaa",
-  border: "#3a3a3a", green: "#25D366", red: "#d24a42", orange: "#e2a63f", blue: "#7c9ac4",
-  buttonBg: "#f0f0f0", buttonText: "#1a1a1a", inputBg: "#2a2a2a", inputPlaceholder: "#aaaaaa",
-};
 
 function initials(name) {
   return name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -35,9 +25,9 @@ const INTENT_META = {
 };
 
 const SEED = [
-  { id: 1, name: "Alex Kwame", phone: "+254 711 000 111", intent: "escalation", unread: 2, time: "08:12", preview: "HELP — I registered for the forum but haven’t received a confirmation yet.", messages: [
-    { from: "them", text: "HELP — I registered for the Sema-Anika forum but haven’t received a confirmation yet.", time: "08:10" },
-    { from: "me", text: "Hi Alex, sorry about that — let me check your registration now.", time: "08:30" },
+  { id: 1, name: "Alex Kwame", phone: "+254 711 000 111", intent: "escalation", unread: 2, time: "08:12", preview: "HELP - I registered for the forum but haven’t received a confirmation yet.", messages: [
+    { from: "them", text: "HELP - I registered for the Sema-Anika forum but haven’t received a confirmation yet.", time: "08:10" },
+    { from: "me", text: "Hi Alex, sorry about that let me check your registration now.", time: "08:30" },
     { from: "them", text: "Thanks! I used +233 711 000 111.", time: "09:02" },
   ]},
   { id: 2, name: "Sarah Ochieng", phone: "+254 722 222 333", intent: "faq", unread: 1, time: "09:41", last: "What events are coming up for artists this month?", messages: [
@@ -50,7 +40,7 @@ const SEED = [
   ], resolved: true },
   { id: 4, name: "Amina Yusuf", phone: "+255 744 333 444", intent: "donation", unread: 0, time: "Yesterday", last: "Can I make a one-time donation via M-Pesa?", messages: [
     { from: "them", text: "Can I make a one-time donation via M-Pesa?", time: "Yesterday 18:00" },
-    { from: "me", text: "Yes! Tap Donate on the site and choose M-Pesa — you'll get an instant receipt.", time: "Yesterday 18:20" },
+    { from: "me", text: "Yes! Tap Donate on the site and choose M-Pesa you'll get an instant receipt.", time: "Yesterday 18:20" },
   ], resolved: true },
   { id: 5, name: "Lynette Muthoni", phone: "+254 112 544 427", intent: "registration", unread: 1, time: "2 hours ago", last: "Please add me to the Poetry & Beat Night waitlist.", messages: [
     { from: "them", text: "Please add me to the Griphon Poetry & Beat Night waitlist.", time: "2 hours ago" },
@@ -74,8 +64,7 @@ function StatBox({ label, value, dotColor, colors }) {
   );
 }
 export default function WhatsAppInbox() {
-  const { theme } = useOutletContext();
-  const COLORS = theme === "dark" ? darkColors : lightColors;
+  const COLORS = useAdminColors();
 
   const [conversations, setConversations] = useState(SEED);
   const [activeId, setActiveId] = useState(SEED[0].id);
@@ -139,6 +128,15 @@ export default function WhatsAppInbox() {
     });
   }
 
+  function toggleOptOut() {
+    setConversations((prev) => {
+      const cur = prev.find((c) => c.id === activeId);
+      const next = prev.map((c) => (c.id === activeId ? { ...c, optedOut: !c.optedOut } : c));
+      updateWhatsAppMessage(activeId, { optedOut: !cur.optedOut });
+      return next;
+    });
+  }
+
   function intentMeta(int) {
     return INTENT_META[int] || INTENT_META.general;
   }
@@ -192,6 +190,7 @@ export default function WhatsAppInbox() {
                     <div className="text-xs truncate mt-0.5" style={{ color: COLORS.muted }}>{c.last || c.preview}</div>
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: meta.bg, color: meta.text }}>{meta.label}</span>
+                      {c.optedOut ? <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#f6d9d9", color: "#b23b3b" }}>Opted out</span> : null}
                       {c.resolved ? <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "#2d7a43" }}><Check size={11} /> Resolved</span> : null}
                     </div>
                   </div>
@@ -210,12 +209,28 @@ export default function WhatsAppInbox() {
                   <div style={{ background: avatarColor(active.name) }} className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold">{initials(active.name)}</div>
                   <div>
                     <div className="font-semibold text-sm" style={{ color: COLORS.text }}>{active.name}</div>
-                    <div className="text-xs" style={{ color: COLORS.muted }}>{active.phone}</div>
+                    <div className="text-xs flex items-center gap-2" style={{ color: COLORS.muted }}>
+                      {active.phone}
+                      {active.optedOut ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: "#f6d9d9", color: "#b23b3b" }}>Opted out</span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
-                <button onClick={toggleResolved} className="text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5" style={{ background: active.resolved ? "#dcefe0" : "#fdecd2", color: active.resolved ? "#2d7a43" : "#8a5c10" }}>
-                  {active.resolved && <Check size={12} />} {active.resolved ? "Resolved" : "Mark resolved"}
-                </button>
+                <div className="flex items-center gap-2">
+                  {active.optedOut ? (
+                    <button
+                      onClick={() => toggleOptOut()}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5"
+                      style={{ background: "#dcefe0", color: "#2d7a43" }}
+                    >
+                      <Check size={12} /> Re-subscribe
+                    </button>
+                  ) : null}
+                  <button onClick={toggleResolved} className="text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5" style={{ background: active.resolved ? "#dcefe0" : "#fdecd2", color: active.resolved ? "#2d7a43" : "#8a5c10" }}>
+                    {active.resolved && <Check size={12} />} {active.resolved ? "Resolved" : "Mark resolved"}
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ minHeight: "280px" }}>
                 {active.messages.map((m, i) => (

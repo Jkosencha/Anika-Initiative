@@ -1,8 +1,18 @@
 import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { navSections } from '../nav'
+import { useAuth } from '../auth/AuthContext'
 
 function Sidebar({ open, onClose }) {
+  const {user, logout} = useAuth()
+
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => item.allowedRoles.includes(user?.role)),
+    }))
+    .filter((section) => section.items.length > 0)
+
   return (
     <>
       {open && (
@@ -36,8 +46,8 @@ function Sidebar({ open, onClose }) {
           Admin Desk
         </p>
 
-        <nav className="admin-nav flex-1 space-y-6 overflow-y-auto px-3 pb-6">
-          {navSections.map((section) => (
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
+          {visibleSections.map((section) => (
             <div key={section.label}>
               <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-cream/40">
                 {section.label}
@@ -78,13 +88,13 @@ function Sidebar({ open, onClose }) {
 
         <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
-            A
+            {user?.initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-cream">Admin</p>
-            <p className="truncate text-xs font-semibold text-cream/50">Leadership</p>
+            <p className="truncate text-sm font-medium text-cream">{user?.name}</p>
+            <p className="truncate text-xs text-cream/50">{user?.roleLabel}</p>
           </div>
-          <button className="text-xs font-semibold text-cream/50 hover:text-cream">Exit</button>
+          <button onClick={logout} className="text-xs font-medium text-cream/50 hover:text-cream">Exit</button>
         </div>
       </aside>
     </>

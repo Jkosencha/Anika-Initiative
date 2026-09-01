@@ -8,6 +8,12 @@ flask = "*"
 flask-sqlalchemy = "*"
 flask-cors = "*"
 python-dotenv = "*"
+flask-mail = "*"
+cloudinary = "*"
+flasgger = "*"
+psycopg2-binary = "*"
+requests = "*"
+marshmallow = "*"
 
 [dev-packages]
 
