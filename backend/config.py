@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,6 +9,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev-secret-change-me")
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret-change-me")
     DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
     CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@anika.org")
 
