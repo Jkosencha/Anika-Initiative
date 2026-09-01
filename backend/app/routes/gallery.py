@@ -1,11 +1,12 @@
 import os
 import uuid
 
-from flask import Blueprint, request, jsonify, current_app
 import cloudinary.uploader
+from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models.gallery import GalleryImage
+from backend.app.utils.decorators import require_permission
 
 gallery_bp = Blueprint("gallery", __name__, url_prefix="/api/gallery")
 
@@ -46,6 +47,7 @@ def list_images():
 
 
 @gallery_bp.route("", methods=["POST"])
+@require_permission("gallery")
 def upload_image():
     """
     Upload a new gallery image (admin).
@@ -123,6 +125,7 @@ def upload_image():
 
 
 @gallery_bp.route("/<int:image_id>", methods=["PATCH"])
+@require_permission("gallery")
 def update_image(image_id):
     """
     Edit a gallery image's caption (admin).
@@ -171,6 +174,7 @@ def update_image(image_id):
 
 
 @gallery_bp.route("/<int:image_id>", methods=["DELETE"])
+@require_permission("gallery")
 def delete_image(image_id):
     """
     Delete a gallery image (admin).

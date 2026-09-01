@@ -1,7 +1,10 @@
-from flask import Blueprint, request, jsonify
+from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+
 from app.extensions import db
 from app.models.contact import Contact
-from datetime import datetime
+from backend.app.utils.decorators import require_permission
 
 contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
 
@@ -75,6 +78,7 @@ def create_contact():
     return jsonify(contact.to_dict()), 201
 
 @contacts_bp.route('', methods=['GET'])
+@require_permission("contacts")
 def list_contacts():
     """
     List contacts with pagination and optional filters
@@ -142,6 +146,7 @@ def list_contacts():
     }), 200
 
 @contacts_bp.route('/<int:contact_id>', methods=['GET'])
+@require_permission("contacts")
 def get_contact(contact_id):
     """
     Get a single contact by ID
@@ -164,6 +169,7 @@ def get_contact(contact_id):
     return jsonify(contact.to_dict()), 200
 
 @contacts_bp.route('/<int:contact_id>', methods=['PUT'])
+@require_permission("contacts")
 def update_contact(contact_id):
     """
     Update a contact (e.g. change status or details)
@@ -210,6 +216,7 @@ def update_contact(contact_id):
     return jsonify(contact.to_dict()), 200
 
 @contacts_bp.route('/<int:contact_id>', methods=['DELETE'])
+@require_permission("contacts")
 def delete_contact(contact_id):
     """
     Delete a contact

@@ -6,6 +6,7 @@ from app.extensions import db
 from app.models.story import Story, content_to_excerpt, generate_slug
 from app.schemas.story_schema import create_story_schema, update_story_schema
 from app.utils.validation import load_json_or_400
+from backend.app.utils.decorators import require_permission
 
 stories_bp = Blueprint("stories", __name__)
 
@@ -77,11 +78,9 @@ def get_story_by_slug(slug):
 
 
 # admin routes --
-# TODO(auth): wrap each of these with your admin auth decorator once one
-# exists — nothing here checks the User/role model yet. All routes are
-# currently open, same caveat as the rest of the API per the Swagger info.
 
 @stories_bp.get("/api/admin/stories")
+@require_permission("stories")
 def list_all_stories():
     """
     List all stories, any status.
@@ -107,6 +106,7 @@ def list_all_stories():
 
 
 @stories_bp.get("/api/admin/stories/<int:story_id>")
+@require_permission("stories")
 def get_story_by_id(story_id):
     """
     Get a single story by id, any status.
@@ -129,6 +129,7 @@ def get_story_by_id(story_id):
 
 
 @stories_bp.post("/api/admin/stories")
+@require_permission("stories")
 def create_story():
     """
     Create a story.
@@ -187,6 +188,7 @@ def create_story():
 
 
 @stories_bp.put("/api/admin/stories/<int:story_id>")
+@require_permission("stories")
 def update_story(story_id):
     """
     Update a story.
@@ -244,6 +246,7 @@ def update_story(story_id):
 
 
 @stories_bp.delete("/api/admin/stories/<int:story_id>")
+@require_permission("stories")
 def delete_story(story_id):
     """
     Delete a story.

@@ -1,10 +1,16 @@
 from flask import Blueprint, current_app, jsonify, request
 
+from backend.app.utils.decorators import require_permission
+
 from ..extensions import db
 from ..models import Application
 from ..models.application import STATUSES, SUBJECTS
-from ..utils.email import send_org_notification, send_user_confirmation, send_status_update_email
 from ..utils.contact_utils import create_contact_from_data
+from ..utils.email import (
+    send_org_notification,
+    send_status_update_email,
+    send_user_confirmation,
+)
 
 applications_bp = Blueprint("applications", __name__, url_prefix="/api/applications")
 
@@ -12,6 +18,7 @@ REQUIRED_FIELDS = ["name", "email", "subject"]
 
 
 @applications_bp.get("")
+@require_permission("applications")
 def list_applications():
     """
     List all Get Involved applications
@@ -163,6 +170,7 @@ def create_application():
 
 
 @applications_bp.patch("/<int:app_id>")
+@require_permission("applications")
 def update_application(app_id):
     """
     Update an application's status (e.g. Shortlisted, Accepted, Rejected)
@@ -218,6 +226,7 @@ def update_application(app_id):
 
 
 @applications_bp.delete("/<int:app_id>")
+@require_permission("applications")
 def delete_application(app_id):
     """
     Delete an application
