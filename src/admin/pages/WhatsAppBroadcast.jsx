@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Send, Check, Clock, Users, Zap } from "lucide-react";
-import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast } from "../../lib/api";
+import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast, fetchWhatsAppStats } from "../../lib/api";
 import { useAdminColors } from "../theme";
 
 
@@ -32,6 +32,15 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   );
 }
 
+// Audiences whose recipient counts reduce as contacts opt out.
+function adjustForOptOuts(audienceSize, optedOut) {
+  const reducible = ["All opted-in", "All contacts"];
+  if (reducible.includes(audienceSize.audience)) {
+    return Math.max(0, audienceSize.value - optedOut);
+  }
+  return audienceSize.value;
+}
+
 export default function WhatsAppBroadcast() {
   const COLORS = useAdminColors();
 
@@ -41,17 +50,19 @@ export default function WhatsAppBroadcast() {
   const [when, setWhen] = useState("now");
   const [scheduleDate, setScheduleDate] = useState("");
   const [sending, setSending] = useState(false);
+  const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 });
 
   useEffect(() => {
     fetchWhatsAppBroadcasts().then(({ rows }) => {
       if (rows && rows.length) setHistory(rows);
     });
+    fetchWhatsAppStats().then(setWaStats);
   }, []);
 
   const MAX_CHARS = 1024;
 
   const contactBase = 1284;
-  const audienceSize = useMemo(() => {
+  const effectiveAudience = useMemo(() => {
     if (audience === "All opted-in") return Math.round(contactBase * 0.62);
     if (audience === "All contacts") return contactBase;
     if (audience === "Opted-in registrants") return 321;
@@ -59,6 +70,8 @@ export default function WhatsAppBroadcast() {
     if (audience === "Nairobi artists") return 402;
     return 150;
   }, [audience]);
+
+  const audienceSize = adjustForOptOuts({ audience, value: effectiveAudience }, waStats.optedOut);
 
   const stats = useMemo(() => {
     const totalSent = history.reduce((s, h) => s + h.recipients, 0);
@@ -127,6 +140,9 @@ export default function WhatsAppBroadcast() {
             </div>
             <div className="mt-2 flex items-center gap-1.5 text-xs" style={{ color: COLORS.muted }}>
               <Users size={14} /> {audienceSize.toLocaleString()} people will receive this message
+              {waStats.optedOut > 0 && (
+                <span style={{ color: "#b23b3b" }}>({waStats.optedOut} opted out excluded)</span>
+              )}
             </div>
           </div>
 
