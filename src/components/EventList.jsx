@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Reveal from './Reveal';
+import { fetchEvents, submitRegistration } from '../lib/api';
 import { 
   Calendar as CalendarIcon, 
   Clock as ClockIcon, 
@@ -91,12 +92,50 @@ const OTHER_EVENTS = [
   }
 ];
 
+const PILLAR_STYLE = {
+  PERFORMANCE: { color: '#EB4C47', badge: 'bg-[#EB4C47]' },
+  DIALOGUE: { color: '#219653', badge: 'bg-[#219653]' },
+  WORKSHOP: { color: '#E2A03F', badge: 'bg-[#E2A03F]' },
+};
+
+// Maps the backend /api/events public shape to the card shape used below.
+function mapApiEvent(ev) {
+  const style = PILLAR_STYLE[ev.pillar] || PILLAR_STYLE.PERFORMANCE;
+  const dateMatch = /(\d{1,2})[\/\s-]?(\w{3})?/.exec(ev.dateStr || '');
+  return {
+    id: ev.id,
+    pillar: ev.pillar,
+    pillarColor: style.color,
+    badgeBg: style.badge,
+    dateNum: dateMatch?.[1] || '—',
+    dateMonth: (dateMatch?.[2] || '').toUpperCase() || '—',
+    title: ev.title,
+    image: ev.image,
+    location: ev.location,
+    dateStr: ev.dateStr,
+    timeStr: ev.timeStr,
+    seats: ev.seats,
+    description: ev.description,
+    quote: '',
+  };
+}
+
 export default function EventsList() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [openFormId, setOpenFormId] = useState(null);
   const [formStates, setFormStates] = useState({});
   const [loading, setLoading] = useState({});
   const [successMsg, setSuccessMsg] = useState({});
+  const [events, setEvents] = useState(OTHER_EVENTS);
+
+  // Load events from the backend when available; fall back to the static list.
+  useEffect(() => {
+    fetchEvents().then(({ rows }) => {
+      if (rows && rows.length) {
+        setEvents(rows.map(mapApiEvent));
+      }
+    });
+  }, []);
 
   const categories = [
     { name: 'ALL', color: '#000000' },
@@ -106,8 +145,8 @@ export default function EventsList() {
   ];
 
   const filteredEvents = activeTab === 'ALL'
-    ? OTHER_EVENTS
-    : OTHER_EVENTS.filter(evt => evt.pillar === activeTab);
+    ? events
+    : events.filter(evt => evt.pillar === activeTab);
 
   const toggleForm = (id) => {
     setOpenFormId(prev => (prev === id ? null : id));
@@ -123,15 +162,30 @@ export default function EventsList() {
     }));
   };
 
-  const handleRegister = (e, eventId) => {
+  const handleRegister = async (e, eventId) => {
     e.preventDefault();
-    setLoading(prev => ({ ...prev, [eventId]: true }));
+    const currentForm = formStates[eventId] || { fullName: '', whatsappNumber: '', optIn: true };
+    const eventTitle =
+      eventId === FEATURED_EVENT.id
+        ? FEATURED_EVENT.title
+        : (events.find(ev => ev.id === eventId)?.title || 'ANIKA Event');
 
-    setTimeout(() => {
+    setLoading(prev => ({ ...prev, [eventId]: true }));
+    try {
+      await submitRegistration({
+        name: currentForm.fullName,
+        phone: currentForm.whatsappNumber,
+        eventTitle,
+        consent: currentForm.optIn,
+        source: 'web',
+      });
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Confirmed! Registration details sent via WhatsApp.' }));
       setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', whatsappNumber: '', optIn: true } }));
+    } catch {
+      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Could not confirm right now. Please try again.' }));
+    } finally {
       setLoading(prev => ({ ...prev, [eventId]: false }));
-    }, 700);
+    }
   };
 
   return (
