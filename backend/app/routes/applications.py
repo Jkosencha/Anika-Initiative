@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request
 
-from backend.app.utils.decorators import require_permission
+from app.utils.decorators import require_permission
 
 from ..extensions import db
 from ..models import Application

@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 
 from app.extensions import db
 from app.models.contact import Contact
-from backend.app.utils.decorators import require_permission
+from app.utils.decorators import require_permission
 
 contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
 

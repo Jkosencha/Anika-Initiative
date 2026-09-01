@@ -6,7 +6,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models.gallery import GalleryImage
-from backend.app.utils.decorators import require_permission
+from app.utils.decorators import require_permission
 
 gallery_bp = Blueprint("gallery", __name__, url_prefix="/api/gallery")
 

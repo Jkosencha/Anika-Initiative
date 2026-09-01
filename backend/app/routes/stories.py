@@ -6,7 +6,7 @@ from app.extensions import db
 from app.models.story import Story, content_to_excerpt, generate_slug
 from app.schemas.story_schema import create_story_schema, update_story_schema
 from app.utils.validation import load_json_or_400
-from backend.app.utils.decorators import require_permission
+from app.utils.decorators import require_permission
 
 stories_bp = Blueprint("stories", __name__)
 
