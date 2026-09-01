@@ -1,20 +1,18 @@
-import { staffAccounts } from "../data/staffAccounts"
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||'http://localhost:5000';
 
+export async function loginRequest({ email, password }) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
 
-export function loginRequest({email, password}) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-        const account = staffAccounts.find(
-            (acc) =>
-            acc.email.toLowerCase() === email.toLowerCase() &&
-            acc.password === password
-        );
-        if (account) {
-            const { password: _pw, ...safeAccount } = account;
-            resolve(safeAccount);
-        } else {
-            reject(new Error('Invalid email or password'));
-        }
-    }, 500);
-  })
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Invalid email or password');
+  }
+
+  return { user: data.user, accessToken: data.access_token };
 }
+
