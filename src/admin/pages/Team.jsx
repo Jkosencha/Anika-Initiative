@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UserPlus, X, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { useAdminColors, initials, avatarColor } from '../theme'
+import { fetchTeam, addTeamMember, updateTeamMember, deleteTeamMember } from '../../lib/api'
 
 const ROLE_STYLE = {
   leadership: { bg: '#f6d9d9', text: '#b23b3b' },
@@ -15,14 +16,6 @@ const roleLabels = {
   programs: 'Programs',
   mel: 'M&E',
 }
-
-const SEED = [
-  { id: 1, name: 'Jennifer Kosencha', email: 'jennifer@anikainitiative.org', role: 'leadership', status: 'Active' },
-  { id: 2, name: 'Brian', email: 'brian@anikainitiative.org', role: 'comms', status: 'Active' },
-  { id: 3, name: 'Lynn', email: 'lynn@anikainitiative.org', role: 'programs', status: 'Active' },
-  { id: 4, name: 'James', email: 'james@anikainitiative.org', role: 'programs', status: 'Active' },
-  { id: 5, name: 'Daniel', email: 'daniel@anikainitiative.org', role: 'comms', status: 'Active' },
-]
 
 function MemberFormModal({ member, onClose, onSave, colors }) {
   const isEdit = Boolean(member)
@@ -166,19 +159,36 @@ function ConfirmDeleteModal({ member, onClose, onConfirm, colors }) {
 
 function Team() {
   const COLORS = useAdminColors()
-  const [team, setTeam] = useState(SEED)
+  const [team, setTeam] = useState([])
+  const [loading, setLoading] = useState(true)
   const [formModal, setFormModal] = useState(null) // null | { member: null | member }
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  function saveMember(data) {
+  useEffect(() => {
+    let cancelled = false
+    fetchTeam().then(({ rows }) => {
+      if (!cancelled) {
+        setTeam(rows)
+        setLoading(false)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function saveMember(data) {
     if (formModal?.member) {
-      setTeam((prev) => prev.map((m) => (m.id === formModal.member.id ? { ...m, ...data } : m)))
+      const { record } = await updateTeamMember(formModal.member.id, data)
+      setTeam((prev) => prev.map((m) => (m.id === formModal.member.id ? { ...m, ...(record ?? data) } : m)))
     } else {
-      setTeam((prev) => [...prev, { ...data, id: Date.now(), status: 'Pending' }])
+      const { record } = await addTeamMember({ ...data, status: 'Pending' })
+      setTeam((prev) => [...prev, record])
     }
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
+    await deleteTeamMember(deleteTarget.id)
     setTeam((prev) => prev.filter((m) => m.id !== deleteTarget.id))
     setDeleteTarget(null)
   }
@@ -208,6 +218,11 @@ function Team() {
         style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
         className="overflow-x-auto rounded-xl"
       >
+        {loading ? (
+          <p className="p-5 text-sm" style={{ color: COLORS.muted }}>
+            Loading team…
+          </p>
+        ) : (
         <table className="w-full text-left text-sm">
           <thead>
             <tr
@@ -277,6 +292,7 @@ function Team() {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {formModal && (

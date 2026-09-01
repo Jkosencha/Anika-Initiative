@@ -263,6 +263,13 @@ function seed() {
         createdAt: new Date(now - 86400000 * 2).toISOString(),
       },
     ],
+    team: [
+      { id: uid(), name: 'Jennifer Kosencha', email: 'jennifer@anikainitiative.org', role: 'leadership', status: 'Active', createdAt: new Date(now - 86400000 * 60).toISOString() },
+      { id: uid(), name: 'Brian', email: 'brian@anikainitiative.org', role: 'comms', status: 'Active', createdAt: new Date(now - 86400000 * 55).toISOString() },
+      { id: uid(), name: 'Lynn', email: 'lynn@anikainitiative.org', role: 'programs', status: 'Active', createdAt: new Date(now - 86400000 * 55).toISOString() },
+      { id: uid(), name: 'James', email: 'james@anikainitiative.org', role: 'programs', status: 'Active', createdAt: new Date(now - 86400000 * 55).toISOString() },
+      { id: uid(), name: 'Daniel', email: 'daniel@anikainitiative.org', role: 'comms', status: 'Active', createdAt: new Date(now - 86400000 * 55).toISOString() },
+    ],
     whatsAppSettings: [
       {
         id: uid(),
