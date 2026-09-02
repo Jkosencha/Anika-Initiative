@@ -29,6 +29,10 @@ const notify = () => listeners.forEach((listener) => listener());
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
+    // Story data changes whenever a save/delete happens, so never let the
+    // browser serve a cached GET response — otherwise a subscriber's
+    // refetch after `notify()` can still resolve with stale data.
+    cache: "no-store",
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });

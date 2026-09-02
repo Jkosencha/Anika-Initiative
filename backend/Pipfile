@@ -7,7 +7,6 @@ name = "pypi"
 flask-sqlalchemy = "*"
 flask-cors = "*"
 python-dotenv = "*"
-flask-mail = "*"
 cloudinary = "*"
 flasgger = "*"
 psycopg2-binary = "*"
@@ -15,6 +14,7 @@ requests = "*"
 marshmallow = "*"
 flask-jwt-extended = "*"
 flask = "*"
+flask-mail = "*"
 
 [dev-packages]
 
