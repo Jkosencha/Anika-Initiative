@@ -3,9 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-
-// We only need fetchDonations and submitDonation now – no updateDonation
-import { fetchDonations, submitDonation } from "../../lib/api";
+import { apiRequest } from "../utils/api"; 
 
 const lightColors = {
   bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
@@ -159,7 +157,6 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
   );
 }
 
-// ---- Helper to format UTC timestamp to local time (Africa/Nairobi) ----
 function formatLocalDate(utcString) {
   if (!utcString) return "—";
   return new Date(utcString).toLocaleString('en-KE', {
@@ -184,14 +181,12 @@ export default function Donations() {
 
   async function loadDonations() {
     setLoading(true);
-    const { ok, source, rows } = await fetchDonations();
-    if (ok) {
-      setDonations(Array.isArray(rows) ? rows : []);
-      if (source === "local") {
-        toast.info("Showing locally saved donations — the payment API isn't reachable right now.");
-      }
-    } else {
+    try {
+      const data = await apiRequest('/api/donations');
+      setDonations(Array.isArray(data) ? data : []);
+    } catch (err) {
       toast.error("Couldn't load donations.");
+      console.error(err);
     }
     setLoading(false);
   }
@@ -241,14 +236,18 @@ export default function Donations() {
 
   async function addDonation(payload) {
     setSaving(true);
-    const { ok, record } = await submitDonation({ ...payload, method: "manual" });
-    setSaving(false);
-    if (ok && record && !record.error) {
+    try {
+      const record = await apiRequest('/api/donations', {
+        method: 'POST',
+        body: { ...payload, method: 'manual' },
+      });
       setDonations((prev) => [record, ...prev]);
       toast.success(`Recorded ${payload.donor_name}'s donation.`);
       setModalOpen(false);
-    } else {
-      toast.error(record?.error || "Couldn't record that donation.");
+    } catch (err) {
+      toast.error(err.message || "Couldn't record that donation.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -370,7 +369,6 @@ export default function Donations() {
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {formatLocalDate(d.created_at)}
               </div>
-              {/* ---- STATUS BADGE – STATIC, NO CLICK ---- */}
               <div
                 style={{ background: s.bg, color: s.text }}
                 className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
