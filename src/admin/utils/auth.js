@@ -13,6 +13,6 @@ export async function loginRequest({ email, password }) {
     throw new Error(data.error || data.message || 'Invalid email or password');
   }
 
-  return { user: data.user, accessToken: data.access_token };
+  return { user: data.user, accessToken: data.access_token, refreshToken: data.refesh_token };
 }
 

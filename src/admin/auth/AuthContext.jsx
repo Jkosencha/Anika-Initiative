@@ -35,10 +35,10 @@ export function AuthProvider({ children }) {
     })
 
     const login = async (email, password) => {
-        const { user: account, accessToken } = await loginRequest({ email, password });
+        const { user: account, accessToken, refreshToken } = await loginRequest({ email, password });
         setUser(account);
         setToken(accessToken);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: account, token: accessToken }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ user: account, token: accessToken, refreshToken }));
         return account;
     };
 
