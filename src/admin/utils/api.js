@@ -1,16 +1,15 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const STORAGE_KEY = 'anika_admin_session';
 
 function getSession() {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return null;
   try {
-    return JSON.parse(stored).token || null;
+    return JSON.parse(stored);
   } catch {
     return null;
   }
 }
-
 
 function saveAccessToken(newAccessToken) {
   const session = getSession();
@@ -18,21 +17,18 @@ function saveAccessToken(newAccessToken) {
   session.token = newAccessToken;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
- 
+
 function clearSession() {
   localStorage.removeItem(STORAGE_KEY);
   window.dispatchEvent(new Event('auth:unauthorized'));
 }
 
-
-// Prevents multiple simultaneous requests from each independently firing
-// their own /refresh call if several 401 at once
 let refreshPromise = null;
- 
+
 async function refreshAccessToken() {
   const session = getSession();
   if (!session?.refreshToken) return null;
- 
+
   if (!refreshPromise) {
     refreshPromise = fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
@@ -48,69 +44,57 @@ async function refreshAccessToken() {
         refreshPromise = null;
       });
   }
- 
+
   return refreshPromise;
 }
 
-
 /**
- * Wraps fetch() to automatically:
- *  - prefix the API base URL
- *  - attach Authorization: Bearer <token> when a token exists
- *  - set JSON headers/parsing by default
- * - on 401, silently try refreshing access token and retrying request
- *  - throw a readable Error on non-2xx responses, with the backend's
- *    message when available (e.g. "Role 'comms' does not have access to 'donations'")
- *
- * Usage:
- *   const contacts = await apiRequest('/api/contacts');
- *   const updated = await apiRequest(`/api/contacts/${id}`, { method: 'PATCH', body: { status: 'archived' } });
+ * apiRequest – authenticated fetch with token refresh and FormData support.
  */
-
-
 export async function apiRequest(path, { method = 'GET', body, headers = {}, ...rest } = {}) {
-    const doFetch = async () => {
-        const session = getSession();
-        const token = session?.token;
+  const isFormData = body instanceof FormData;
 
-        const response = await fetch(`${API_BASE_URL}${path}`, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                ...headers,
-            },
-            body: body !== undefined ? JSON.stringify(body) : undefined,
-            ...rest,
-        });
-        // No JSON body on some responses (e.g. 204 No Content from delete_story)
-        const data = await response.json().catch(() => null);
-        return { response, data };
+  const doFetch = async () => {
+    const session = getSession();
+    const token = session?.token;
+
+    const requestHeaders = {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
     };
 
-    let { response, data } = await doFetch();
+    const requestBody = isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined);
 
-    if (response.status === 401) {
-        const newAccessToken = await refreshAccessToken();
-        
-        if (newAccessToken) {
-            // Refresh worked -- save the new token and retry the original
-            // request once, transparently. The user never sees this happen.
-            saveAccessToken(newAccessToken);
-            ({ response, data } = await doFetch());
-        } else {
-            // Refresh token missing/expired too -- this is a real logout, not
-            // a recoverable blip.
-            clearSession();
-        }
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: requestHeaders,
+      body: requestBody,
+      ...rest,
+    });
+
+    const data = await response.json().catch(() => null);
+    return { response, data };
+  };
+
+  let { response, data } = await doFetch();
+
+  if (response.status === 401) {
+    const newAccessToken = await refreshAccessToken();
+    if (newAccessToken) {
+      saveAccessToken(newAccessToken);
+      ({ response, data } = await doFetch());
+    } else {
+      clearSession();
     }
+  }
 
-    if (!response.ok) {
-        const message = data?.message || data?.error || `Request failed (${response.status})`;
-        const error = new Error(message);
-        error.status = response.status;
-        throw error;
-    }
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Request failed (${response.status})`;
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
 
-    return data;
+  return data;
 }
