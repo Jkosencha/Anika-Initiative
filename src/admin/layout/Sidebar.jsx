@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { navSections } from '../nav'
 import { useAuth } from '../auth/AuthContext'
+import { getInitials } from '../utils/getInitials'
 
 function Sidebar({ open, onClose }) {
   const {user, logout} = useAuth()
@@ -88,7 +89,7 @@ function Sidebar({ open, onClose }) {
 
         <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
-            {user?.initials}
+            {getInitials(user?.name)}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-cream">{user?.name}</p>
