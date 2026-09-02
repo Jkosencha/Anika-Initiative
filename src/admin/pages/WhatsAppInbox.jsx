@@ -83,6 +83,7 @@ export default function WhatsAppInbox() {
 
   const unreadTotal = conversations.reduce((s, c) => s + c.unread, 0);
   const openCount = conversations.filter((c) => !c.resolved).length;
+  const optedOutCount = conversations.filter((c) => c.optedOut).length;
 
   const filtered = useMemo(() => {
     let result = conversations;
@@ -157,6 +158,12 @@ export default function WhatsAppInbox() {
         <StatBox colors={COLORS} label="UNREAD" value={unreadTotal} dotColor="#e2a63f" />
         <StatBox colors={COLORS} label="TOTAL THREADS" value={conversations.length} dotColor={COLORS.blue} />
         <StatBox colors={COLORS} label="RESOLVED" value={conversations.filter((c) => c.resolved).length} dotColor="#3c8a4c" />
+      </div>
+      <div className="mt-3 text-xs" style={{ color: COLORS.muted }}>
+        <span className="inline-flex items-center gap-1.5 font-semibold" style={{ color: "#b23b3b" }}>
+          <span className="w-2 h-2 rounded-full" style={{ background: "#b23b3b" }} /> {optedOutCount} opted out
+        </span>{" "}
+        - excluded from WhatsApp broadcasts
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,0.8fr)_1.6fr] gap-4" style={{ minHeight: "60vh" }}>

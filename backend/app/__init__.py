@@ -73,6 +73,11 @@ def create_app(config_class=Config):
     from app.models.gallery import GalleryImage
     from app.models.story import Story
     from app.models.user import User
+    from app.models.event import Event
+    from app.models.registration import Registration
+    from app.models.whatsapp_conversation import WhatsAppConversation
+    from app.models.whatsapp_broadcast import WhatsAppBroadcast
+    from app.models.whatsapp_settings import WhatsAppSettings
 
     from app.routes import (
         applications_bp,
@@ -82,6 +87,10 @@ def create_app(config_class=Config):
         gallery_bp,
         health_bp,
         stories_bp,
+        events_bp,
+        registrations_bp,
+        whatsapp_bp,
+        metrics_bp,
     )
 
     app.register_blueprint(health_bp)
@@ -91,6 +100,10 @@ def create_app(config_class=Config):
     app.register_blueprint(stories_bp)
     app.register_blueprint(contacts_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(events_bp)
+    app.register_blueprint(registrations_bp)
+    app.register_blueprint(whatsapp_bp)
+    app.register_blueprint(metrics_bp)
 
     with app.app_context():
         db.create_all()

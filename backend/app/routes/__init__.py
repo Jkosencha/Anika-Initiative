@@ -6,5 +6,21 @@ from .applications import applications_bp
 from .auth import auth_bp
 from .contacts import contacts_bp
 from .health import health_bp
+from .events import events_bp
+from .registrations import registrations_bp
+from .whatsapp import whatsapp_bp
+from .metrics import metrics_bp
 
-__all__ = ["applications_bp", "auth_bp", "contacts_bp", "donations_bp", "gallery_bp", "health_bp", "stories_bp"]
+__all__ = [
+    "health_bp",
+    "donations_bp",
+    "applications_bp",
+    "auth_bp",
+    "gallery_bp",
+    "stories_bp",
+    "contacts_bp",
+    "events_bp",
+    "registrations_bp",
+    "whatsapp_bp",
+    "metrics_bp",
+]

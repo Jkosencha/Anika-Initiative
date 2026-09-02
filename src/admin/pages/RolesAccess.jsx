@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check } from 'lucide-react'
 import { useAdminColors } from '../theme'
 import { navSections } from '../nav'
+import { DEFAULT_PAGE_ACCESS, getAccessOverrides, saveAccessOverrides } from '../access'
 
 const roles = ['leadership', 'comms', 'programs', 'mel']
 
@@ -12,28 +13,28 @@ const roleLabels = {
   mel: 'M&E',
 }
 
-const sections = navSections.flatMap((section) => section.items.map((item) => item.label))
-
-// Leadership is always true and locked — seeded here for completeness but never read.
-const defaultAccess = {
-  Dashboard: { leadership: true, comms: true, programs: true, mel: true },
-  Contacts: { leadership: true, comms: true, programs: true, mel: false },
-  Events: { leadership: true, comms: false, programs: true, mel: false },
-  Registrations: { leadership: true, comms: false, programs: true, mel: false },
-  Applications: { leadership: true, comms: false, programs: true, mel: false },
-  Partners: { leadership: true, comms: false, programs: true, mel: false },
-  Stories: { leadership: true, comms: true, programs: false, mel: false },
-  Gallery: { leadership: true, comms: true, programs: false, mel: false },
-  'WhatsApp broadcast': { leadership: true, comms: true, programs: false, mel: false },
-  'WhatsApp inbox': { leadership: true, comms: true, programs: false, mel: false },
-  Messages: { leadership: true, comms: true, programs: false, mel: false },
-  Contributions: { leadership: true, comms: false, programs: false, mel: true },
-  Impact: { leadership: true, comms: false, programs: true, mel: true },
-  Reports: { leadership: true, comms: false, programs: false, mel: true },
-  Team: { leadership: true, comms: false, programs: false, mel: false },
-  Settings: { leadership: true, comms: false, programs: false, mel: false },
-  'Roles & access': { leadership: true, comms: false, programs: false, mel: false },
+// Sidebar label -> access.js page key. Rows are driven by the actual nav, so this
+// stays in sync with what's really in the sidebar.
+const LABEL_TO_KEY = {
+  Dashboard: 'dashboard',
+  Contacts: 'contacts',
+  Events: 'events',
+  Registrations: 'registrations',
+  Applications: 'applications',
+  Partners: 'partners',
+  Stories: 'stories',
+  Gallery: 'gallery',
+  'WhatsApp broadcast': 'whatsappBroadcast',
+  'WhatsApp inbox': 'whatsappInbox',
+  Contributions: 'donations',
+  Impact: 'impact',
+  Reports: 'reports',
+  Team: 'team',
+  Settings: 'settings',
+  'Roles & access': 'roles',
 }
+
+const sections = navSections.flatMap((section) => section.items.map((item) => item.label))
 
 function RoleCheckbox({ checked, disabled, onChange, colors }) {
   return (
@@ -57,13 +58,22 @@ function RoleCheckbox({ checked, disabled, onChange, colors }) {
 
 function RolesAccess() {
   const COLORS = useAdminColors()
-  const [access, setAccess] = useState(defaultAccess)
+  const [overrides, setOverrides] = useState(() => getAccessOverrides())
+
+  function isChecked(section, role) {
+    const key = LABEL_TO_KEY[section]
+    const override = overrides[key]?.[role]
+    if (override != null) return override
+    return Boolean(DEFAULT_PAGE_ACCESS[key]?.includes(role))
+  }
 
   function toggle(section, role) {
-    setAccess((prev) => ({
-      ...prev,
-      [section]: { ...prev[section], [role]: !prev[section][role] },
-    }))
+    const key = LABEL_TO_KEY[section]
+    setOverrides((prev) => {
+      const next = { ...prev, [key]: { ...prev[key], [role]: !isChecked(section, role) } }
+      saveAccessOverrides(next)
+      return next
+    })
   }
 
   return (
@@ -106,7 +116,7 @@ function RolesAccess() {
                   ) : (
                     <td key={role} className="px-5 py-3">
                       <RoleCheckbox
-                        checked={access[section][role]}
+                        checked={isChecked(section, role)}
                         onChange={() => toggle(section, role)}
                         colors={COLORS}
                       />

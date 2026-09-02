@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
+import { submitApplication } from '../lib/api'
 
 const BENEFITS = [
   { title: 'Residencies', text: 'Priority access to cross-border artistic residencies.', accent: 'gold' },
@@ -16,17 +17,40 @@ const accentBar = {
   coral: 'bg-coral',
 };
 
+// Maps the Alliance "I am a..." role to the backend Application subject enum.
+const ROLE_SUBJECT = {
+  'Artist': 'artist',
+  'Cultural Organisation': 'partnership',
+  'Enabler / Partner': 'partnership',
+  'Institution': 'partnership',
+};
+
 export default function AlliancePage() {
-  const [form, setForm] = useState({ name: '', org: '', country: '', phone: '', role: '', consent: true });
+  const [form, setForm] = useState({ name: '', email: '', org: '', country: '', phone: '', role: '', consent: true });
   const [status, setStatus] = useState(null);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || form.phone.trim().length < 9) {
+    if (!form.name.trim() || !form.email.trim() || form.phone.trim().length < 9) {
       setStatus('error')
       return
     }
-    setStatus('done')
+    setStatus('submitting')
+    try {
+      await submitApplication({
+        name: form.name,
+        email: form.email || undefined,
+        phone: form.phone,
+        organisation: form.org || undefined,
+        country: form.country || undefined,
+        subject: ROLE_SUBJECT[form.role] || 'partnership',
+        message: `Alliance membership application. Role: ${form.role || 'Artist'}`,
+        whatsapp_opt_in: form.consent,
+      })
+      setStatus('done')
+    } catch {
+      setStatus('error')
+    }
   }
 
   return (
@@ -165,6 +189,20 @@ export default function AlliancePage() {
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
                 </div>
+                <div>
+                  <label htmlFor="a-email" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                    Email
+                  </label>
+                  <input
+                    id="a-email"
+                    type="email"
+                    required
+                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                    placeholder="peter@example.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  />
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="a-org" className="mb-1 block font-body text-xs font-extrabold uppercase">
@@ -236,7 +274,7 @@ export default function AlliancePage() {
 
                 {status === 'error' && (
                   <p className="font-body text-sm font-semibold text-coral">
-                    Please provide your name and a valid WhatsApp number.
+                    Please provide your name, email and a valid WhatsApp number.
                   </p>
                 )}
 

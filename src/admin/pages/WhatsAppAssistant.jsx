@@ -71,13 +71,13 @@ export default function WhatsAppAssistant() {
   const [draft, setDraft] = useState("");
   const [stats, setStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 });
 
-  function rebuildChatFromContact(contact) {
+  function rebuildChatFromContact(contact, greeting) {
     if (!contact) return;
     const msgs = (contact.messages || []).map((m) => ({
       from: m.from === "me" ? "bot" : "user",
       text: m.text,
     }));
-    setChat([{ from: "bot", text: contact.greeting || settings.greeting }, ...msgs]);
+    setChat([{ from: "bot", text: greeting || settings.greeting }, ...msgs]);
   }
 
   function refreshStats() {
@@ -105,6 +105,7 @@ export default function WhatsAppAssistant() {
       }
     });
     refreshStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function replyFor(input) {
