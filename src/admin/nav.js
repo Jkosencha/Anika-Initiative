@@ -32,8 +32,8 @@ export const navSections = [
     label: 'Programs',
     items: [
       { label: 'Events', to: '/admin/events', icon: CalendarDays, allowedRoles: PAGE_ACCESS.events },
-      { label: 'Registrations', to: '/admin/registrations', icon: ClipboardList, badge: 37, allowedRoles: PAGE_ACCESS.registrations },
-      { label: 'Applications', to: '/admin/applications', icon: FileText, badge: 6, allowedRoles: PAGE_ACCESS.applications },
+      { label: 'Registrations', to: '/admin/registrations', icon: ClipboardList, badgeKey: 'registrations', allowedRoles: PAGE_ACCESS.registrations },
+      { label: 'Applications', to: '/admin/applications', icon: FileText, badgeKey: 'applications', allowedRoles: PAGE_ACCESS.applications },
       { label: 'Partners', to: '/admin/partners', icon: Handshake, allowedRoles: PAGE_ACCESS.partners },
     ],
   },
@@ -43,7 +43,7 @@ export const navSections = [
       { label: 'Stories', to: '/admin/stories', icon: BookOpen, allowedRoles: PAGE_ACCESS.stories},
       { label: 'Gallery', to: '/admin/gallery', icon: Image, allowedRoles: PAGE_ACCESS.gallery },
       { label: 'WhatsApp broadcast', to: '/admin/whatsapp/broadcast', icon: Megaphone, allowedRoles: PAGE_ACCESS.whatsappBroadcast },
-      { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badge: 3, badgeAccent: true, allowedRoles: PAGE_ACCESS.whatsappInbox },
+      { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badgeKey: 'whatsappInboxUnread', badgeAccent: true, allowedRoles: PAGE_ACCESS.whatsappInbox },
     ],
   },
   {
