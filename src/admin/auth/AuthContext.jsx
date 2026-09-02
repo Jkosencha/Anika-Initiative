@@ -29,8 +29,12 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        setUser(null);
         localStorage.removeItem(STORAGE_KEY);
+        // Hard navigation (not React Router) so the app re-boots from scratch on
+        // next sign-in — access.js/nav.js compute their role-access matrix once
+        // per page load, so a plain state clear would leave saved Roles & Access
+        // changes invisible until an unrelated manual refresh.
+        window.location.href = '/admin/login';
     };
 
     return (
