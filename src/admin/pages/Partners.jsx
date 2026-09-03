@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { X, Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { usePartners } from "../../features/about/context/PartnerContext";

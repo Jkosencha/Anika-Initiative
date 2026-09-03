@@ -29,7 +29,7 @@ const OTHER_EVENTS = [
     id: 'evt-1',
     pillar: 'PERFORMANCE',
     pillarColor: '#EB4C47',
-    badgeBg: 'bg-[#EB4C47]',
+    badgeBg: 'bg-coral',
     dateNum: '06',
     dateMonth: 'SEP',
     title: 'Open Mic',
@@ -77,7 +77,7 @@ const OTHER_EVENTS = [
     id: 'evt-4',
     pillar: 'PERFORMANCE',
     pillarColor: '#EB4C47',
-    badgeBg: 'bg-[#EB4C47]',
+    badgeBg: 'bg-coral',
     dateNum: '26',
     dateMonth: 'NOV',
     title: 'Heritage Arts Festival',
@@ -92,7 +92,7 @@ const OTHER_EVENTS = [
 ];
 
 const PILLAR_STYLE = {
-  PERFORMANCE: { color: '#EB4C47', badge: 'bg-[#EB4C47]' },
+  PERFORMANCE: { color: '#EB4C47', badge: 'bg-coral' },
   DIALOGUE: { color: '#219653', badge: 'bg-[#219653]' },
   WORKSHOP: { color: '#E2A03F', badge: 'bg-[#E2A03F]' },
 };
@@ -188,7 +188,7 @@ export default function EventsList() {
   };
 
   return (
-    <div className="bg-[#ede8df] min-h-screen text-gray-900 font-sans">
+    <div className="bg-cream min-h-screen text-gray-900 font-sans">
       
       {/* 1. HERO SECTION */}
       <Reveal>
@@ -218,13 +218,13 @@ export default function EventsList() {
         {/* 2A. UPCOMING FEATURED EVENT */}
         <Reveal>
         <section>
-          <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block mb-3">
+          <span className="text-xs font-bold text-coral uppercase tracking-wider block mb-3">
             UPCOMING EVENT
           </span>
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md grid grid-cols-1 md:grid-cols-12">
             
             {/* Poster Image */}
-            <div className="relative h-80 overflow-hidden bg-black md:col-span-5 md:h-[26rem]">
+            <div className="relative h-80 overflow-hidden bg-black md:col-span-5 md:h-104">
               <img 
                 src={FEATURED_EVENT.image} 
                 alt={FEATURED_EVENT.title} 
@@ -238,7 +238,7 @@ export default function EventsList() {
                 <h2 className="text-2xl font-bold text-gray-900 leading-snug">
                   {FEATURED_EVENT.title}
                 </h2>
-                <p className="text-xs font-semibold text-[#EB4C47] mt-1">
+                <p className="text-xs font-semibold text-coral mt-1">
                   {FEATURED_EVENT.dateStr}
                 </p>
                 <p className="text-xs font-semibold text-[#219653] mt-0.5">
@@ -252,7 +252,7 @@ export default function EventsList() {
               <div>
                 <button
                   onClick={() => toggleForm(FEATURED_EVENT.id)}
-                  className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white font-bold text-xs uppercase px-6 py-3 rounded tracking-wider transition-colors inline-flex items-center gap-2"
+                  className="bg-coral hover:bg-[#d43f3a] text-white font-bold text-xs uppercase px-6 py-3 rounded tracking-wider transition-colors inline-flex items-center gap-2"
                 >
                   {openFormId === FEATURED_EVENT.id ? 'CLOSE FORM' : 'REGISTER FOR FESTIVAL'}
                   {openFormId === FEATURED_EVENT.id ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
@@ -263,7 +263,7 @@ export default function EventsList() {
 
           {/* Inline Form Drawer for Featured Event */}
           {openFormId === FEATURED_EVENT.id && (
-            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-[#FFF] p-6 shadow-md md:p-8">
+            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-white p-6 shadow-md md:p-8">
               {renderRegistrationForm(FEATURED_EVENT.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
             </div>
           )}
@@ -274,7 +274,7 @@ export default function EventsList() {
         {/* 2B. OTHER EVENTS SECTION */}
         <Reveal>
         <section className="space-y-6">
-          <span className="text-xs font-bold text-[#EB4C47] uppercase tracking-wider block">
+          <span className="text-xs font-bold text-coral uppercase tracking-wider block">
             OTHER EVENTS
           </span>
 
@@ -314,13 +314,13 @@ export default function EventsList() {
                   <div className="flex items-center gap-4">
                     
                     {/* Colored Date Badge */}
-                    <div className={`${evt.badgeBg} text-white text-center py-3 px-4 rounded-md min-w-[65px] flex-shrink-0`}>
+                    <div className={`${evt.badgeBg} text-white text-center py-3 px-4 rounded-md min-w-16.25 shrink-0`}>
                       <div className="text-2xl font-black leading-none">{evt.dateNum}</div>
                       <div className="text-[10px] font-bold tracking-widest mt-0.5">{evt.dateMonth}</div>
                     </div>
 
                     {/* Thumbnail */}
-                    <div className="hidden h-24 w-32 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-200 sm:block">
+                    <div className="hidden h-24 w-32 shrink-0 overflow-hidden rounded-md border border-gray-200 bg-gray-200 sm:block">
                       <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
                     </div>
 
@@ -339,10 +339,10 @@ export default function EventsList() {
                   </div>
 
                   {/* Register Trigger */}
-                  <div className="flex-shrink-0 self-end md:self-center">
+                  <div className="shrink-0 self-end md:self-center">
                     <button
                       onClick={() => toggleForm(evt.id)}
-                      className="bg-[#EB4C47] hover:bg-[#d43f3a] text-white text-xs font-bold uppercase px-5 py-2.5 rounded tracking-wider transition-colors inline-flex items-center gap-1.5"
+                      className="bg-coral hover:bg-[#d43f3a] text-white text-xs font-bold uppercase px-5 py-2.5 rounded tracking-wider transition-colors inline-flex items-center gap-1.5"
                     >
                       REGISTER
                       {openFormId === evt.id ? <ChevronUpIcon className="w-3.5 h-3.5" /> : <ChevronDownIcon className="w-3.5 h-3.5" />}
@@ -356,9 +356,9 @@ export default function EventsList() {
                     
                     {/* Rich Meta Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-700 font-medium mb-5 pb-4 border-b border-gray-200">
-                      <p className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.dateStr}</p>
+                      <p className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5 text-coral" /> {evt.dateStr}</p>
                       <p className="flex items-center gap-1.5"><ClockIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.timeStr}</p>
-                      <p className="flex items-center gap-1.5"><MapPinIcon className="w-3.5 h-3.5 text-[#EB4C47]" /> {evt.location}</p>
+                      <p className="flex items-center gap-1.5"><MapPinIcon className="w-3.5 h-3.5 text-coral" /> {evt.location}</p>
                       <p className="flex items-center gap-1.5"><UsersIcon className="w-3.5 h-3.5 text-gray-500" /> {evt.seats}</p>
                     </div>
 
@@ -406,7 +406,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
             placeholder="First and Last Name"
             value={currentForm.fullName}
             onChange={(e) => handleInputChange(eventId, 'fullName', e.target.value)}
-            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-[#EB4C47] focus:outline-none focus:ring-2 focus:ring-[#EB4C47]/20"
+            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
           />
         </div>
 
@@ -418,7 +418,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
             placeholder="+254 712 345 678"
             value={currentForm.whatsappNumber}
             onChange={(e) => handleInputChange(eventId, 'whatsappNumber', e.target.value)}
-            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-[#EB4C47] focus:outline-none focus:ring-2 focus:ring-[#EB4C47]/20"
+            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
           />
         </div>
       </div>
@@ -439,7 +439,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
       <button
         type="submit"
         disabled={loading[eventId]}
-        className="inline-flex items-center rounded bg-[#EB4C47] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#d43f3a]"
+        className="inline-flex items-center rounded bg-coral px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#d43f3a]"
       >
         {loading[eventId] ? 'CONFIRMING...' : 'CONFIRM SEAT'}
       </button>

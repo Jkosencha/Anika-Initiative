@@ -1,5 +1,5 @@
 // admin/pages/stories/StoryEditor.jsx
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -49,17 +49,6 @@ const darkColors = {
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
 };
-
-const AVOID_PHRASES = [
-  'the voiceless',
-  'giving people a voice',
-  'saving them',
-  'rescuing',
-  'helpless',
-  'beneficiaries',
-  'sensitise',
-  'victims',
-]
 
 // Gallery images from AdminGallery
 const GALLERY_IMAGES = [
@@ -160,7 +149,7 @@ function Toolbar({ editor }) {
 }
 
 // Gallery Picker Modal Component
-function GalleryPicker({ onClose, onSelect, colors }) {
+function GalleryPicker({ onClose, onSelect }) {
   const [selectedUrl, setSelectedUrl] = useState(null)
   const [uploadPreview, setUploadPreview] = useState(null)
   const fileInputRef = useRef(null)
@@ -267,7 +256,6 @@ function StoryEditor({ story, onCancel, onSave }) {
   const { theme } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
-  const isNew = !story
   const [title, setTitle] = useState(story?.title || '')
   const [pillarSlug, setPillarSlug] = useState(() => {
     const mapping = {

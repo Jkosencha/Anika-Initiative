@@ -77,13 +77,13 @@ const roles = [
 
 const roleColors = {
   artist: {
-    bg: "bg-[#eb4c47]/10",
+    bg: "bg-coral/10",
     border: "border-[#eb4c47]",
     ring: "ring-[#eb4c47]",
-    text: "text-[#eb4c47]",
-    button: "bg-[#eb4c47] hover:bg-[#d43d3a]",
-    icon: "text-[#eb4c47]",
-    box: "bg-[#eb4c47]",
+    text: "text-coral",
+    button: "bg-coral hover:bg-[#d43d3a]",
+    icon: "text-coral",
+    box: "bg-coral",
   },
   volunteer: {
     bg: "bg-green-50",
@@ -199,7 +199,7 @@ const GetInvolved = () => {
         return;
       }
       if (result.normalized) {
-        formData.phone = result.normalized;
+        setFormData((previous) => ({ ...previous, phone: result.normalized }));
       }
     }
 
@@ -300,8 +300,8 @@ const GetInvolved = () => {
             const Icon = way.icon;
             return (
               <Reveal key={way.title} delay={index * 150}>
-                <article className="flex min-h-[320px] flex-col items-center rounded-xl border border-[#e8e2d8] bg-[#fcf9f6] p-8 text-center shadow-sm transition-shadow hover:shadow-md">
-                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#eb4c47]/10 text-[#eb4c47]">
+                <article className="flex min-h-80 flex-col items-center rounded-xl border border-[#e8e2d8] bg-[#fcf9f6] p-8 text-center shadow-sm transition-shadow hover:shadow-md">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-coral/10 text-coral">
                     <Icon size={34} strokeWidth={1.8} aria-hidden="true" />
                   </div>
                   <h2 className="mb-3 text-2xl font-bold">{way.title}</h2>
@@ -311,7 +311,7 @@ const GetInvolved = () => {
                   <button
                     type="button"
                     onClick={way.action}
-                    className="rounded-md bg-[#eb4c47] px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#d43d3a] focus:outline-none focus:ring-2 focus:ring-[#eb4c47] focus:ring-offset-2 cursor-pointer"
+                    className="rounded-md bg-coral px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#d43d3a] focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 cursor-pointer"
                   >
                     {way.cta}
                   </button>
@@ -540,7 +540,7 @@ const GetInvolved = () => {
                   type="checkbox"
                   checked={whatsappOptIn}
                   onChange={(e) => setWhatsappOptIn(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#eb4c47] focus:ring-[#eb4c47]"
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-coral focus:ring-coral"
                 />
                 <span className="text-sm text-gray-600 flex items-start gap-2">
                   <MessageCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />

@@ -1,8 +1,8 @@
 // admin/pages/stories/Stories.jsx
-import React, { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Eye, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useOutletContext } from 'react-router-dom'
-import { PILLARS, getPillar, STATUS_STYLES, STATUS_LABELS } from './data/pillars'
+import { getPillar, STATUS_STYLES, STATUS_LABELS } from './data/pillars'
 import StoryEditor from './StoryEditor'
 import { storiesStore } from '../../../data/storiesStore'
 
@@ -256,7 +256,7 @@ function Stories() {
         border: `1px solid ${COLORS.border}` 
       }}>
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-205"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
@@ -286,7 +286,7 @@ function Stories() {
           return (
             <div
               key={story.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-205"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns: "2fr 1.2fr 1fr 1fr 1.2fr 1fr 0.8fr",

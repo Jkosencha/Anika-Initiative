@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import StoryDetail from "./components/StoryDetail.jsx";
 import { storiesStore } from "../../data/storiesStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Reveal from "./components/Reveal.jsx";
 
 export default function StoryDetailView() {
@@ -9,7 +9,7 @@ export default function StoryDetailView() {
   const [story, setStory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadStory = async () => {
+  const loadStory = useCallback(async () => {
     setIsLoading(true);
     try {
       const found = await storiesStore.getBySlug(slug);
@@ -20,13 +20,13 @@ export default function StoryDetailView() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [slug]);
 
   useEffect(() => {
     loadStory();
     const unsubscribe = storiesStore.subscribe(loadStory);
     return unsubscribe;
-  }, [slug]);
+  }, [loadStory]);
 
   if (isLoading) {
     return (

@@ -148,7 +148,8 @@ function Dashboard() {
   const [donations, setDonations] = useState([])
   const [registrations, setRegistrations] = useState([])
   const [events, setEvents] = useState([])
-  const [waStats, setWaStats, stories, setStories] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 })
+  const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 })
+  const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
   const [newRegistrationsThisWeek, setNewRegistrationsThisWeek] = useState(0)
 
@@ -159,37 +160,16 @@ function Dashboard() {
     whatsapp: '#25D366',
   }
 
-  // WhatsApp items are injected at the top of the activity feed.
-  const liveActivity = useMemo(() => {
-    const items = [...recentActivity]
-    if (waStats.escalated > 0) {
-      items.unshift({
-        text: `${waStats.escalated} WhatsApp ${waStats.escalated === 1 ? 'conversation needs' : 'conversations need'} a human reply (HELP routed)`,
-        time: 'Routing from the assistant',
-        to: '/admin/whatsapp/inbox',
-        type: 'whatsapp',
-      })
-    }
-    if (waStats.unread > 0) {
-      items.unshift({
-        text: `${waStats.unread} unread WhatsApp ${waStats.unread === 1 ? 'message' : 'messages'} in the inbox`,
-        time: 'Answered by Anika Assistant',
-        to: '/admin/whatsapp/inbox',
-        type: 'whatsapp',
-      })
-    }
-    return items
-  }, [waStats])
-
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents(), storiesStore.getAll().catch(() => [])]), fetchWhatsAppStats()]).then(
+    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents(), fetchWhatsAppStats(), storiesStore.getAll().catch(() => [])]).then(
       ([donationsRes, registrationsRes, eventsRes, waRes, storiesRows]) => {
         if (cancelled) return
         setDonations(donationsRes.rows.map(normalizeDonation))
         setRegistrations(registrationsRes.rows)
         setEvents(eventsRes.rows)
         setWaStats(waRes || { threads: 0, optedOut: 0, escalated: 0, unread: 0 })
+        setStories(storiesRows)
         const now = Date.now()
         setNewRegistrationsThisWeek(
           registrationsRes.rows.filter((r) => r.createdAt && now - new Date(r.createdAt).getTime() < WEEK_MS).length
@@ -227,6 +207,23 @@ function Dashboard() {
     () => buildRecentActivity(registrations, donations, stories),
     [registrations, donations, stories]
   )
+  const liveActivity = [...recentActivity]
+  if (waStats.escalated > 0) {
+    liveActivity.unshift({
+      text: `${waStats.escalated} WhatsApp ${waStats.escalated === 1 ? 'conversation needs' : 'conversations need'} a human reply (HELP routed)`,
+      time: 'Routing from the assistant',
+      to: '/admin/whatsapp/inbox',
+      type: 'whatsapp',
+    })
+  }
+  if (waStats.unread > 0) {
+    liveActivity.unshift({
+      text: `${waStats.unread} unread WhatsApp ${waStats.unread === 1 ? 'message' : 'messages'} in the inbox`,
+      time: 'Answered by Anika Assistant',
+      to: '/admin/whatsapp/inbox',
+      type: 'whatsapp',
+    })
+  }
 
   return (
     <div style={{ background: COLORS.bg, minHeight: '100%' }} className="rounded-lg p-6 font-sans">

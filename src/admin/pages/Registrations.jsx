@@ -60,7 +60,7 @@ function downloadCSV(rows, filename) {
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
         <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
@@ -248,7 +248,7 @@ export default function AdminRegistrations() {
       </div>
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
-        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[980px]" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-245" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
           <div>ATTENDEE</div><div>EVENT</div><div>PHONE</div><div>DATE</div><div>SOURCE</div><div>WHATSAPP</div><div>STATUS</div>
         </div>
         {filtered.length === 0 && (
@@ -257,7 +257,7 @@ export default function AdminRegistrations() {
         {filtered.map((r) => {
           const s = STATUS_STYLE[r.status] || STATUS_STYLE.Pending;
           return (
-            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[980px]" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-245" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
               <div className="flex items-center gap-3">
                 <div style={{ background: avatarColor(r.name) }} className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">{initials(r.name)}</div>
                 <span className="font-semibold text-sm" style={{ color: COLORS.text }}>{r.name}</span>

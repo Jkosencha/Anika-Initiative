@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { X, ChevronDown, Trash2, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { X, Trash2, Search } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { apiRequest } from "../utils/api"; 
@@ -364,7 +364,7 @@ export default function Applications() {
         method: 'PATCH',
         body: { status },
       });
-    } catch (err) {
+    } catch {
       setApplications(previous);
       toast.error("Failed to update status.");
     }
@@ -375,7 +375,7 @@ export default function Applications() {
     setApplications((prev) => prev.filter((a) => a.id !== id));
     try {
       await apiRequest(`/api/applications/${id}`, { method: 'DELETE' });
-    } catch (err) {
+    } catch {
       setApplications(previous);
       toast.error("Failed to delete application.");
     }

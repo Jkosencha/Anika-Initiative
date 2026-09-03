@@ -283,7 +283,7 @@ export default function AlliancePage() {
               <button
                 type="submit"
                 disabled={status === 'submitting'}
-                className="w-full rounded bg-[#EB4C47] px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a] disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full rounded bg-coral px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {status === 'submitting' ? 'Submitting...' : 'Request Membership'}
               </button>
