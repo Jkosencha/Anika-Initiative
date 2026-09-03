@@ -8,6 +8,7 @@ import {
   deleteRegistration,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
+import { normalizePhone, sanitizePhoneInput } from "../../lib/phone";
 
 const STATUS_STYLE = {
   Confirmed: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -67,12 +68,13 @@ function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
 
   function submit(e) {
     e.preventDefault();
-    if (!name.trim() || !event) return;
+    const normalizedPhone = normalizePhone(phone);
+    if (!name.trim() || !event || !normalizedPhone) return;
     onAdd({
       id: Date.now(),
       name: name.trim(),
       event,
-      phone: phone.trim() ? phone : "+254 7•• ••• 000",
+      phone: normalizedPhone,
       date: "Today " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       source: "Manual",
       consent,
@@ -95,7 +97,7 @@ function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>WhatsApp number</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254 712 000 000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
+            <input value={phone} onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))} placeholder="+254 712 000 000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>Event</label>

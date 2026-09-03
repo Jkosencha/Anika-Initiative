@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from app.extensions import db
 from app.models.contact import Contact
 from app.utils.decorators import require_permission
+from app.utils.phone import normalize_phone
 
 contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
 
@@ -62,11 +63,16 @@ def create_contact():
 
     if data['source'] not in ('donation', 'getinvolved'):
         return jsonify({'error': 'Invalid source.'}), 400
+    phone = data.get('phone')
+    if phone:
+      phone = normalize_phone(phone)
+      if not phone:
+        return jsonify({'error': 'phone must be a valid international number including country code'}), 400
 
     contact = Contact(
         name=data['name'],
         email=data['email'],
-        phone=data.get('phone'),
+        phone=phone,
         message=data.get('message'),
         source=data['source'],
         subject=data.get('subject'),
@@ -207,6 +213,10 @@ def update_contact(contact_id):
     """
     contact = Contact.query.get_or_404(contact_id)
     data = request.get_json() or {}
+    if data.get('phone'):
+      data['phone'] = normalize_phone(data['phone'])
+      if not data['phone']:
+        return jsonify({'error': 'phone must be a valid international number including country code'}), 400
     allowed = ['name', 'email', 'phone', 'message', 'status']
     for field in allowed:
         if field in data:

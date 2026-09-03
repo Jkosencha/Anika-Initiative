@@ -12,6 +12,7 @@ import {
   fetchWhatsAppStatus,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
+import { normalizePhone, sanitizePhoneInput } from "../../lib/phone";
 
 const FLOW_LABELS = {
   confirmRegistration: "Event registration confirmation (auto on form submit)",
@@ -141,7 +142,8 @@ export default function WhatsAppAssistant() {
     setSimulating(true);
 
     const name = simName.trim() || "Test Visitor";
-    const phone = simPhone.trim() || "+254 700 111 222";
+    const phone = normalizePhone(simPhone);
+    if (!phone) return;
 
     try {
       // Push the message through the real bot engine (same code the webhook
@@ -426,7 +428,7 @@ export default function WhatsAppAssistant() {
               />
               <input
                 value={simPhone}
-                onChange={(e) => setSimPhone(e.target.value)}
+                onChange={(e) => setSimPhone(sanitizePhoneInput(e.target.value))}
                 placeholder="+254 700 000 000"
                 className="px-3 py-1.5 rounded-lg text-sm outline-none min-w-0"
                 style={{ border: `1px solid ${COLORS.border}`, background: COLORS.inputBg, color: COLORS.text }}
