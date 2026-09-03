@@ -54,7 +54,6 @@ export default function ProgramCard({ program }) {
               className= {`inline-flex items-center gap-2 mt-4 text-sm font-semibold uppercase tracking-wide text-white px-5 py-2.5 transition-opacity duration-200 hover:opacity-90 ${accentBg[program.accentClass]}`}
           >
               Read {program.title} Stories
-              <ArrowRight size={14}/>
           </Link>
         </motion.div>
       </AnimatePresence>
