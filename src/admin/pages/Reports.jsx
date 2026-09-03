@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  Clock, X, Pencil, Trash2, Upload, FileText, AlertTriangle, Plus,
+  X, Pencil, Trash2, Upload, FileText, AlertTriangle,
 } from 'lucide-react'
 import { useAdminColors } from '../theme'
 import { useAuth } from '../auth/AuthContext'

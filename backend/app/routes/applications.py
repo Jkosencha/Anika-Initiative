@@ -11,6 +11,7 @@ from ..utils.email import (
     send_status_update_email,
     send_user_confirmation,
 )
+from app.utils.phone import normalize_phone
 
 applications_bp = Blueprint("applications", __name__, url_prefix="/api/applications")
 
@@ -120,10 +121,16 @@ def create_application():
         current_app.logger.warning("Rejected application submission, invalid subject: %s", subject)
         return jsonify({"error": f"Invalid subject. Must be one of {SUBJECTS}"}), 400
 
+    phone = (data.get("phone") or "").strip() or None
+    if phone:
+      phone = normalize_phone(phone)
+      if not phone:
+        return jsonify({"error": "phone must be a valid international number including country code"}), 400
+
     entry = Application(
         name=data["name"].strip(),
         email=data["email"].strip(),
-        phone=(data.get("phone") or "").strip() or None,
+        phone=phone,
         organisation=(data.get("organisation") or "").strip() or None,
         country=(data.get("country") or "").strip() or None,
         subject=subject,
