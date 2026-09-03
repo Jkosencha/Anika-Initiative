@@ -11,6 +11,7 @@ from ..utils.email import (
     send_status_update_email,
     send_user_confirmation,
 )
+from ..models.newsletter import NewsletterSubscriber  
 
 applications_bp = Blueprint("applications", __name__, url_prefix="/api/applications")
 
@@ -134,7 +135,6 @@ def create_application():
 
     db.session.add(entry)
 
-    # Create a contact record for the CRM (non‑blocking)
     create_contact_from_data(
         name=entry.name,
         email=entry.email,
@@ -151,7 +151,6 @@ def create_application():
         "New application #%s created (email=%s, subject=%s)", entry.id, entry.email, subject
     )
 
-    # Email failures should never break the submission itself
     try:
         send_org_notification(entry)
     except Exception:
@@ -214,6 +213,34 @@ def update_application(app_id):
     db.session.commit()
     current_app.logger.info("Application #%s status updated to %s", app_id, status)
 
+   
+    if entry.subject == 'newsletter' and status == 'Accepted':
+        try:
+            subscriber = NewsletterSubscriber.query.filter_by(email=entry.email).first()
+            if subscriber:
+
+                subscriber.name = entry.name
+                if not subscriber.is_active:
+                    subscriber.is_active = True
+                    subscriber.unsubscribed_at = None
+                    db.session.commit()
+                    current_app.logger.info(f"Newsletter subscriber re‑activated for {entry.email}")
+                else:
+                    db.session.commit()
+                    current_app.logger.info(f"Newsletter subscriber already active: {entry.email}")
+            else:
+                new_sub = NewsletterSubscriber(
+                    email=entry.email,
+                    name=entry.name,
+                    is_active=True
+                )
+                db.session.add(new_sub)
+                db.session.commit()
+                current_app.logger.info(f"Newsletter subscriber created for {entry.email}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to create/activate subscriber for {entry.email}: {e}")
+
+  
     try:
         send_status_update_email(entry, status)
     except Exception:
