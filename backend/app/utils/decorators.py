@@ -1,15 +1,14 @@
-# defines which resources can be used by which role
-
 from functools import wraps
 
-from flask import jsonify
+from flask import jsonify, request
 from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 RESOURCE_ACCESS = {
-    "leadership": "__all__",  # full access, bypasses the allow-list below
+    "leadership": "__all__", 
     "comms": {
         "dashboard", "contacts", "stories", "gallery",
         "whatsapp_broadcast", "whatsapp_inbox", "messages", "impact",
+        "newsletter",
     },
     "programs": {
         "dashboard", "contacts", "events", "registrations",
@@ -20,7 +19,7 @@ RESOURCE_ACCESS = {
     },
 }
 
-def role_has_access(role: str, resource:str) -> bool:
+def role_has_access(role: str, resource: str) -> bool:
     allowed = RESOURCE_ACCESS.get(role)
     if allowed == "__all__":
         return True
@@ -44,6 +43,9 @@ def require_permission(resource: str):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+          
+            if request.method == "OPTIONS":
+                return fn(*args, **kwargs)
             verify_jwt_in_request()
             claims = get_jwt()
             role = claims.get("role")
@@ -69,6 +71,8 @@ def require_role(*roles: str):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            if request.method == "OPTIONS":
+                return fn(*args, **kwargs)
             verify_jwt_in_request()
             claims = get_jwt()
             role = claims.get("role")

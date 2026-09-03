@@ -19,10 +19,11 @@ import AdminRegistrations from '../pages/Registrations';
 import AdminEvents from '../pages/Events';
 import Impact from '../pages/Impact';
 import Reports from '../pages/Reports';
+import Newsletter from '../pages/Newsletter';  
 
 export default function AdminRoutes() {
   return (
-     <Routes>
+    <Routes>
       <Route path="/" element={<AdminLayout />}>
         <Route index element={<ProtectedRoute allowedRoles={PAGE_ACCESS.dashboard}><Dashboard /></ProtectedRoute>} />
         <Route path="contacts" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.contacts}><Contacts /></ProtectedRoute>} />
@@ -41,6 +42,7 @@ export default function AdminRoutes() {
         <Route path="team" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.team}><Team /></ProtectedRoute>} />
         <Route path="settings" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.settings}><Settings /></ProtectedRoute>} />
         <Route path="roles" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.roles}><RolesAccess /></ProtectedRoute>} />
+        <Route path="newsletter" element={<ProtectedRoute allowedRoles={PAGE_ACCESS.newsletter}><Newsletter /></ProtectedRoute>} />   {/* 👈 NEW */}
       </Route>
     </Routes>
   );
