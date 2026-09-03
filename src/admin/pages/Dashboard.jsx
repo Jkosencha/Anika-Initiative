@@ -290,38 +290,18 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         <Card title="Recent activity" colors={COLORS}>
-          <ul>
-            {liveActivity.map((item) => (
-              <li key={item.text} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
-                <Link
-                  to={item.to}
-                  className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-black/5"
-                >
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: activityColor[item.type] }} />
-                  <div>
-                    <p className="text-sm" style={{ color: COLORS.text }}>
-                      {item.text}
-                    </p>
-                    <p className="text-xs" style={{ color: COLORS.muted }}>
-                      {item.time}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
           {loading ? (
             <p className="text-sm" style={{ color: COLORS.muted }}>
               Loading…
             </p>
-          ) : recentActivity.length === 0 ? (
+          ) : liveActivity.length === 0 ? (
             <p className="text-sm" style={{ color: COLORS.muted }}>
               No recent activity yet.
             </p>
           ) : (
             <ul>
-              {recentActivity.map((item) => (
-                <li key={item.id} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
+              {liveActivity.map((item) => (
+                <li key={item.id ?? item.text} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
                   <Link
                     to={item.to}
                     className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-black/5"
