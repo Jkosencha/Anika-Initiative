@@ -113,6 +113,7 @@ def create_app(config_class=Config):
         registrations_bp,
         whatsapp_bp,
         metrics_bp,
+        team_bp,
     )
 
     app.register_blueprint(health_bp)
@@ -126,6 +127,7 @@ def create_app(config_class=Config):
     app.register_blueprint(registrations_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(metrics_bp)
+    app.register_blueprint(team_bp)
 
     with app.app_context():
         db.create_all()

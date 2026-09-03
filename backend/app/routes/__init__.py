@@ -10,6 +10,7 @@ from .events import events_bp
 from .registrations import registrations_bp
 from .whatsapp import whatsapp_bp
 from .metrics import metrics_bp
+from .team import team_bp
 
 __all__ = [
     "health_bp",
@@ -23,4 +24,5 @@ __all__ = [
     "registrations_bp",
     "whatsapp_bp",
     "metrics_bp",
+    "team_bp",
 ]
