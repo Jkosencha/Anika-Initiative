@@ -13,6 +13,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
 
@@ -39,10 +40,14 @@ function Sidebar({ onOpenAccount }) {
     .filter((section) => section.items.length > 0)
 
   return (
-    <SidebarPrimitive className="border-sidebar-border">
+    <SidebarPrimitive collapsible="icon" className="border-sidebar-border">
       <SidebarHeader className="items-center gap-0 pt-5">
-        <img src="/anika-logo.png" alt="Anika Initiative" className="h-32 w-auto object-contain" />
-        <p className="px-6 pb-3 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+        <img
+          src="/anika-logo.png"
+          alt="Anika Initiative"
+          className="h-32 w-auto object-contain transition-all group-data-[collapsible=icon]:h-8"
+        />
+        <p className="px-6 pb-3 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
           Admin Desk
         </p>
       </SidebarHeader>
@@ -63,19 +68,20 @@ function Sidebar({ onOpenAccount }) {
                         to={to}
                         end={end}
                         onClick={closeOnMobile}
+                        title={label}
                         className={({ isActive }) =>
-                          `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                          `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2 ${
                             isActive
                               ? 'bg-white text-coral'
                               : 'text-sidebar-foreground/70 hover:bg-white/5 hover:text-sidebar-foreground'
                           }`
                         }
                       >
-                        <Icon size={18} strokeWidth={2} />
-                        <span className="flex-1">{label}</span>
+                        <Icon size={18} strokeWidth={2} className="shrink-0" />
+                        <span className="flex-1 group-data-[collapsible=icon]:hidden">{label}</span>
                         {badge != null && badge > 0 && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold group-data-[collapsible=icon]:hidden ${
                               badgeAccent ? 'bg-coral text-white' : 'bg-white/10 text-sidebar-foreground/70'
                             }`}
                           >
@@ -92,10 +98,11 @@ function Sidebar({ onOpenAccount }) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="flex-row items-center gap-3 border-t border-sidebar-border px-4 py-4">
+      <SidebarFooter className="flex-row items-center gap-3 border-t border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
         <button
           onClick={onOpenAccount}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left hover:bg-white/5"
+          title={user?.name}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left hover:bg-white/5 group-data-[collapsible=icon]:flex-none"
           aria-label="My account"
         >
           {user?.avatarUrl ? (
@@ -105,15 +112,20 @@ function Sidebar({ onOpenAccount }) {
               {getInitials(user?.name)}
             </div>
           )}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-medium text-sidebar-foreground">{user?.name}</p>
             <p className="truncate text-xs text-sidebar-foreground/50">{ROLE_LABELS[user?.role] ?? user?.role}</p>
           </div>
         </button>
-        <button onClick={logout} className="shrink-0 text-xs font-medium text-sidebar-foreground/50 hover:text-sidebar-foreground">
+        <button
+          onClick={logout}
+          title="Exit"
+          className="shrink-0 text-xs font-medium text-sidebar-foreground/50 hover:text-sidebar-foreground group-data-[collapsible=icon]:hidden"
+        >
           Exit
         </button>
       </SidebarFooter>
+      <SidebarRail />
     </SidebarPrimitive>
   )
 }
