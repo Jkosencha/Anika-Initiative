@@ -25,86 +25,6 @@ const PILLAR_COLORS = {
   Governance: "#1A1208",
 };
 
-const SEED = [
-  {
-    id: 1,
-    title: "Sema-Anika Community Dialogue Forum",
-    date: "Sat, 12 Sep 2026",
-    time: "14:00 EAT",
-    location: "Nairobi Cultural Centre",
-    pillar: "Arts & Culture",
-    capacity: 120,
-    registered: 98,
-    status: "Live",
-  },
-  {
-    id: 2,
-    title: "Try My Shoe: Youth Storytelling Lab",
-    date: "Thu, 24 Sep 2026",
-    time: "10:00 EAT",
-    location: "Kilimani Creative Space, Nairobi",
-    pillar: "Youth & Migration",
-    capacity: 40,
-    registered: 40,
-    status: "Full",
-  },
-  {
-    id: 3,
-    title: "Griphon x ANIKA: Poetry & Beat Night",
-    date: "Sat, 03 Oct 2026",
-    time: "19:00 EAT",
-    location: "The GoDown Arts Centre, Nairobi",
-    pillar: "Expressions",
-    capacity: 200,
-    registered: 152,
-    status: "Live",
-  },
-  {
-    id: 4,
-    title: "Gaining Grip: Creative Expression & Healing Lab",
-    date: "Sat, 17 Oct 2026",
-    time: "09:00 EAT",
-    location: "Karura Creative Space, Nairobi",
-    pillar: "Expressions",
-    capacity: 60,
-    registered: 21,
-    status: "Live",
-  },
-  {
-    id: 5,
-    title: "Y-Talks: Citizens' Civic Art Forum",
-    date: "Sat, 07 Nov 2026",
-    time: "14:00 EAT",
-    location: "Nairobi City Hall Amphitheatre",
-    pillar: "Governance",
-    capacity: 300,
-    registered: 88,
-    status: "Live",
-  },
-  {
-    id: 6,
-    title: "Her Story: Open Mic & Healing Forum",
-    date: "Sat, 21 Nov 2026",
-    time: "16:00 EAT",
-    location: "Kenya National Theatre, Nairobi",
-    pillar: "Gender & Development",
-    capacity: 150,
-    registered: 64,
-    status: "Live",
-  },
-  {
-    id: 7,
-    title: "Heritage Arts Festival (2027 planning)", 
-    date: "TBC",
-    time: "TBC",
-    location: "Nairobi",
-    pillar: "Arts & Culture",
-    capacity: 300,
-    registered: 0,
-    status: "Draft",
-  },
-];
-
 function toCSV(rows) {
   const header = ["Event", "Date", "Time", "Location", "Pillar", "Capacity", "Registered", "Status"];
   const lines = rows.map((r) =>
@@ -296,7 +216,7 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
 export default function AdminEvents() {
   const COLORS = useAdminColors();
 
-  const [events, setEvents] = useState(SEED);
+  const [events, setEvents] = useState([]);
   const [tab, setTab] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
@@ -304,7 +224,7 @@ export default function AdminEvents() {
 
   useEffect(() => {
     fetchEvents().then(({ rows }) => {
-      if (rows && rows.length) setEvents(rows);
+      setEvents(Array.isArray(rows) ? rows : []);
     });
   }, []);
 
