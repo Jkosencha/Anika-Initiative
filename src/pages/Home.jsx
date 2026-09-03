@@ -1,15 +1,45 @@
 
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
 import { whatsappUrl } from '../lib/whatsapp'
+import { fetchEvents } from '../lib/api'
+import { storiesStore } from '../data/storiesStore'
+import { PILLARS } from '../data/pillars'
 
-const stats = [
-  { target: 100, suffix: '+', label: 'Events Held', color: 'text-coral' },
-  { target: 2500, suffix: '+', label: 'Forum Participants', color: 'text-anika-green' },
-  { target: 150, suffix: '', label: 'Artists Engaged', color: 'text-gold' },
-  { target: 24, suffix: 'M+', label: 'Online Impressions', color: 'text-anika-blue' },
+// Same storage key + defaults as the admin "Impact metrics" editor
+// (src/admin/pages/Impact.jsx) — these stats are admin-edited there,
+// saved to localStorage, and read here so the two stay in sync.
+const IMPACT_STORAGE_KEY = 'anika_admin_impact_stats'
+const HOME_STATS = [
+  { label: 'Events Held', fallback: '100+', color: 'text-coral' },
+  { label: 'Forum Participants', fallback: '2,500+', color: 'text-anika-green' },
+  { label: 'Artists Engaged', fallback: '150', color: 'text-gold' },
+  { label: 'Online Impressions', fallback: '24M+', color: 'text-anika-blue' },
 ]
+
+// Admin stores values as free-text ("2,500+", "24M+") — split back into a
+// numeric target Counter can animate to, plus whatever suffix follows it.
+function parseStatValue(value) {
+  const match = /^([\d,.]+)\s*(.*)$/.exec(String(value ?? '').trim())
+  if (!match) return { target: 0, suffix: '' }
+  return { target: parseFloat(match[1].replace(/,/g, '')) || 0, suffix: match[2].trim() }
+}
+
+function readImpactStats() {
+  let saved = []
+  try {
+    saved = JSON.parse(localStorage.getItem(IMPACT_STORAGE_KEY)) || []
+  } catch {
+    saved = []
+  }
+  return HOME_STATS.map(({ label, fallback, color }) => {
+    const match = saved.find((s) => s.label?.toLowerCase() === label.toLowerCase())
+    const { target, suffix } = parseStatValue(match?.value ?? fallback)
+    return { label, target, suffix, color }
+  })
+}
 
 const pillars = [
   { name: 'Arts & Culture', color: 'bg-coral', description: 'Heritage, cultural exchange and collaborative artistic production across borders.' },
@@ -19,22 +49,55 @@ const pillars = [
   { name: 'Governance', color: 'bg-ink', description: 'Deepening youth engagement with rights, civic life and democracy.' },
 ]
 
-const events = [
-  { image: '/slim.jpg', category: 'Open Mic', date: 'SAT 06 SEP', location: 'Nairobi' },
-  { image: '/PHYL.jpg', category: 'Song performance', date: 'SAT 20 SEP', location: 'Nairobi' },
-  { image: '/jaaziya.jpg', category: 'Artist Guest Speaker', date: 'SUN 05 OCT', location: 'Nairobi' },
-]
-
-const stories = [
-  { slug: 'sema-anika-forum', image: '/image7.jpg', theme: 'Arts & Culture', title: 'When a room becomes a stage for honest conversation' },
-  { slug: 'refupoet-belonging', image: '/image8.jpg', theme: 'Youth & Migration', title: 'A generation building belonging across borders' },
-  { slug: 'air-it-out', image: '/image4.jpg', theme: 'Gender & Development', title: 'Naming what silence protects' },
-]
-
 const polaroid = (rotate) =>
   `bg-cream p-2 pb-6 shadow-xl ${rotate} transition-transform duration-300 ease-out hover:rotate-0`
 
 function Home() {
+  const [events, setEvents] = useState([])
+  const [eventsLoading, setEventsLoading] = useState(true)
+  const [stories, setStories] = useState([])
+  const [storiesLoading, setStoriesLoading] = useState(true)
+  const [stats] = useState(readImpactStats)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchEvents()
+      .then(({ rows }) => {
+        if (cancelled) return
+        const now = new Date()
+        const upcoming = (rows || [])
+          .filter((e) => e.status === 'Live' || e.status === 'Full')
+          .map((e) => ({ ...e, _date: new Date(e.date) }))
+          .filter((e) => !Number.isNaN(e._date.getTime()) && e._date >= now)
+          .sort((a, b) => a._date - b._date)
+          .slice(0, 3)
+        setEvents(upcoming)
+      })
+      .finally(() => {
+        if (!cancelled) setEventsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    storiesStore
+      .getPublished()
+      .then((rows) => {
+        if (cancelled) return
+        setStories((rows || []).slice(0, 3))
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setStoriesLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <>
       <section className="relative -mt-[93px] overflow-hidden bg-charcoal pt-[93px] text-cream">
@@ -185,21 +248,27 @@ function Home() {
             </NavLink>
           </Reveal>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            {events.map((event, i) => (
-              <Reveal key={event.category} delay={i * 100}>
-                <img
-                  src={event.image}
-                  alt={event.category}
-                  className="aspect-4/3 w-full rounded object-cover"
-                />
-                <p className="mt-3 font-editorial text-2xl italic">{event.category}</p>
-                <p className="mt-1 font-body text-sm uppercase tracking-wide text-cream/70">
-                  {event.date} &middot; {event.location}
-                </p>
-              </Reveal>
-            ))}
-          </div>
+          {eventsLoading ? (
+            <p className="mt-10 font-body text-sm text-cream/60">Loading upcoming events…</p>
+          ) : events.length === 0 ? (
+            <p className="mt-10 font-body text-sm text-cream/60">No upcoming events scheduled right now — check back soon.</p>
+          ) : (
+            <div className="mt-10 grid gap-6 sm:grid-cols-3">
+              {events.map((event, i) => (
+                <Reveal key={event.id} delay={i * 100}>
+                  <img
+                    src={event.image || '/image6.jpg'}
+                    alt={event.pillar || event.title}
+                    className="aspect-4/3 w-full rounded object-cover"
+                  />
+                  <p className="mt-3 font-editorial text-2xl italic">{event.pillar || event.title}</p>
+                  <p className="mt-1 font-body text-sm uppercase tracking-wide text-cream/70">
+                    {event.date}{event.location ? ` · ${event.location}` : ''}
+                  </p>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -211,25 +280,33 @@ function Home() {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
-          {stories.map((story, i) => (
-            <Reveal key={story.slug} delay={i * 100}>
-              <img
-                src={story.image}
-                alt={story.title}
-                className="aspect-4/3 w-full rounded object-cover"
-              />
-              <p className="mt-3 font-body text-xs font-semibold uppercase tracking-wide text-coral">{story.theme}</p>
-              <p className="mt-1 font-body font-semibold text-ink">{story.title}</p>
-              <NavLink
-                to={`/stories/${story.slug}`}
-                className="mt-3 inline-block rounded bg-ink px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-cream hover:opacity-90"
-              >
-                Read Our Story
-              </NavLink>
-            </Reveal>
-          ))}
-        </div>
+        {storiesLoading ? (
+          <p className="mt-10 font-body text-sm text-ink/60">Loading stories…</p>
+        ) : stories.length === 0 ? (
+          <p className="mt-10 font-body text-sm text-ink/60">New stories are on their way — check back soon.</p>
+        ) : (
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {stories.map((story, i) => (
+              <Reveal key={story.slug} delay={i * 100}>
+                <img
+                  src={story.image}
+                  alt={story.title}
+                  className="aspect-4/3 w-full rounded object-cover"
+                />
+                <p className="mt-3 font-body text-xs font-semibold uppercase tracking-wide text-coral">
+                  {PILLARS.find((p) => p.slug === story.pillar)?.name || story.pillar}
+                </p>
+                <p className="mt-1 font-body font-semibold text-ink">{story.title}</p>
+                <NavLink
+                  to={`/stories/${story.slug}`}
+                  className="mt-3 inline-block rounded bg-ink px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-cream hover:opacity-90"
+                >
+                  Read Our Story
+                </NavLink>
+              </Reveal>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="bg-anika-blue text-cream">
