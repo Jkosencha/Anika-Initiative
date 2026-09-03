@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, Moon, Sun, Bell, Check } from 'lucide-react'
+import { Menu, Moon, Sun, Bell, Check, Trash2 } from 'lucide-react'
 import { useAdminNotifications } from './useAdminNotifications'
 
 function greeting() {
@@ -20,7 +20,7 @@ function today() {
 
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
   const [notifOpen, setNotifOpen] = useState(false)
-  const { notifications, unreadCount, markRead, markAllRead } = useAdminNotifications()
+  const { notifications, unreadCount, markRead, markAllRead, clearAll } = useAdminNotifications()
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink/10 bg-cream/70 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-charcoal/70">
@@ -50,7 +50,9 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-coral" />
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-coral px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
           </button>
 
@@ -64,14 +66,25 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
               <div className="absolute right-0 top-full z-30 mt-2 w-80 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-xl dark:border-white/10 dark:bg-charcoal">
                 <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3 dark:border-white/10">
                   <span className="text-sm font-bold">Notifications</span>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllRead}
-                      className="flex items-center gap-1 text-xs font-medium text-coral hover:underline"
-                    >
-                      <Check size={12} /> Mark all read
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="flex items-center gap-1 text-xs font-medium text-coral hover:underline"
+                      >
+                        <Check size={12} /> Mark all read
+                      </button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearAll}
+                        aria-label="Clear notifications"
+                        className="flex items-center gap-1 text-xs font-medium text-ink/40 hover:text-ink dark:text-cream/40 dark:hover:text-cream"
+                      >
+                        <Trash2 size={12} /> Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <ul className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 && (
