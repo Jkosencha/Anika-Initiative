@@ -31,7 +31,7 @@ function persistSet(key, set) {
 }
 
 function getTimestamp(row) {
-  const raw = row?.created_at ?? row?.createdAt ?? row?.created ?? row?.date ?? null
+  const raw = row?.updated_at ?? row?.updatedAt ?? row?.created_at ?? row?.createdAt ?? row?.created ?? row?.date ?? null
   const t = raw ? new Date(raw).getTime() : NaN
   return Number.isNaN(t) ? 0 : t
 }

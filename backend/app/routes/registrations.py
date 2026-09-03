@@ -199,9 +199,11 @@ def update_registration(reg_id):
                 sync_event_seats(event, +1)
             elif reg.status == "Canceled" and old_status != "Canceled":
                 sync_event_seats(event, -1)
-    for field in ("name", "phone", "email", "eventTitle", "consent", "source"):
-        if field in data:
-            setattr(reg, field, data[field])
+    for field in ("name", "phone", "email", "consent", "source"):
+      if field in data:
+        setattr(reg, field, data[field])
+    if "eventTitle" in data:
+      reg.event_title = data["eventTitle"]
     db.session.commit()
     return jsonify(reg.to_dict())
 
