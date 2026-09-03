@@ -10,7 +10,7 @@ export default function ReportBanner() {
             <div className='mx-auto max-w-6xl px-6 flex flex-col md:flex-row md:items-center md:justify-center gap-40'>
                 <div>
                     <h3 className='font-display text-2xl md:text-3xl mb-2'>
-                        Annual Impact Report 2025
+                        Annual Report 2025
                     </h3>
                     
                     <p className='text-white/80 max-w-lg'>
