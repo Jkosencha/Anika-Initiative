@@ -65,7 +65,10 @@ function applicationText(a) {
 }
 // NOTE: uses inbox thread createdAt as a stand-in for last-message time —
 // no separate "last message at" field is available from the API.
-function whatsappMessageText(c) {
+function inboxNotificationText(c) {
+  if (c.intent === 'escalation' && !c.resolved) {
+    return `AI escalated a conversation with ${c.name ?? c.phone ?? 'a contact'} — needs a human reply`
+  }
   return `New WhatsApp message from ${c.name ?? c.phone ?? 'a contact'}`
 }
 function broadcastText(b) {
@@ -133,10 +136,10 @@ async function loadOnce() {
         ts: getTimestamp(d),
       })),
       ...inbox
-        .filter((c) => (c.unread || 0) > 0)
+        .filter((c) => (c.unread || 0) > 0 || (c.intent === 'escalation' && !c.resolved))
         .map((c) => ({
           id: `whatsapp-${c.id}`,
-          text: whatsappMessageText(c),
+          text: inboxNotificationText(c),
           to: '/admin/whatsapp/inbox',
           ts: getTimestamp(c),
         })),
