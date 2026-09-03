@@ -1,4 +1,4 @@
-import { Download, Pencil, X } from "lucide-react"
+import { Download, Pencil, Trash2, X, Plus, AlertTriangle } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useAdminColors } from "../theme"
 
@@ -25,34 +25,39 @@ const SEED = [
 
 const STORAGE_KEY = 'anika_admin_impact_stats'
 
-function StatEditModal({ stat, onClose, onSave, colors}) {
-    const [label, setLabel] = useState(stat.label)
-    const [value, setValue] = useState(stat.value)
-    const [colorKey, setColorKey] = useState(stat.colorKey)
+function StatFormModal({ stat, onClose, onSave, colors }) {
+    const isEdit = Boolean(stat)
+    const [label, setLabel] = useState(stat?.label ?? '')
+    const [value, setValue] = useState(stat?.value ?? '')
+    const [colorKey, setColorKey] = useState(stat?.colorKey ?? COLOR_OPTIONS[0].value)
 
     function submit(e) {
         e.preventDefault()
         if (!label.trim() || !value.trim()) return
-        onSave({...stat, label: label.trim(), value: value.trim(), colorKey })
+        onSave({
+            ...(isEdit ? stat : {}),
+            label: label.trim(),
+            value: value.trim(),
+            colorKey,
+        })
         onClose()
     }
 
     return (
-        <div 
+        <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(20,18,15,0.45)' }}
             onClick={onClose}
         >
-            <form 
+            <form
                 onSubmit={submit}
                 onClick={(e) => e.stopPropagation()}
                 style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
                 className="w-full max-w-sm overflow-hidden rounded-2xl shadow-xl"
             >
-
                 <div className="flex items-center justify-between border-b p-5" style={{ borderColor: colors.border }}>
                     <h2 className="text-lg font-bold" style={{ color: colors.text }}>
-                        Edit stat
+                        {isEdit ? 'Edit stat' : 'Add impact stat'}
                     </h2>
                     <button type="button" onClick={onClose} className="rounded-full p-1 hover:bg-black/5">
                         <X size={18} color={colors.muted} />
@@ -60,12 +65,10 @@ function StatEditModal({ stat, onClose, onSave, colors}) {
                 </div>
 
                 <div className="space-y-3 p-5 font-body">
-                    
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold" style={{ color: colors.muted }}>
                             Label
                         </label>
-                        
                         <input
                             required
                             value={label}
@@ -118,7 +121,7 @@ function StatEditModal({ stat, onClose, onSave, colors}) {
                         style={{ background: colors.buttonBg, color: colors.buttonText }}
                         className="rounded-full px-4 py-2 text-sm font-semibold cursor-pointer font-body"
                     >
-                        Save
+                        {isEdit ? 'Save' : 'Add'}
                     </button>
                 </div>
             </form>
@@ -126,15 +129,54 @@ function StatEditModal({ stat, onClose, onSave, colors}) {
     )
 }
 
-
-
+function ConfirmDeleteModal({ stat, onClose, onConfirm, colors }) {
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(20,18,15,0.45)' }}
+            onClick={onClose}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ background: colors.panel, border: `1px solid ${colors.red}` }}
+                className="w-full max-w-sm overflow-hidden rounded-2xl shadow-xl"
+            >
+                <div className="p-5">
+                    <div className="flex items-center gap-2.5">
+                        <AlertTriangle size={18} color={colors.red} />
+                        <h2 className="text-lg font-bold" style={{ color: colors.text }}>
+                            Delete this stat?
+                        </h2>
+                    </div>
+                    <p className="mt-2 text-sm" style={{ color: colors.muted }}>
+                        <strong style={{ color: colors.text }}>{stat.label}</strong> will be removed from the
+                        public Impact page immediately.
+                    </p>
+                </div>
+                <div className="flex justify-end gap-2 border-t p-4" style={{ borderColor: colors.border }}>
+                    <button type="button" onClick={onClose} className="px-3 py-2 text-sm font-semibold" style={{ color: colors.muted }}>
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        style={{ background: colors.red, color: '#fff' }}
+                        className="rounded-full px-4 py-2 text-sm font-semibold"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 export default function Impact() {
     const COLORS = useAdminColors()
     const [stats, setStats] = useState(SEED)
-    const [editTarget, setEditTarget] = useState(null)
-    const [isDirty, setIsDirty] = useState(false)
-    const [savedNotice, setSavedNotice] = useState(false)
+    const [formTarget, setFormTarget] = useState(null) // null | { stat: null | stat }
+    const [deleteTarget, setDeleteTarget] = useState(null)
+    const [toast, setToast] = useState('')
 
     useEffect(() => {
         try {
@@ -145,16 +187,32 @@ export default function Impact() {
         }
     }, [])
 
-    function updateStat(updated) {
-        setStats((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
-        setIsDirty(true)
+    function persist(next) {
+        setStats(next)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
     }
 
-    function saveChanges() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stats))
-        setIsDirty(false)
-        setSavedNotice(true)
-        setTimeout(() => setSavedNotice(false), 2200)
+    function showToast(message) {
+        setToast(message)
+        setTimeout(() => setToast(''), 2200)
+    }
+
+    function saveStat(data) {
+        if (data.id) {
+            // Editing an existing stat
+            persist(stats.map((s) => (s.id === data.id ? data : s)))
+            showToast('Stat updated.')
+        } else {
+            // Adding a new one
+            persist([...stats, { ...data, id: Date.now() }])
+            showToast('Stat added.')
+        }
+    }
+
+    function confirmDelete() {
+        persist(stats.filter((s) => s.id !== deleteTarget.id))
+        showToast('Stat deleted.')
+        setDeleteTarget(null)
     }
 
     function exportCsv() {
@@ -172,21 +230,21 @@ export default function Impact() {
         document.body.removeChild(link)
         URL.revokeObjectURL(url)
     }
-  
+
     return (
         <div style={{ background: COLORS.bg, minHeight: '100%' }} className="rounded-lg p-6 font-sans">
-            
+
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                
+
                 <div>
                     <h1 className="text-2xl font-body font-bold" style={{ color: COLORS.text }}>
                         Impact metrics
                     </h1>
                     <p className="mt-1 text-sm font-body" style={{ color: COLORS.muted }}>
-                        These power the public Impact page. Keep them verified.
+                        These power the public Impact page. Changes save immediately.
                     </p>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                     <button
                         onClick={exportCsv}
@@ -194,20 +252,16 @@ export default function Impact() {
                         className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-bold font-body tracking-wide cursor-pointer"
                     >
                         <Download size={14} />
-                            EXPORT CSV
+                        EXPORT CSV
                     </button>
-                    
+
                     <button
-                        onClick={saveChanges}
-                        disabled={!isDirty}
-                        style={{
-                            background: isDirty ? COLORS.buttonBg : COLORS.border,
-                            color: isDirty ? COLORS.buttonText : COLORS.muted,
-                            cursor: isDirty ? 'pointer' : 'not-allowed',
-                        }}
-                        className="rounded-lg px-4 py-2.5 text-xs font-bold font-body tracking-wide cursor-pointer"
+                        onClick={() => setFormTarget({ stat: null })}
+                        style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
+                        className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-bold font-body tracking-wide cursor-pointer"
                     >
-                        {savedNotice ? 'SAVED' : 'SAVE CHANGES'}
+                        <Plus size={14} />
+                        ADD IMPACT
                     </button>
                 </div>
             </div>
@@ -219,14 +273,24 @@ export default function Impact() {
                         style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
                         className="relative rounded-xl p-5"
                     >
-                        <button
-                            onClick={() => setEditTarget(stat)}
-                            className="absolute right-4 top-4 flex items-center gap-1 text-xs font-bold tracking-wide cursor-pointer"
-                            style={{ color: COLORS[stat.colorKey] }}
-                        >
-                            <Pencil size={12} />
-                           
-                        </button>
+                        <div className="absolute right-4 top-4 flex items-center gap-2">
+                            <button
+                                onClick={() => setFormTarget({ stat })}
+                                aria-label={`Edit ${stat.label}`}
+                                className="cursor-pointer"
+                                style={{ color: COLORS[stat.colorKey] }}
+                            >
+                                <Pencil size={14} />
+                            </button>
+                            <button
+                                onClick={() => setDeleteTarget(stat)}
+                                aria-label={`Delete ${stat.label}`}
+                                className="cursor-pointer"
+                                style={{ color: COLORS.red }}
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
                         <p className="text-3xl font-extrabold" style={{ color: COLORS[stat.colorKey] }}>
                             {stat.value}
                         </p>
@@ -237,13 +301,31 @@ export default function Impact() {
                 ))}
             </div>
 
-            {editTarget && (
-                <StatEditModal
-                    stat={editTarget}
-                    onClose={() => setEditTarget(null)}
-                    onSave={updateStat}
+            {formTarget && (
+                <StatFormModal
+                    stat={formTarget.stat}
+                    onClose={() => setFormTarget(null)}
+                    onSave={saveStat}
                     colors={COLORS}
                 />
+            )}
+
+            {deleteTarget && (
+                <ConfirmDeleteModal
+                    stat={deleteTarget}
+                    onClose={() => setDeleteTarget(null)}
+                    onConfirm={confirmDelete}
+                    colors={COLORS}
+                />
+            )}
+
+            {toast && (
+                <div
+                    className="fixed bottom-6 right-6 z-50 rounded-lg px-4 py-3 text-sm font-semibold shadow-lg"
+                    style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
+                >
+                    {toast}
+                </div>
             )}
         </div>
     )
