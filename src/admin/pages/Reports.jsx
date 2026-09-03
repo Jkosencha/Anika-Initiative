@@ -9,7 +9,7 @@ import { apiRequest } from '../utils/api'
 const REPORT_TYPES = [
   { id: 'donor', label: 'Donor report' },
   { id: 'event', label: 'Event summary' },
-  { id: 'impact', label: 'Annual impact report' },
+  { id: 'impact', label: 'Impact report' },
   { id: 'contacts', label: 'Contact export' },
 ]
 
@@ -28,7 +28,7 @@ function emptyFormState() {
     dayOfMonth: '',
     specificDate: '',
     sendTo: '',
-    format: 'PDF',
+    format: '',
   }
 }
 
@@ -518,7 +518,7 @@ export default function Reports() {
       sendTo: schedule.sendTo,
       format: schedule.format,
     })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    document.getElementById('schedule-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   function cancelEdit() {
@@ -551,16 +551,18 @@ export default function Reports() {
       <div className="space-y-6">
         <AnnualReportPanel colors={COLORS} user={user} showToast={showToast} />
 
-        <ScheduleForm
-          form={form}
-          setForm={setForm}
-          onSubmit={submitForm}
-          onCancelEdit={cancelEdit}
-          isEditing={Boolean(form.id)}
-          colors={COLORS}
-          saving={saving}
-        />
-
+        <div id = "schedule-form">
+          <ScheduleForm
+            form={form}
+            setForm={setForm}
+            onSubmit={submitForm}
+            onCancelEdit={cancelEdit}
+            isEditing={Boolean(form.id)}
+            colors={COLORS}
+            saving={saving}
+          />
+        </div>
+        
         <div
           style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
           className="overflow-x-auto rounded-xl"
