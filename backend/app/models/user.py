@@ -16,6 +16,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="comms")
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    avatar_url = db.Column(db.String(500), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):
@@ -31,6 +32,7 @@ class User(db.Model):
             "email": self.email,
             "role": self.role,
             "isActive": self.is_active,
+            "avatarUrl": self.avatar_url,
         }
 
     def __repr__(self):
