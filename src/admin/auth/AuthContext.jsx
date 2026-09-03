@@ -42,6 +42,22 @@ export function AuthProvider({ children }) {
         return account;
     };
 
+    const updateUser = (patch) => {
+        setUser((prev) => {
+            const next = { ...prev, ...patch };
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, user: next }));
+                } catch {
+                    // corrupted session -- next login will rebuild it cleanly
+                }
+            }
+            return next;
+        });
+    };
+
     const logout = () => {
         setUser(null);
         setToken(null);
@@ -54,7 +70,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+        <AuthContext.Provider value={{ user, token, isLoading, login, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
   );
