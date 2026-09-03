@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, Moon, Sun, Bell, Check } from 'lucide-react'
+import { Menu, Moon, Sun, Bell, Check, Trash2 } from 'lucide-react'
+import { useAdminNotifications } from './useAdminNotifications'
 import { useAuth } from '../auth/AuthContext'
-import { fetchDonations, fetchRegistrations, normalizeDonation } from '../../lib/api'
-import { storiesStore } from '../../data/storiesStore'
-import { buildActivityFeed } from '../utils/activityFeed'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -21,65 +19,10 @@ function today() {
   })
 }
 
-const READ_KEY_PREFIX = 'anika_read_notifications_'
-
-function getReadIds(userId) {
-  try {
-    const raw = localStorage.getItem(READ_KEY_PREFIX + userId)
-    return raw ? new Set(JSON.parse(raw)) : new Set()
-  } catch {
-    return new Set()
-  }
-}
-
-function saveReadIds(userId, ids) {
-  localStorage.setItem(READ_KEY_PREFIX + userId, JSON.stringify([...ids]))
-}
-
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
   const { user } = useAuth()
   const [notifOpen, setNotifOpen] = useState(false)
-  const [notifications, setNotifications] = useState([])
-  const unreadCount = notifications.filter((n) => !n.read).length
-
-  useEffect(() => {
-    if (!user?.id) return
-    let cancelled = false
-    Promise.all([fetchDonations(), fetchRegistrations(), storiesStore.getAll().catch(() => [])]).then(
-      ([donationsRes, registrationsRes, storiesRows]) => {
-        if (cancelled) return
-        const feed = buildActivityFeed(
-          registrationsRes.rows,
-          donationsRes.rows.map(normalizeDonation),
-          storiesRows ?? [],
-          6
-        )
-        const readIds = getReadIds(user.id)
-        setNotifications(feed.map((item) => ({ ...item, read: readIds.has(item.id) })))
-      }
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [user?.id])
-
-  function markAllRead() {
-    setNotifications((prev) => {
-      const next = prev.map((n) => ({ ...n, read: true }))
-      saveReadIds(user.id, new Set(next.map((n) => n.id)))
-      return next
-    })
-  }
-
-  function markRead(id) {
-    setNotifications((prev) => {
-      const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-      const readIds = getReadIds(user.id)
-      readIds.add(id)
-      saveReadIds(user.id, readIds)
-      return next
-    })
-  }
+  const { notifications, unreadCount, markRead, markAllRead, clearAll } = useAdminNotifications()
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink/10 bg-cream/70 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-charcoal/70">
@@ -109,7 +52,9 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-coral" />
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-coral px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
           </button>
 
@@ -123,46 +68,56 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
               <div className="absolute right-0 top-full z-30 mt-2 w-80 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-xl dark:border-white/10 dark:bg-charcoal">
                 <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3 dark:border-white/10">
                   <span className="text-sm font-bold">Notifications</span>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllRead}
-                      className="flex items-center gap-1 text-xs font-medium text-coral hover:underline"
-                    >
-                      <Check size={12} /> Mark all read
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="flex items-center gap-1 text-xs font-medium text-coral hover:underline"
+                      >
+                        <Check size={12} /> Mark all read
+                      </button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearAll}
+                        aria-label="Clear notifications"
+                        className="flex items-center gap-1 text-xs font-medium text-ink/40 hover:text-ink dark:text-cream/40 dark:hover:text-cream"
+                      >
+                        <Trash2 size={12} /> Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <ul className="max-h-80 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <li className="px-4 py-6 text-center text-sm text-ink/40 dark:text-cream/40">
-                      Nothing new.
+                  {notifications.length === 0 && (
+                    <li className="px-4 py-6 text-center text-xs text-ink/40 dark:text-cream/40">
+                      No notifications yet
                     </li>
-                  ) : (
-                    notifications.map((n) => (
-                      <li key={n.id}>
-                        <Link
-                          to={n.to}
-                          onClick={() => {
-                            markRead(n.id)
-                            setNotifOpen(false)
-                          }}
-                          className="flex w-full items-start gap-2.5 border-b border-ink/5 px-4 py-3 text-left last:border-b-0 hover:bg-ink/5 dark:border-white/5 dark:hover:bg-white/5"
-                        >
-                          <span
-                            className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                              n.read ? 'bg-transparent' : 'bg-coral'
-                            }`}
-                          />
-                          <span>
-                            <p className={`text-sm ${n.read ? 'text-ink/60 dark:text-cream/60' : 'font-semibold text-ink dark:text-cream'}`}>
-                              {n.text}
-                            </p>
-                            <p className="mt-0.5 text-xs text-ink/40 dark:text-cream/40">{n.time}</p>
-                          </span>
-                        </Link>
-                      </li>
-                    ))
                   )}
+                  {notifications.map((n) => (
+                    <li key={n.id}>
+                      <Link
+                        to={n.to}
+                        onClick={() => {
+                          markRead(n.id)
+                          setNotifOpen(false)
+                        }}
+                        className="flex w-full items-start gap-2.5 border-b border-ink/5 px-4 py-3 text-left last:border-b-0 hover:bg-ink/5 dark:border-white/5 dark:hover:bg-white/5"
+                      >
+                        <span
+                          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                            n.read ? 'bg-transparent' : 'bg-coral'
+                          }`}
+                        />
+                        <span>
+                          <p className={`text-sm ${n.read ? 'text-ink/60 dark:text-cream/60' : 'font-semibold text-ink dark:text-cream'}`}>
+                            {n.text}
+                          </p>
+                          <p className="mt-0.5 text-xs text-ink/40 dark:text-cream/40">{n.time}</p>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </>

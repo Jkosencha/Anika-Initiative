@@ -1,8 +1,8 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { X, Search, Trash2, Pencil, Eye } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { X, Search, Trash2, Eye } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
+import { apiRequest } from "../utils/api"; 
 
-// Light/dark theme colors
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
@@ -29,7 +29,6 @@ const darkColors = {
 
 const AVATAR_COLORS = ["#c0392b", "#2f4a6b", "#b3760c", "#2d7a43", "#6b4a8a"];
 
-// Map source + subject to display type
 function getContactType(source, subject) {
   if (source === 'donation') return 'Donor';
   if (source === 'getinvolved') {
@@ -57,13 +56,14 @@ const TYPE_STYLE = {
   Other: { bg: "#e8e8e8", text: "#666666" },
 };
 
-const MANUAL_SOURCES = [
-  "Website form",
-  "M-Pesa",
-  "Referral",
-  "Email",
-  "Phone call",
-];
+const TAB_TO_TYPE = {
+  Artists: "Artist",
+  Youth: "Youth",
+  Donors: "Donor",
+  Partners: "Partner",
+  Volunteers: "Volunteer",
+  Newsletter: "Newsletter",
+};
 
 function initials(name) {
   return name
@@ -81,7 +81,6 @@ function avatarColor(name) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-// Format date to "Registered · X days ago"
 function formatEngagement(dateStr) {
   if (!dateStr) return "Registered";
   const date = new Date(dateStr);
@@ -93,14 +92,12 @@ function formatEngagement(dateStr) {
   return `${diffDays} days ago`;
 }
 
-// Get source label
 function getSourceLabel(source) {
   if (source === "donation") return "Donation";
   if (source === "getinvolved") return "Get Involved";
   return source;
 }
 
-// CSV exporting
 function toCSV(rows) {
   const header = [
     "Name",
@@ -142,7 +139,6 @@ function downloadCSV(rows, filename) {
   URL.revokeObjectURL(url);
 }
 
-// Pill component
 function Pill({ active, children, onClick, colors }) {
   return (
     <button
@@ -159,7 +155,6 @@ function Pill({ active, children, onClick, colors }) {
   );
 }
 
-// type of getinvolved anataka
 function TypeBadge({ type }) {
   const s = TYPE_STYLE[type] || TYPE_STYLE.Volunteer;
   return (
@@ -173,7 +168,6 @@ function TypeBadge({ type }) {
   );
 }
 
-// View Contact Modal designed
 function ViewContactModal({ contact, onClose, colors }) {
   if (!contact) return null;
 
@@ -304,7 +298,6 @@ function ViewContactModal({ contact, onClose, colors }) {
   );
 }
 
-// Delete confirmation modal
 function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
   if (!contact) return null;
   return (
@@ -371,7 +364,6 @@ function DeleteConfirmModal({ contact, onClose, onConfirm, colors }) {
   );
 }
 
-// Main component
 export default function Contacts() {
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
@@ -386,23 +378,12 @@ export default function Contacts() {
   const [viewTarget, setViewTarget] = useState(null);
 
   const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers", "Newsletter"];
-  const tabToType = {
-    Artists: "Artist",
-    Youth: "Youth",
-    Donors: "Donor",
-    Partners: "Partner",
-    Volunteers: "Volunteer",
-    Newsletter: "Newsletter",
-  };
 
-  // Fetch contacts
   const fetchContacts = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/contacts?per_page=100");
-      if (!response.ok) throw new Error("Failed to fetch contacts");
-      const data = await response.json();
+      const data = await apiRequest('/api/contacts?per_page=100');
       const fetched = data.contacts || [];
       const mapped = fetched.map((c) => ({
         id: c.id,
@@ -435,10 +416,7 @@ export default function Contacts() {
 
   const deleteContact = async (id) => {
     try {
-      const response = await fetch(`/api/contacts/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Delete failed");
+      await apiRequest(`/api/contacts/${id}`, { method: 'DELETE' });
       setContacts((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error(err);
@@ -448,7 +426,7 @@ export default function Contacts() {
 
   const filtered = useMemo(() => {
     let rows = contacts;
-    if (tab !== "All") rows = rows.filter((c) => c.type === tabToType[tab]);
+    if (tab !== "All") rows = rows.filter((c) => c.type === TAB_TO_TYPE[tab]);
     if (query.trim()) {
       const q = query.toLowerCase();
       rows = rows.filter(
@@ -468,7 +446,6 @@ export default function Contacts() {
     downloadCSV(filtered, "contacts.csv");
   };
 
-  //  truncate text
   const truncate = (text, maxLen = 50) => {
     if (!text) return '—';
     return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
@@ -560,7 +537,7 @@ export default function Contacts() {
           className="rounded-xl overflow-hidden overflow-x-auto"
         >
           <div
-            className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[920px]"
+            className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-230"
             style={{
               color: COLORS.muted,
               borderColor: COLORS.border,
@@ -589,7 +566,7 @@ export default function Contacts() {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[920px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-230"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns:

@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
-from app.models.event import Event, EVENT_STATUSES
+from app.models.event import EVENT_STATUSES, Event
 
 events_bp = Blueprint("events", __name__, url_prefix="/api/events")
 
@@ -102,6 +102,7 @@ def create_event():
 
 
 @events_bp.patch("/<int:event_id>")
+@events_bp.put("/<int:event_id>")
 def update_event(event_id):
     """
     Update an event (admin) - e.g. change status or registered count.
@@ -154,7 +155,6 @@ def update_event(event_id):
     db.session.commit()
     current_app.logger.info("Event updated: id=%s", event.id)
     return jsonify(event.to_dict())
-
 
 @events_bp.delete("/<int:event_id>")
 def delete_event(event_id):

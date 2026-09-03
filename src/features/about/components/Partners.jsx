@@ -15,42 +15,65 @@ function chunk(list, size) {
   return pages
 }
 
+// Legacy static logo map — only used as a fallback for partners that were
+// added before the dashboard upload feature existed and have no partner.logo
+// saved. Any partner with a logo uploaded via the dashboard uses that instead.
+const legacyLogoMap = {
+  'SEMA': '/partners/sema.png',
+  'Strategic Applications': '/partners/strategic-applications.png',
+  'Creatives Garage': '/partners/creatives-garage.png',
+  'YWCA': '/partners/ywca.png',
+}
+
+function initials(name) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
+
 function PartnerCard({ partner, compact = false }) {
   // State to track if logo failed to load
   const [logoError, setLogoError] = useState(false)
-  
-  // Map partner names to logo files if they exist
-  const getLogoPath = (name) => {
-    const logoMap = {
-      'SEMA': '/partners/sema.png',
-      'Strategic Applications': '/partners/strategic-applications.png',
-      'Creatives Garage': '/partners/creatives-garage.png',
-      'YWCA': '/partners/ywca.png',
-    }
-    return logoMap[name]
-  }
 
-  const logoPath = getLogoPath(partner.name)
+  // Prefer the logo saved from the dashboard; fall back to the legacy
+  // static file map for older partners that predate the upload feature.
+  const logoSrc = partner.logo || legacyLogoMap[partner.name]
+
+  // If the logo is updated in the dashboard, this card re-renders with a new
+  // logoSrc but keeps the same React instance (keyed by partner.name/id), so
+  // a stale logoError from a previous failed load would otherwise stick around
+  // and hide the newly uploaded logo. Reset it whenever the source changes.
+  useEffect(() => {
+    setLogoError(false)
+  }, [logoSrc])
 
   return (
     <div
-      className={`group flex items-center justify-center rounded-lg border border-ink/10 bg-white/40 px-4 ${
-        compact ? 'h-24 w-28 shrink-0' : 'h-32 w-full'
+      className={`group flex flex-col items-center justify-center gap-2 rounded-lg border border-ink/10 bg-white/40 px-4 py-3 text-center ${
+        compact ? 'w-28 shrink-0' : 'w-full'
       }`}
     >
-      {logoPath && !logoError ? (
+      {logoSrc && !logoError ? (
         <img
-          src={logoPath}
+          src={logoSrc}
           alt={partner.name}
-          className="max-h-8 w-auto object-contain grayscale opacity-70 transition duration-200 group-hover:grayscale-0 group-hover:opacity-100"
+          className="h-10 w-auto max-w-[80%] object-contain"
           onError={() => setLogoError(true)} // Handle image load error
         />
       ) : (
-        // Fallback text logotype — displays when logo is missing or fails to load
-        <span className="font-display text-sm uppercase tracking-wide text-ink/60 transition duration-200 group-hover:text-ink">
-          {partner.name}
+        // Fallback initials badge — displays when logo is missing or fails to load
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink/10 font-display text-sm text-ink/60 transition duration-200 group-hover:text-ink">
+          {initials(partner.name)}
         </span>
       )}
+
+      <span className="font-body text-xs font-semibold uppercase tracking-wide text-ink/70 transition duration-200 group-hover:text-ink">
+        {partner.name}
+      </span>
     </div>
   )
 }
@@ -63,6 +86,9 @@ export default function Partners() {
     () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
   )
   const [isPaused, setIsPaused] = useState(false)
+  const pages = chunk(partners || [], CARDS_PER_PAGE_DESKTOP)
+  const [index, setIndex] = useState(0)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     const mql = window.matchMedia(MOBILE_QUERY)
@@ -70,15 +96,6 @@ export default function Partners() {
     mql.addEventListener('change', handleChange)
     return () => mql.removeEventListener('change', handleChange)
   }, [])
-
-  // If no partners, don't render the section
-  if (!partners || partners.length === 0) {
-    return null
-  }
-
-  const pages = chunk(partners, CARDS_PER_PAGE_DESKTOP)
-  const [index, setIndex] = useState(0)
-  const timerRef = useRef(null)
 
   const goTo = (i) => setIndex((i + pages.length) % pages.length)
   const next = () => goTo(index + 1)
@@ -90,6 +107,11 @@ export default function Partners() {
     return () => clearInterval(timerRef.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, isPaused, pages.length, isMobile])
+
+  // If no partners, don't render the section
+  if (!partners || partners.length === 0) {
+    return null
+  }
 
   // Mobile: every partner shown at once in a continuous, looping marquee.
   const marqueeItems = [...partners, ...partners]

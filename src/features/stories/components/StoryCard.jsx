@@ -63,7 +63,7 @@ const StoryCard = ({ story }) => {
 
   return (
     <article className="flex flex-col h-full overflow-hidden rounded-lg bg-white/40 shadow-sm">
-      <div className="aspect-4/3 overflow-hidden bg-ink/10 flex-shrink-0">
+      <div className="aspect-4/3 overflow-hidden bg-ink/10 shrink-0">
         <img
           src={story.image}
           alt=""
@@ -103,7 +103,7 @@ const StoryCard = ({ story }) => {
 
         <Link
           to={`/stories/${story.slug}`}
-          className="mt-6 inline-flex self-start items-center gap-2 rounded-full bg-anika-blue px-5 py-2 font-body text-sm font-semibold text-cream transition-colors duration-200 hover:bg-coral flex-shrink-0"
+          className="mt-6 inline-flex self-start items-center gap-2 rounded-full bg-anika-blue px-5 py-2 font-body text-sm font-semibold text-cream transition-colors duration-200 hover:bg-coral shrink-0"
         >
           Read More
         </Link>

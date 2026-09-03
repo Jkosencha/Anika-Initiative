@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { X, Trash2, Pencil, Check, Upload } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
+import { apiRequest } from "../utils/api"; 
 
 // configuring light and dark theme
 const lightColors = {
@@ -103,7 +104,7 @@ function DeleteConfirmModal({ item, onClose, onConfirm, colors }) {
   );
 }
 
-function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors, onDeleteClick }) {
+function Tile({ item, onCaptionChange, onOpen, colors, onDeleteClick }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.caption);
 
@@ -233,7 +234,6 @@ function ImageModal({ item, onClose, colors }) {
 }
 
 export default function Gallery() {
-  // Get theme from AdminLayout via Outlet context
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
 
@@ -245,111 +245,90 @@ export default function Gallery() {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
-  // Fetch images from API on mount
-  useEffect(() => {
-    fetchImages();
-  }, []);
-
   const fetchImages = async () => {
     try {
-      const res = await fetch("/api/gallery");
-      if (!res.ok) throw new Error("Failed to fetch gallery");
-      const data = await res.json();
+      const data = await apiRequest('/api/gallery');
       setImages(data);
     } catch (err) {
-      console.error("Error loading gallery:", err);
+      console.error('Error loading gallery:', err);
       setError(err.message);
-      toast.error("Failed to load gallery images");
+      toast.error('Failed to load gallery images');
     } finally {
       setLoading(false);
     }
   };
 
-  // Upload a single file – field name MUST be "image" (matches backend)
-  const uploadFile = async (file, caption = "") => {
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  const uploadFile = async (file, caption = '') => {
     if (!file || !(file instanceof File)) {
-      console.error("Invalid file object:", file);
-      toast.error("Invalid file – please select an image.");
+      toast.error('Invalid file – please select an image.');
       return;
     }
 
     const formData = new FormData();
-    formData.append("image", file);   // <--- CRITICAL: field name = "image"
-    if (caption) formData.append("caption", caption);
+    formData.append('image', file);
+    if (caption) formData.append('caption', caption);
 
     try {
-      const res = await fetch("/api/gallery", {
-        method: "POST",
+      const newImage = await apiRequest('/api/gallery', {
+        method: 'POST',
         body: formData,
-        // No manual Content-Type header
       });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Upload failed (${res.status}): ${errorText}`);
-      }
-
-      const newImage = await res.json();
       setImages((prev) => [newImage, ...prev]);
       toast.success(`"${newImage.caption}" uploaded successfully`);
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error('Upload error:', err);
       toast.error(`Upload failed: ${err.message}`);
     }
   };
 
-  // Handle multiple files from input or drop
   function handleFiles(fileList) {
     const files = Array.from(fileList || []);
     if (files.length === 0) return;
     let uploadedCount = 0;
     for (const file of files) {
-      if (!file.type.startsWith("image/")) continue;
-      const caption = file.name.replace(/\.[^/.]+$/, "") || "Untitled";
+      if (!file.type.startsWith('image/')) continue;
+      const caption = file.name.replace(/\.[^/.]+$/, '') || 'Untitled';
       uploadFile(file, caption);
       uploadedCount++;
     }
     if (uploadedCount === 0) {
-      toast.warning("No valid image files selected");
+      toast.warning('No valid image files selected');
     }
   }
 
-  // Delete an image
   const performDelete = async (id) => {
     try {
-      const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
+      await apiRequest(`/api/gallery/${id}`, { method: 'DELETE' });
       setImages((prev) => prev.filter((img) => img.id !== id));
-      toast.success("Image deleted successfully");
+      toast.success('Image deleted successfully');
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error('Delete error:', err);
       toast.error(`Delete failed: ${err.message}`);
     }
   };
 
-  // Update caption
   const updateCaption = async (id, newCaption) => {
     try {
-      const res = await fetch(`/api/gallery/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption: newCaption }),
+      const updated = await apiRequest(`/api/gallery/${id}`, {
+        method: 'PATCH',
+        body: { caption: newCaption },
       });
-      if (!res.ok) throw new Error("Update failed");
-      const updated = await res.json();
       setImages((prev) => prev.map((img) => (img.id === id ? updated : img)));
-      toast.success("Caption updated");
+      toast.success('Caption updated');
     } catch (err) {
-      console.error("Update error:", err);
+      console.error('Update error:', err);
       toast.error(`Update failed: ${err.message}`);
     }
   };
 
-//loading ya gallery
   if (loading) {
     return (
       <div
-        style={{ background: COLORS.bg, minHeight: "100%", display: "flex", justifyContent: "center", alignItems: "center", padding: "2rem" }}
+        style={{ background: COLORS.bg, minHeight: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}
       >
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
@@ -361,14 +340,14 @@ export default function Gallery() {
 
   if (error) {
     return (
-      <div style={{ background: COLORS.bg, minHeight: "100%", padding: "2rem" }}>
-        <p style={{ color: "red" }}>Error: {error}</p>
+      <div style={{ background: COLORS.bg, minHeight: '100%', padding: '2rem' }}>
+        <p style={{ color: 'red' }}>Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans">
+    <div style={{ background: COLORS.bg, minHeight: '100%' }} className="p-6 font-sans">
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
@@ -387,7 +366,7 @@ export default function Gallery() {
             className="hidden"
             onChange={(e) => {
               handleFiles(e.target.files);
-              e.target.value = "";
+              e.target.value = '';
             }}
           />
           <button
@@ -417,12 +396,12 @@ export default function Gallery() {
         style={{
           border: `2px dashed ${dragOver ? COLORS.text : COLORS.border}`,
           background: dragOver ? COLORS.dragBg : COLORS.panel,
-          transition: "all 0.2s ease",
+          transition: 'all 0.2s ease',
         }}
         className="rounded-xl mb-5 p-6 text-center text-sm transition-colors"
       >
         <span style={{ color: COLORS.text }}>
-          {dragOver ? "Drop your images here" : "Howdy! drag and drop photos here, or use the Upload button above."}
+          {dragOver ? 'Drop your images here' : 'Howdy! drag and drop photos here, or use the Upload button above.'}
         </span>
       </div>
 

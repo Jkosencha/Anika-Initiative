@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Send, Check, Clock, Users, Zap } from "lucide-react";
-import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast, fetchWhatsAppStats } from "../../lib/api";
+import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast, fetchWhatsAppStats, fetchWhatsAppInbox } from "../../lib/api";
 import { useAdminColors } from "../theme";
 
 
@@ -22,7 +22,7 @@ const SEED_HISTORY = [
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
         <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
@@ -51,25 +51,38 @@ export default function WhatsAppBroadcast() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [sending, setSending] = useState(false);
   const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 });
+  const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
     fetchWhatsAppBroadcasts().then(({ rows }) => {
       if (rows && rows.length) setHistory(rows);
     });
     fetchWhatsAppStats().then(setWaStats);
+    fetchWhatsAppInbox().then(({ rows }) => {
+      if (rows && rows.length) setConversations(rows);
+    });
   }, []);
 
   const MAX_CHARS = 1024;
 
-  const contactBase = 1284;
+  // Audience sizes come from the real conversation list when it exists, so the
+  // counts match what the assistant actually knows. A fallback base keeps the
+  // composer sane before the first registrations/bot threads are created.
+  const fallbackBase = 1284;
+  const liveContacts = conversations.length > 0 ? conversations.length : fallbackBase;
+  const liveOptIns =
+    conversations.length > 0
+      ? conversations.filter((c) => !c.optedOut).length
+      : Math.round(fallbackBase * 0.62);
+
   const effectiveAudience = useMemo(() => {
-    if (audience === "All opted-in") return Math.round(contactBase * 0.62);
-    if (audience === "All contacts") return contactBase;
-    if (audience === "Opted-in registrants") return 321;
-    if (audience === "Alliance contacts") return 214;
-    if (audience === "Nairobi artists") return 402;
-    return 150;
-  }, [audience]);
+    if (audience === "All opted-in") return liveOptIns;
+    if (audience === "All contacts") return liveContacts;
+    if (audience === "Opted-in registrants") return Math.round(liveContacts * 0.25);
+    if (audience === "Alliance contacts") return Math.round(liveContacts * 0.16);
+    if (audience === "Nairobi artists") return Math.round(liveContacts * 0.3);
+    return liveOptIns;
+  }, [audience, liveContacts, liveOptIns]);
 
   const audienceSize = adjustForOptOuts({ audience, value: effectiveAudience }, waStats.optedOut);
 
@@ -77,8 +90,8 @@ export default function WhatsAppBroadcast() {
     const totalSent = history.reduce((s, h) => s + h.recipients, 0);
     const delivered = history.filter((h) => h.status === "Delivered").length;
     const scheduled = history.filter((h) => h.status === "Scheduled").length;
-    return { count: history.length, totalSent, delivered, scheduled, fresh: Math.round(contactBase * 0.38) };
-  }, [history]);
+    return { count: history.length, totalSent, delivered, scheduled, fresh: Math.round(liveContacts * 0.38) };
+  }, [history, liveContacts]);
 
   function send() {
     if (!message.trim()) return;
@@ -194,13 +207,13 @@ export default function WhatsAppBroadcast() {
       </div>
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
-        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
+        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-190" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
           <div>CAMPAIGN</div><div>AUDIENCE</div><div>RECIPIENTS</div><div>STATUS / DATE</div>
         </div>
         {history.map((h) => {
           const s = STATUS_STYLE[h.status] || STATUS_STYLE.Sent;
           return (
-            <div key={h.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[760px]" style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
+            <div key={h.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-190" style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
               <div>
                 <div className="font-semibold text-sm" style={{ color: COLORS.text }}>{h.title}</div>
                 <div className="text-xs mt-0.5" style={{ color: COLORS.muted }}>{h.channel} • {h.date}</div>

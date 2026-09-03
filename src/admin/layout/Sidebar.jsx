@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { navSections } from '../nav'
 import { useAuth } from '../auth/AuthContext'
 import { getInitials } from '../utils/getInitials'
-import { fetchRegistrations, fetchApplications, fetchWhatsAppInbox } from '../../lib/api'
+import { useAdminNotifications } from './useAdminNotifications'
 
 const ROLE_LABELS = {
   leadership: 'Leadership',
@@ -15,25 +14,7 @@ const ROLE_LABELS = {
 
 function Sidebar({ open, onClose, onOpenAccount }) {
   const {user, logout} = useAuth()
-  const [badges, setBadges] = useState({})
-
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([fetchRegistrations(), fetchApplications(), fetchWhatsAppInbox()]).then(
-      ([registrationsRes, applicationsRes, inboxRes]) => {
-        if (cancelled) return
-        const unreadTotal = inboxRes.rows.reduce((sum, c) => sum + (c.unread || 0), 0)
-        setBadges({
-          registrations: registrationsRes.rows.length,
-          applications: applicationsRes.rows.length,
-          whatsappInboxUnread: unreadTotal,
-        })
-      }
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const { badges } = useAdminNotifications()
 
   const visibleSections = navSections
     .map((section) => ({

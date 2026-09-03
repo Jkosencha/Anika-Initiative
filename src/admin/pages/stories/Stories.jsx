@@ -1,10 +1,68 @@
 // admin/pages/stories/Stories.jsx
-import React, { useMemo, useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, Eye, ChevronDown, ChevronUp } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, Eye, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useOutletContext } from 'react-router-dom'
-import { PILLARS, getPillar, STATUS_STYLES, STATUS_LABELS } from './data/pillars'
+import { getPillar, STATUS_STYLES, STATUS_LABELS } from './data/pillars'
 import StoryEditor from './StoryEditor'
 import { storiesStore } from '../../../data/storiesStore'
+
+// Same delete-confirmation pattern as Partners.jsx
+function DeleteConfirmModal({ isOpen, onClose, onConfirm, storyTitle, colors, isDeleting }) {
+  if (!isOpen) return null
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
+          <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+            Delete Story
+          </h2>
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <p className="text-sm" style={{ color: colors.text }}>
+            Are you sure you want to delete <span className="font-bold">{storyTitle}</span>?
+          </p>
+          <p className="text-xs" style={{ color: colors.muted }}>
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: colors.border }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isDeleting}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            style={{ background: "#dc2626", color: "#ffffff" }}
+            className="text-sm font-semibold px-4 py-2 rounded-full hover:bg-red-700 disabled:opacity-60"
+          >
+            {isDeleting ? "Deleting…" : "Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // Same light/dark palette shape as Partners.jsx
 const lightColors = {
@@ -52,6 +110,8 @@ function Stories() {
   const [isLoading, setIsLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
   const [error, setError] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Load stories from the API
   const loadStories = async () => {
@@ -95,23 +155,30 @@ function Stories() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm('Are you sure you want to delete this story?')) return
+  function handleDelete(story) {
+    setDeleteConfirm(story)
+  }
+
+  async function confirmDelete() {
+    if (!deleteConfirm) return
+    setIsDeleting(true)
     try {
-      await storiesStore.delete(id)
+      await storiesStore.delete(deleteConfirm.id)
+      setDeleteConfirm(null)
     } catch (err) {
       console.error('Failed to delete story:', err)
+      setError('Failed to delete story. Please try again.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
   async function handleSave(payload) {
-    try {
-      await storiesStore.save(payload)
-      setView('list')
-    } catch (err) {
-      console.error('Failed to save story:', err)
-      // Keep the editor open so the person doesn't lose their draft
-    }
+    // Let storiesStore.save() errors propagate to the caller (StoryEditor)
+    // so it can show "Save failed" and keep the unsaved edits on screen
+    // instead of silently reporting success.
+    await storiesStore.save(payload)
+    setView('list')
   }
 
   const toggleExpand = (id) => {
@@ -189,7 +256,7 @@ function Stories() {
         border: `1px solid ${COLORS.border}` 
       }}>
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-205"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
@@ -219,7 +286,7 @@ function Stories() {
           return (
             <div
               key={story.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-205"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns: "2fr 1.2fr 1fr 1fr 1.2fr 1fr 0.8fr",
@@ -279,7 +346,7 @@ function Stories() {
                   <Edit size={16} style={{ color: COLORS.muted }} />
                 </button>
                 <button
-                  onClick={() => handleDelete(story.id)}
+                  onClick={() => handleDelete(story)}
                   className="p-1.5 rounded-lg hover:bg-black/5"
                   title="Delete story"
                 >
@@ -391,7 +458,7 @@ function Stories() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(story.id)}
+                      onClick={() => handleDelete(story)}
                       style={{ 
                         border: `1px solid ${COLORS.border}`, 
                         background: COLORS.panel, 
@@ -417,6 +484,15 @@ function Stories() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+        storyTitle={deleteConfirm?.title || ""}
+        colors={COLORS}
+        isDeleting={isDeleting}
+      />
     </div>
   )
 }

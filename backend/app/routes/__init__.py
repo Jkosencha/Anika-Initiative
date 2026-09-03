@@ -11,6 +11,7 @@ from .registrations import registrations_bp
 from .whatsapp import whatsapp_bp
 from .metrics import metrics_bp
 from .team import team_bp
+from .settings import settings_bp
 
 __all__ = [
     "health_bp",
@@ -25,4 +26,5 @@ __all__ = [
     "whatsapp_bp",
     "metrics_bp",
     "team_bp",
+    "settings_bp",
 ]

@@ -1,5 +1,5 @@
 // admin/pages/stories/StoryEditor.jsx
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -49,17 +49,6 @@ const darkColors = {
   inputBg: "#2a2a2a",
   inputPlaceholder: "#aaaaaa",
 };
-
-const AVOID_PHRASES = [
-  'the voiceless',
-  'giving people a voice',
-  'saving them',
-  'rescuing',
-  'helpless',
-  'beneficiaries',
-  'sensitise',
-  'victims',
-]
 
 // Gallery images from AdminGallery
 const GALLERY_IMAGES = [
@@ -160,7 +149,7 @@ function Toolbar({ editor }) {
 }
 
 // Gallery Picker Modal Component
-function GalleryPicker({ onClose, onSelect, colors }) {
+function GalleryPicker({ onClose, onSelect }) {
   const [selectedUrl, setSelectedUrl] = useState(null)
   const [uploadPreview, setUploadPreview] = useState(null)
   const fileInputRef = useRef(null)
@@ -267,7 +256,6 @@ function StoryEditor({ story, onCancel, onSave }) {
   const { theme } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
-  const isNew = !story
   const [title, setTitle] = useState(story?.title || '')
   const [pillarSlug, setPillarSlug] = useState(() => {
     const mapping = {
@@ -369,16 +357,36 @@ function StoryEditor({ story, onCancel, onSave }) {
     }
   }
 
-  function handleSaveDraft() {
+  const [isSaving, setIsSaving] = useState(false)
+
+  async function handleSaveDraft() {
     if (!validate()) return
-    onSave(buildPayload('draft'))
-    setSaveState('Saved')
+    setIsSaving(true)
+    setSaveState('Saving…')
+    try {
+      await onSave(buildPayload('draft'))
+      setSaveState('Saved')
+    } catch (error) {
+      console.error('Failed to save draft:', error)
+      setSaveState('Save failed — try again')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  function handlePublish() {
+  async function handlePublish() {
     if (!validate()) return
-    onSave(buildPayload('published'))
-    setSaveState('Saved')
+    setIsSaving(true)
+    setSaveState('Saving…')
+    try {
+      await onSave(buildPayload('published'))
+      setSaveState('Saved')
+    } catch (error) {
+      console.error('Failed to publish story:', error)
+      setSaveState('Save failed — try again')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -405,7 +413,12 @@ function StoryEditor({ story, onCancel, onSave }) {
           Stories
         </button>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium" style={{ color: COLORS.muted }}>{saveState}</span>
+          <span
+            className="text-xs font-medium"
+            style={{ color: saveState === 'Save failed — try again' ? '#b23b3b' : COLORS.muted }}
+          >
+            {saveState}
+          </span>
           {story?.status === 'published' && story?.slug && (
             <a
               href={`/stories/${story.slug}`}
@@ -418,21 +431,23 @@ function StoryEditor({ story, onCancel, onSave }) {
           )}
           <button
             onClick={handleSaveDraft}
+            disabled={isSaving}
             style={{ 
               border: `1px solid ${COLORS.border}`,
               background: COLORS.panel,
               color: COLORS.text
             }}
-            className="text-sm font-semibold px-4 py-2 rounded-lg hover:bg-black/5"
+            className="text-sm font-semibold px-4 py-2 rounded-lg hover:bg-black/5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save draft
           </button>
           <button
             onClick={handlePublish}
+            disabled={isSaving}
             style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
-            className="text-sm font-semibold px-4 py-2 rounded-lg"
+            className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {story?.status === 'published' ? 'Update' : 'Publish'}
+            {isSaving ? 'Saving…' : story?.status === 'published' ? 'Update' : 'Publish'}
           </button>
         </div>
       </div>

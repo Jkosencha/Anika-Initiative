@@ -44,7 +44,6 @@ const formatPhoneInput = (value) => {
   return digits.slice(0, 12);
 };
 
-
 const roles = [
   {
     id: "artist",
@@ -78,13 +77,13 @@ const roles = [
 
 const roleColors = {
   artist: {
-    bg: "bg-[#eb4c47]/10",
+    bg: "bg-coral/10",
     border: "border-[#eb4c47]",
     ring: "ring-[#eb4c47]",
-    text: "text-[#eb4c47]",
-    button: "bg-[#eb4c47] hover:bg-[#d43d3a]",
-    icon: "text-[#eb4c47]",
-    box: "bg-[#eb4c47]",
+    text: "text-coral",
+    button: "bg-coral hover:bg-[#d43d3a]",
+    icon: "text-coral",
+    box: "bg-coral",
   },
   volunteer: {
     bg: "bg-green-50",
@@ -190,7 +189,7 @@ const GetInvolved = () => {
       return;
     }
 
-    // Validating phone number if it aint  newsletterr
+    // Validating phone number if it aint newsletter
     if (!isNewsletter) {
       const phone = formData.phone;
       const result = validatePhone(phone);
@@ -200,7 +199,7 @@ const GetInvolved = () => {
         return;
       }
       if (result.normalized) {
-        formData.phone = result.normalized;
+        setFormData((previous) => ({ ...previous, phone: result.normalized }));
       }
     }
 
@@ -269,39 +268,40 @@ const GetInvolved = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAF7F2] text-[#1E1A18] font-body">
-      <Reveal>
-        <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
-          <img
-            src="/anika-flower.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
-          />
-          <div className="relative z-10 mx-auto max-w-6xl px-6">
+    <main className="min-h-screen bg-cream text-[#1E1A18] font-body">
+      {/* Hero Section – text revealed individually */}
+      <section className="relative overflow-hidden bg-charcoal text-cream py-16 md:py-12">
+        <img
+          src="/anika-flower.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+        />
+        <div className="relative z-10 mx-auto max-w-6xl px-6">
+          <Reveal>
             <h1 className="text-4xl md:text-6xl font-bold font-display tracking-wider">
               GET INVOLVED
             </h1>
+          </Reveal>
+          <Reveal delay={150}>
             <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
               Whether you volunteer, apply as an artist, partner with us or
               just want the stories in your inbox, there's a place for you at
               ANIKA.
             </p>
-          </div>
-        </section>
-      </Reveal>
+          </Reveal>
+        </div>
+      </section>
 
-      <Reveal>
-        <section className="mx-auto max-w-6xl px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {waysToGetInvolved.map((way) => {
-              const Icon = way.icon;
-              return (
-                <article
-                  key={way.title}
-                  className="flex min-h-[320px] flex-col items-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm transition-shadow hover:shadow-lg"
-                >
-                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#eb4c47]/10 text-[#eb4c47]">
+      {/* Ways to get involved cards – revealed with delay and toned-down background */}
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {waysToGetInvolved.map((way, index) => {
+            const Icon = way.icon;
+            return (
+              <Reveal key={way.title} delay={index * 150}>
+                <article className="flex min-h-80 flex-col items-center rounded-xl border border-[#e8e2d8] bg-[#fcf9f6] p-8 text-center shadow-sm transition-shadow hover:shadow-md">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-coral/10 text-coral">
                     <Icon size={34} strokeWidth={1.8} aria-hidden="true" />
                   </div>
                   <h2 className="mb-3 text-2xl font-bold">{way.title}</h2>
@@ -311,60 +311,65 @@ const GetInvolved = () => {
                   <button
                     type="button"
                     onClick={way.action}
-                    className="rounded-md  bg-[#eb4c47] px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#d43d3a] focus:outline-none focus:ring-2 focus:ring-[#eb4c47] focus:ring-offset-2 cursor-pointer"
+                    className="rounded-md bg-coral px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[#d43d3a] focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 cursor-pointer"
                   >
                     {way.cta}
                   </button>
                 </article>
-              );
-            })}
-          </div>
-        </section>
-      </Reveal>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
 
-      <Reveal>
-        <section className="px-4 py-16 bg-[#FAF7F2]" id="get-involved-form">
-          <div className="mx-auto max-w-4xl">
-            <div className="text-center mb-10">
+      {/* Form Section – text elements revealed individually */}
+      <section className="px-4 py-16 bg-cream" id="get-involved-form">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-10">
+            <Reveal>
               <h2 className="text-3xl md:text-4xl font-bold">Get in touch.</h2>
+            </Reveal>
+            <Reveal delay={100}>
               <p className="mt-2 font-editorial text-lg italic text-gray-600">
                 We begin with the voice, not the institution. Tell us who you are
                 and what you need to say.
               </p>
-            </div>
+            </Reveal>
+          </div>
 
-            <div className="mb-8">
-              <div className="flex flex-wrap gap-6 justify-center md:justify-start">
-                {roles.map((role) => {
-                  const Icon = role.icon;
-                  const isActive = selectedRole === role.id;
-                  const colors = roleColors[role.id];
+          <div className="mb-8">
+            <div className="flex flex-wrap gap-6 justify-center md:justify-start">
+              {roles.map((role) => {
+                const Icon = role.icon;
+                const isActive = selectedRole === role.id;
+                const colors = roleColors[role.id];
 
-                  return (
-                    <div
-                      key={role.id}
-                      onClick={() => handleRoleSelect(role)}
-                      className="flex flex-col items-center cursor-pointer transition-all duration-200"
-                    >
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <Icon
-                          className={`w-5 h-5 ${
-                            isActive ? colors.icon : "text-gray-400"
-                          }`}
-                        />
-                        <span>{role.label}</span>
-                      </div>
-                      <div
-                        className={`mt-1.5 w-full h-0.5 rounded transition-colors ${
-                          isActive ? colors.box : "bg-gray-200"
+                return (
+                  <div
+                    key={role.id}
+                    onClick={() => handleRoleSelect(role)}
+                    className="flex flex-col items-center cursor-pointer transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Icon
+                        className={`w-5 h-5 ${
+                          isActive ? colors.icon : "text-gray-400"
                         }`}
                       />
+                      <span>{role.label}</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div
+                      className={`mt-1.5 w-full h-0.5 rounded transition-colors ${
+                        isActive ? colors.box : "bg-gray-200"
+                      }`}
+                    />
+                  </div>
+                );
+              })}
             </div>
+          </div>
 
+          <Reveal delay={200}>
             <form
               onSubmit={handleSubmit}
               className={`rounded-2xl p-8 md:p-10 border-2 shadow-lg transition-all duration-300 ${currentColors.border} ${currentColors.bg}`}
@@ -430,7 +435,7 @@ const GetInvolved = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="0712345678 or +254712345678"
-                        maxLength="12"  // additional guard
+                        maxLength="12"
                         required
                         className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
                       />
@@ -535,7 +540,7 @@ const GetInvolved = () => {
                   type="checkbox"
                   checked={whatsappOptIn}
                   onChange={(e) => setWhatsappOptIn(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#eb4c47] focus:ring-[#eb4c47]"
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-coral focus:ring-coral"
                 />
                 <span className="text-sm text-gray-600 flex items-start gap-2">
                   <MessageCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
@@ -570,9 +575,9 @@ const GetInvolved = () => {
                   : "We'll respond within 48 hours. Your information is kept confidential."}
               </p>
             </form>
-          </div>
-        </section>
-      </Reveal>
+          </Reveal>
+        </div>
+      </section>
     </main>
   );
 };

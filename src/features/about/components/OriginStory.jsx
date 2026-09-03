@@ -35,9 +35,6 @@ export default function OriginStory() {
           </figure>
         </div>
 
-        <blockquote className="mt-14 max-w-2xl border-l-4 border-coral pl-6 font-editorial text-2xl italic leading-snug text-ink sm:text-3xl">
-          &ldquo;{origin.pullQuote}&rdquo;
-        </blockquote>
 
         <p className="mt-10 max-w-3xl border-t border-ink/10 pt-8 font-body text-lg leading-relaxed text-ink/80">
           {origin.closing}

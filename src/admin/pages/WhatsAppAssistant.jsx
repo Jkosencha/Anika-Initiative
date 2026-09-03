@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bot, Save, MessageSquare, Zap, ShieldCheck, SendHorizonal, UserRound } from "lucide-react";
+import { Bot, Save, MessageSquare, Zap, ShieldCheck, SendHorizonal, UserRound, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   fetchWhatsAppSettings,
@@ -8,6 +8,8 @@ import {
   fetchWhatsAppInbox,
   updateWhatsAppMessage,
   fetchWhatsAppStats,
+  simulateWhatsAppMessage,
+  fetchWhatsAppStatus,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
 
@@ -70,6 +72,10 @@ export default function WhatsAppAssistant() {
   const [chat, setChat] = useState([{ from: "bot", text: DEFAULT_SETTINGS.greeting }]);
   const [draft, setDraft] = useState("");
   const [stats, setStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 });
+  const [simName, setSimName] = useState("");
+  const [simPhone, setSimPhone] = useState("");
+  const [simulating, setSimulating] = useState(false);
+  const [waStatus, setWaStatus] = useState({ configured: false, simulated: true });
 
   function rebuildChatFromContact(contact, greeting) {
     if (!contact) return;
@@ -101,51 +107,92 @@ export default function WhatsAppAssistant() {
       if (rows && rows.length) {
         setContacts(rows);
         setContactId(rows[0].id);
+        setSimName(rows[0].name);
+        setSimPhone(rows[0].phone);
         rebuildChatFromContact(rows[0]);
       }
     });
+    fetchWhatsAppStatus().then(setWaStatus);
     refreshStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function replyFor(input) {
+    // Offline mirror of the bot engine (backend /api/whatsapp/simulate is used
+    // when available). Kept in sync with anika_assistant.resolve_reply.
     const s = settings;
     const msg = input.trim().toLowerCase();
-    if (!s.menuEnabled) return settings.answers.default;
-    if (s.flows.humanEscalation && (msg.includes("help") || msg === "4")) return s.answers.human;
-    if (s.flows.optOut && msg === "stop") return "You have been unsubscribed from ANIKA updates. Reply any time to opt back in.";
+    if (s.flows.humanEscalation && (msg.includes("help") || msg === "4" || msg.includes("human"))) return s.answers.human;
+    if (s.flows.optOut && (msg === "stop" || msg === "unsubscribe" || msg === "opt out")) return "You have been unsubscribed from ANIKA updates. Reply any time to opt back in.";
     if (msg === "1" || msg.includes("event")) return s.answers.events;
-    if (msg === "2" || msg === "alliance" || msg.includes("apply") || msg.includes("join")) return s.answers.apply;
-    if (msg === "3" || msg.includes("donat")) return s.answers.donate;
+    if (msg === "2" || msg === "alliance" || msg.includes("apply") || msg.includes("join") || msg.includes("member")) return s.answers.apply;
+    if (msg === "3" || msg.includes("donat") || msg.includes("support")) return s.answers.donate;
     return s.answers.default;
   }
 
-  function sendMessage() {
-    if (!draft.trim()) return;
+  async function sendMessage() {
+    if (!draft.trim() || simulating) return;
     const text = draft.trim();
-    const upper = text.toUpperCase();
-    const botReply = replyFor(text);
-    const flowNote =
-      upper === "HELP"
-        ? "Thread flagged for escalation. A team member will be assigned in the inbox."
-        : upper === "STOP"
-          ? "Contact opted out. Removed from outbound lists. Inbox updated."
-          : null;
-
     const now = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const userMsg = { from: "them", text, time: now() };
-    const botMsg = { from: "me", text: botReply, time: now() };
 
-    setChat((prev) => [
-      ...prev,
-      { from: "user", text },
-      { from: "bot", text: botReply },
-      ...(flowNote ? [{ from: "system", text: flowNote }] : []),
-    ]);
+    setChat((prev) => [...prev, { from: "user", text }]);
     setDraft("");
+    setSimulating(true);
 
-    // Persist into the shared inbox thread so it shows up across Inbox + Auto-flags.
-    if (contactId) {
+    const name = simName.trim() || "Test Visitor";
+    const phone = simPhone.trim() || "+254 700 111 222";
+
+    try {
+      // Push the message through the real bot engine (same code the webhook
+      // uses) so FAQ/HELP/STOP/re-subscribe all behave exactly as live.
+      const res = await simulateWhatsAppMessage({ name, phone, message: text });
+      const botReply = res.reply || "…";
+      const conv = res.conversation;
+
+      const upper = text.toUpperCase();
+      const note =
+        conv?.intent === "escalation"
+          ? "Thread flagged for escalation. A team member will be assigned in the inbox."
+          : conv?.optedOut && upper !== "STOP"
+            ? "Contact re-subscribed. They will receive outbound updates again."
+            : upper === "STOP"
+              ? "Contact opted out. Removed from outbound lists. Inbox updated."
+              : null;
+
+      setChat((prev) => [
+        ...prev,
+        { from: "bot", text: botReply },
+        ...(note ? [{ from: "system", text: note }] : []),
+      ]);
+
+      if (conv) {
+        setContacts((prev) => {
+          const exists = prev.some((c) => c.id === conv.id);
+          return exists ? prev.map((c) => (c.id === conv.id ? conv : c)) : [conv, ...prev];
+        });
+        setContactId(conv.id);
+        setSimName(conv.name);
+        setSimPhone(conv.phone);
+      }
+    } catch {
+      // Backend offline: keep the demo interactive with the local mirror.
+      const botReply = replyFor(text);
+      const upper = text.toUpperCase();
+      const flowNote =
+        upper === "HELP"
+          ? "Thread flagged for escalation. A team member will be assigned in the inbox."
+          : upper === "STOP"
+            ? "Contact opted out. Removed from outbound lists. Inbox updated."
+            : null;
+      const botMsg = { from: "me", text: botReply, time: now() };
+
+      setChat((prev) => [
+        ...prev,
+        { from: "bot", text: botReply },
+        ...(flowNote ? [{ from: "system", text: flowNote }] : []),
+      ]);
+
       const contact = contacts.find((c) => c.id === contactId);
       if (contact) {
         const patch = {
@@ -157,16 +204,23 @@ export default function WhatsAppAssistant() {
             : {}),
           ...(upper === "STOP" && settings.flows.optOut ? { optedOut: true } : {}),
         };
-        updateWhatsAppMessage(contactId, patch).then(refreshStats);
-        setContacts((prev) => prev.map((c) => (c.id === contactId ? { ...c, ...patch } : c)));
+        updateWhatsAppMessage(contact.id, patch).then(refreshStats);
+        setContacts((prev) => prev.map((c) => (c.id === contact.id ? { ...c, ...patch } : c)));
       }
+    } finally {
+      setSimulating(false);
+      refreshStats();
     }
   }
 
   function selectContact(id) {
     setContactId(id);
     const c = contacts.find((x) => x.id === id);
-    if (c) rebuildChatFromContact(c);
+    if (c) {
+      setSimName(c.name);
+      setSimPhone(c.phone);
+      rebuildChatFromContact(c);
+    }
   }
 
   const activeContact = contacts.find((c) => c.id === contactId);
@@ -199,6 +253,18 @@ export default function WhatsAppAssistant() {
         >
           <Save size={14} /> SAVE SETTINGS
         </button>
+        <span
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold"
+          style={waStatus?.configured
+            ? { background: "#dcefe0", color: "#2d7a43" }
+            : { background: "#fdecd2", color: "#8a5c10" }}
+          title={waStatus?.configured
+            ? "WhatsApp Cloud API is configured - replies are sent to real numbers."
+            : "WhatsApp credentials are not set. The bot still processes messages (simulated mode)."}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: waStatus?.configured ? "#2d7a43" : "#c98a1f" }} />
+          {waStatus?.configured ? "WhatsApp Cloud connected" : "Assistant simulated"}
+        </span>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -347,6 +413,25 @@ export default function WhatsAppAssistant() {
           </div>
 
           <div className="p-3 border-t" style={{ borderColor: COLORS.border }}>
+            <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold" style={{ color: COLORS.muted }}>
+              <UserRound size={12} /> New visitor (or pick a thread above)
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <input
+                value={simName}
+                onChange={(e) => setSimName(e.target.value)}
+                placeholder="Visitor name"
+                className="px-3 py-1.5 rounded-lg text-sm outline-none min-w-0"
+                style={{ border: `1px solid ${COLORS.border}`, background: COLORS.inputBg, color: COLORS.text }}
+              />
+              <input
+                value={simPhone}
+                onChange={(e) => setSimPhone(e.target.value)}
+                placeholder="+254 700 000 000"
+                className="px-3 py-1.5 rounded-lg text-sm outline-none min-w-0"
+                style={{ border: `1px solid ${COLORS.border}`, background: COLORS.inputBg, color: COLORS.text }}
+              />
+            </div>
             <div className="flex gap-1.5 flex-wrap mb-3">
               {["1) Upcoming events", "2) How to apply", "3) How to donate", "4) Talk to a human", "HELP", "STOP"].map((q) => (
                 <button
@@ -373,8 +458,8 @@ export default function WhatsAppAssistant() {
                 className="flex-1 px-3 py-2 rounded-full text-sm outline-none"
                 style={{ border: `1px solid ${COLORS.border}`, background: COLORS.inputBg, color: COLORS.text }}
               />
-              <button type="submit" className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ background: "#25D366" }} title="Send">
-                <SendHorizonal size={16} />
+              <button type="submit" disabled={simulating} className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ background: "#25D366", opacity: simulating ? 0.6 : 1 }} title="Send">
+                {simulating ? <Loader2 size={16} className="animate-spin" /> : <SendHorizonal size={16} />}
               </button>
             </form>
           </div>

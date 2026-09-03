@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, Plus, Search } from "lucide-react";
+import { X, Plus, Search, Trash2 } from "lucide-react";
 import {
   fetchRegistrations,
+  fetchEvents,
   submitRegistration,
   updateRegistration,
+  deleteRegistration,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
 
@@ -58,7 +60,7 @@ function downloadCSV(rows, filename) {
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
         <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
@@ -68,10 +70,10 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   );
 }
 
-function AddRegistrationModal({ onClose, onAdd, colors }) {
+function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [event, setEvent] = useState("Sema-Anika Community Dialogue Forum");
+  const [event, setEvent] = useState((eventOptions && eventOptions[0]) || "Sema-Anika Community Dialogue Forum");
   const [consent, setConsent] = useState(true);
 
   function submit(e) {
@@ -109,7 +111,7 @@ function AddRegistrationModal({ onClose, onAdd, colors }) {
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>Event</label>
             <select value={event} onChange={(e) => setEvent(e.target.value)} className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text, appearance: "auto" }}>
-              {SEED.map((r) => r.event).filter((v, i, a) => a.indexOf(v) === i).map((e) => <option key={e} value={e}>{e}</option>)}
+              {(eventOptions && eventOptions.length ? eventOptions : SEED.map((r) => r.event).filter((v, i, a) => a.indexOf(v) === i)).map((e) => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
           <label className="flex items-center gap-2 text-sm" style={{ color: colors.text }}>
@@ -133,6 +135,8 @@ export default function AdminRegistrations() {
   const [tab, setTab] = useState("All");
   const [q, setQ] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [eventOptions, setEventOptions] = useState([]);
 
   useEffect(() => {
     fetchRegistrations().then(({ rows: stored }) => {
@@ -140,6 +144,9 @@ export default function AdminRegistrations() {
         // Normalise store records (which use eventTitle) to the page's shape.
         setRows(stored.map((r) => ({ ...r, event: r.event || r.eventTitle || "" })));
       }
+    });
+    fetchEvents().then(({ rows: evs }) => {
+      if (evs && evs.length) setEventOptions(evs.map((e) => e.title).filter(Boolean));
     });
   }, []);
 
@@ -165,17 +172,43 @@ export default function AdminRegistrations() {
   }, [rows]);
 
   function addRow(row) {
-    submitRegistration({ ...row, eventTitle: row.event });
+    const payload = {
+      name: row.name,
+      phone: row.phone,
+      email: row.email || null,
+      eventTitle: row.event,
+      source: "Manual",
+      consent: Boolean(row.consent),
+    };
+    submitRegistration(payload).then((res) => {
+      if (res.source === "api") refreshFromApi();
+    });
     setRows((prev) => [row, ...prev]);
   }
-  function cycleStatus(id) {
-    setRows((prev) => prev.map((r) => {
-      if (r.id !== id) return r;
-      const order = ["Confirmed", "Pending", "Waitlist", "Canceled"];
-      const status = order[(order.indexOf(r.status) + 1) % order.length];
-      updateRegistration(id, { status });
-      return { ...r, status };
-    }));
+
+  function updateStatus(id, status) {
+    if (!STATUS_STYLE[status]) return;
+    setRows((prev) => prev.map((r) => (r.id !== id ? r : { ...r, status })));
+    updateRegistration(id, { status }).then((res) => {
+      if (res.source === "api") refreshFromApi();
+    });
+  }
+
+  function deleteRow(id) {
+    deleteRegistration(id).then((res) => {
+      if (res.source === "api") refreshFromApi();
+    });
+    setRows((prev) => prev.filter((r) => r.id !== id));
+    setConfirmDelete(null);
+  }
+
+  // Re-pull from the backend after a successful API mutation so event seat
+  // counts (and anything else the server computed) stay in sync.
+  async function refreshFromApi() {
+    const res = await fetchRegistrations();
+    if (res.source === "api" && Array.isArray(res.rows)) {
+      setRows(res.rows.map((r) => ({ ...r, event: r.event || r.eventTitle || "" })));
+    }
   }
 
   return (
@@ -215,7 +248,7 @@ export default function AdminRegistrations() {
       </div>
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
-        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[980px]" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-245" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
           <div>ATTENDEE</div><div>EVENT</div><div>PHONE</div><div>DATE</div><div>SOURCE</div><div>WHATSAPP</div><div>STATUS</div>
         </div>
         {filtered.length === 0 && (
@@ -224,7 +257,7 @@ export default function AdminRegistrations() {
         {filtered.map((r) => {
           const s = STATUS_STYLE[r.status] || STATUS_STYLE.Pending;
           return (
-            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[980px]" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-245" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
               <div className="flex items-center gap-3">
                 <div style={{ background: avatarColor(r.name) }} className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">{initials(r.name)}</div>
                 <span className="font-semibold text-sm" style={{ color: COLORS.text }}>{r.name}</span>
@@ -248,14 +281,73 @@ export default function AdminRegistrations() {
                   </span>
                 )}
               </div>
-              <button onClick={() => cycleStatus(r.id)} title="Click to change status" style={{ background: s.bg, color: s.text }} className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold">
-                <span style={{ background: s.dot }} className="w-1.5 h-1.5 rounded-full" />{r.status}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={r.status}
+                  onChange={(e) => updateStatus(r.id, e.target.value)}
+                  title="Change status"
+                  style={{ background: s.bg, color: s.text, border: `1px solid ${s.dot}` }}
+                  className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold outline-none appearance-auto"
+                >
+                  {Object.keys(STATUS_STYLE).map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(r)}
+                  title="Delete registration"
+                  className="p-1.5 rounded-lg hover:bg-black/5"
+                  style={{ color: "#b23b3b" }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           );
         })}
       </div>
-      {modalOpen && <AddRegistrationModal onClose={() => setModalOpen(false)} onAdd={addRow} colors={COLORS} />}
+      {modalOpen && <AddRegistrationModal onClose={() => setModalOpen(false)} onAdd={addRow} colors={COLORS} eventOptions={eventOptions} />}
+      {confirmDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(20,18,15,0.45)" }}
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
+            className="w-full max-w-sm rounded-2xl p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-bold text-lg" style={{ color: COLORS.text }}>
+              Remove this registration?
+            </h3>
+            <p className="mt-2 text-sm leading-6" style={{ color: COLORS.muted }}>
+              <span style={{ color: COLORS.text, fontWeight: 600 }}>{confirmDelete.name}</span> for{" "}
+              <span style={{ color: COLORS.text, fontWeight: 600 }}>"{confirmDelete.event}"</span> will be
+              permanently removed and the event's seat count will be freed. This cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                className="text-sm font-semibold px-3 py-2 rounded-lg"
+                style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel, color: COLORS.text }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteRow(confirmDelete.id)}
+                className="text-sm font-semibold px-4 py-2 rounded-lg text-white"
+                style={{ background: "#EB4C47" }}
+              >
+                Delete registration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

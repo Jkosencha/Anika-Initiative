@@ -7,7 +7,6 @@ import {
   Gift,
   Users,
   Mic,
-  Globe,
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -38,12 +37,11 @@ const validatePhone = (phone) => {
   return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
 };
 
-// Phone input formatter striping non-digits, limit to 12 digits
+// Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
   const digits = value.replace(/[^0-9]/g, '');
   return digits.slice(0, 12);
 };
-
 
 const DonationPage = () => {
   const [donorName, setDonorName] = useState("");
@@ -58,11 +56,12 @@ const DonationPage = () => {
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
+  // Impact stats – removed icons, only numbers and labels remain
   const impactStats = [
-    { icon: Users, label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-[#eb4c47]" },
-    { icon: Mic, label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
-    { icon: Globe, label: "AFRICAN COUNTRIES", value: 14, suffix: "", color: "text-[#e8a850]" },
-    { icon: Heart, label: "LIVES IMPACTED", value: 2500, suffix: "+", color: "text-[#3a7599]" },
+    { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-coral" },
+    { label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
+    { label: "AFRICAN COUNTRIES", value: 14, suffix: "", color: "text-[#e8a850]" },
+    { label: "LIVES IMPACTED", value: 2500, suffix: "+", color: "text-[#3a7599]" },
   ];
 
   const handleAmountSelect = (amount) => {
@@ -89,7 +88,7 @@ const DonationPage = () => {
       return;
     }
 
-    //validating email if provided
+    // validating email if provided
     if (email) {
       const emailResult = validateEmail(email);
       if (!emailResult.valid) {
@@ -98,7 +97,7 @@ const DonationPage = () => {
       }
     }
 
-    //validating phone only ya mpesa
+    // validating phone only for M-Pesa
     if (donationMethod === "mpesa") {
       const phone = phoneNumber;
       const result = validatePhone(phone);
@@ -120,7 +119,7 @@ const DonationPage = () => {
 
     const currency = donationMethod === "mpesa" ? "KES" : "USD";
 
-    // Normalize phone for submission remove leading 0, add 254 if needed
+    // Normalize phone for submission: remove leading 0, add 254 if needed
     let normalizedPhone = phoneNumber;
     if (donationMethod === "mpesa") {
       const cleaned = phoneNumber.replace(/[^0-9]/g, '');
@@ -208,61 +207,62 @@ const DonationPage = () => {
 
   return (
     <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      <Reveal>
-        <section className="relative overflow-hidden bg-charcoal text-cream px-6 md:px-16 py-16">
-          <img
-            src="/anika-flower.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
-          />
-          <div className="relative z-10 mx-auto max-w-6xl px-6">
+   
+      <section className="relative overflow-hidden bg-charcoal text-cream px-6 md:px-16 py-16">
+        <img
+          src="/anika-flower.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-8 -top-10 -bottom-10 w-md rotate-0 opacity-90"
+        />
+        <div className="relative z-10 mx-auto max-w-6xl px-6">
+          <Reveal>
             <h1 className="text-5xl md:text-6xl font-display">SUPPORT OUR WORK</h1>
+          </Reveal>
+          <Reveal delay={150}>
             <p className="mt-4 max-w-md text-lg text-[#E6A15E] font-editorial italic">
               Your gift keeps the rooms open, the mics on and the conversation going
             </p>
-          </div>
-        </section>
-      </Reveal>
-
-      <section className="py-12 bg-charcoal">
-        <div className="mx-auto max-w-6xl px-6">
-          <Reveal className="max-w-5xl text-left">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {impactStats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="text-center">
-                    <div className="flex justify-center mb-2">
-                      <Icon className={`w-6 h-6 ${stat.color}`} />
-                    </div>
-                    <div className={`text-2xl md:text-3xl font-display ${stat.color}`}>
-                      <Counter from={0} to={stat.value} duration={2} suffix={stat.suffix} />
-                    </div>
-                    <div className="mt-1 font-body text-xs text-cream/60">{stat.label}</div>
-                  </div>
-                );
-              })}
-            </div>
           </Reveal>
         </div>
       </section>
 
-      <Reveal>
-        <section className="py-16 mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div>
+      <section className="py-12 bg-charcoal">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {impactStats.map((stat, index) => (
+              <Reveal key={stat.label} delay={index * 100}>
+                <div className="text-center">
+                  <div className={`text-2xl md:text-3xl font-display ${stat.color}`}>
+                    <Counter from={0} to={stat.value} duration={2} suffix={stat.suffix} />
+                  </div>
+                  <div className="mt-1 font-body text-xs text-cream/60">{stat.label}</div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 mx-auto max-w-6xl px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <div>
+            <Reveal>
               <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
                 Why Give?
               </span>
+            </Reveal>
+            <Reveal delay={100}>
               <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-6">
                 Some realities can't be understood through reports alone.
               </h2>
+            </Reveal>
 
-              <div className="space-y-4">
-                <div className="bg-[#F4EFE9] p-6 rounded-2xl border border-[#E6DED5]">
+            <div className="space-y-4">
+              <Reveal delay={150}>
+                <div className="bg-[#faf5ef] p-6 rounded-2xl border border-[#e8e2d8]">
                   <div className="flex items-start gap-4">
-                    <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-[#E6A15E] p-2 rounded-full shrink-0">
                       <Gift className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -274,14 +274,18 @@ const DonationPage = () => {
                     </div>
                   </div>
                 </div>
+              </Reveal>
 
+              <Reveal delay={200}>
                 <div className="w-full h-64 bg-[#E6DED5] rounded-2xl flex items-center justify-center text-[#8a8074] overflow-hidden">
-                  <img src="/image6.jpg" alt="Spoken word" className="w-full h-full object-cover" />
+                  <img src="/RAYA1.jpg" alt="Spoken word" className="w-full h-full object-cover" />
                 </div>
-              </div>
+              </Reveal>
             </div>
+          </div>
 
-            <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+          <Reveal delay={250}>
+            <div className="bg-[#faf5ef] p-8 rounded-3xl shadow-lg border border-[#e8e2d8]">
               <h3 className="text-2xl font-bold mb-2">Make a Donation</h3>
               <p className="text-sm text-gray-500 mb-6">Choose your amount and preferred method.</p>
 
@@ -418,54 +422,55 @@ const DonationPage = () => {
                 </p>
               )}
             </div>
-          </div>
-        </section>
-      </Reveal>
+          </Reveal>
+        </div>
+      </section>
 
-      <Reveal>
-        <section className="py-16 bg-[#F4EFE9]">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="text-center mb-12">
+      {/* Impact Stories – heading and cards revealed with delays */}
+      <section className="py-16 bg-[#F4EFE9]">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="text-center mb-12">
+            <Reveal>
               <span className="text-[#E6A15E] font-semibold text-sm tracking-widest uppercase">
                 Impact Stories
               </span>
+            </Reveal>
+            <Reveal delay={100}>
               <h2 className="text-3xl md:text-4xl font-bold mt-2">Where your support goes</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-2xl shadow-md">
-                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Mic className="w-6 h-6 text-[#E6A15E]" />
-                </div>
-                <h4 className="font-bold text-lg mb-2">Open Mic Nights</h4>
-                <p className="text-sm text-gray-600">
-                  Monthly events where artists air the unsaid. Your support keeps the stage open.
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-md">
-                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-[#E6A15E]" />
-                </div>
-                <h4 className="font-bold text-lg mb-2">Artist Residencies</h4>
-                <p className="text-sm text-gray-600">
-                  Cross-border collaborations that bring African artists together to create.
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-2xl shadow-md">
-                <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Heart className="w-6 h-6 text-[#E6A15E]" />
-                </div>
-                <h4 className="font-bold text-lg mb-2">Safe Spaces</h4>
-                <p className="text-sm text-gray-600">
-                  Therapy workshops and forums where hard conversations finally happen.
-                </p>
-              </div>
-            </div>
+            </Reveal>
           </div>
-        </section>
-      </Reveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Mic,
+                title: "Open Mic Nights",
+                desc: "Monthly events where artists air the unsaid. Your support keeps the stage open.",
+              },
+              {
+                icon: Users,
+                title: "Artist Residencies",
+                desc: "Cross-border collaborations that bring African artists together to create.",
+              },
+              {
+                icon: Heart,
+                title: "Safe Spaces",
+                desc: "Therapy workshops and forums where hard conversations finally happen.",
+              },
+            ].map((story, index) => (
+              <Reveal key={story.title} delay={index * 150}>
+                <div className="bg-[#faf5ef] p-6 rounded-2xl shadow-md border border-[#e8e2d8]">
+                  <div className="bg-[#FDF6EE] w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                    <story.icon className="w-6 h-6 text-[#E6A15E]" />
+                  </div>
+                  <h4 className="font-bold text-lg mb-2">{story.title}</h4>
+                  <p className="text-sm text-gray-600">{story.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

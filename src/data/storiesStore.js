@@ -7,7 +7,7 @@
 // index.jsx / StoryDetailView.jsx / admin Stories.jsx).
 import React from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL || ""}/api`;
 
 // Same admin-slug -> public-slug mapping the old store used, kept here as a
 // safety net in case a caller passes an admin-format pillar slug directly.
@@ -28,19 +28,57 @@ let listeners = [];
 const notify = () => listeners.forEach((listener) => listener());
 
 async function request(path, options = {}) {
+  let token = null;
+
+  // AuthContext stores the logged-in admin session here.
+  const session = localStorage.getItem("anika_admin_session");
+
+  if (session) {
+    try {
+      const parsed = JSON.parse(session);
+      token = parsed?.token || null;
+    } catch {
+      token = null;
+    }
+  }
+
+  // Backwards compatibility with older auth storage.
+  if (!token) {
+    token =
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("adminToken");
+  }
+
+  const headers = {
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
+    cache: "no-store",
+    headers,
   });
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     try {
       const body = await res.json();
-      if (body?.error) message = body.error;
-    } catch (_) {
-      // no JSON body — keep the default message
+
+      if (body?.details) {
+        message = `${body.error || "Validation failed"}: ${JSON.stringify(body.details)}`;
+      } else if (body?.error) {
+        message = body.error;
+      } else if (body?.message) {
+        message = body.message;
+      } else if (body?.errors) {
+        message = JSON.stringify(body.errors);
+      }
+    } catch {
+      // Keep the default HTTP error message if the response is not JSON.
     }
+
     throw new Error(message);
   }
 
@@ -57,8 +95,6 @@ const fileToBase64 = (file) =>
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);
   });
-
-const isBase64Image = (str) => !!str && str.startsWith("data:image/");
 
 const getImageUrl = (thumbnail) => {
   if (!thumbnail) return "/placeholder-image.jpg";
@@ -79,7 +115,7 @@ export const storiesStore = {
   getBySlug: async (slug) => {
     try {
       return await request(`/stories/${encodeURIComponent(slug)}`);
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -87,18 +123,36 @@ export const storiesStore = {
   // Admin: single story by id, any status, includes raw `content`
   getById: async (id) => request(`/admin/stories/${id}`),
 
-  // Create (no id) or update (has id)
+  // Update an existing story OR create a new story.
+  // IMPORTANT: an existing story (with an id) is ALWAYS updated.
   save: async (storyData) => {
-    const payload = { ...storyData, pillar: normalizePillarSlug(storyData.pillar) };
-    const saved = payload.id
-      ? await request(`/admin/stories/${payload.id}`, {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        })
-      : await request("/admin/stories", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
+    const storyId = storyData?.id;
+
+    const payload = {
+      ...storyData,
+      pillar: normalizePillarSlug(storyData.pillar),
+    };
+
+    // Never send the id inside the JSON body. The backend gets it
+    // from /api/admin/stories/:id.
+    delete payload.id;
+
+    let saved;
+
+    if (storyId !== undefined && storyId !== null && storyId !== "") {
+      // EXISTING STORY: update that exact story.
+      saved = await request(`/admin/stories/${storyId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+    } else {
+      // NEW STORY: only create when there is genuinely no id.
+      saved = await request("/admin/stories", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    }
+
     notify();
     return saved;
   },

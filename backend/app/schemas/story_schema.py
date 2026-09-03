@@ -1,9 +1,11 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, EXCLUDE
 
 from app.models.story import ALLOWED_PILLARS, ALLOWED_STATUSES
 
 
 class CreateStorySchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
     """
     POST /api/admin/stories -- creates a story. `title`/`status`/`author`
     all fall back to sane defaults if omitted, matching the old
@@ -23,6 +25,8 @@ class CreateStorySchema(Schema):
 
 
 class UpdateStorySchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
     """PUT /api/admin/stories/<id> -- every field optional, only given ones are changed."""
 
     title = fields.Str(validate=validate.Length(min=1, max=255))

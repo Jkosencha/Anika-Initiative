@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-
-// We only need fetchDonations and submitDonation now – no updateDonation
-import { fetchDonations, submitDonation } from "../../lib/api";
+import { apiRequest } from "../utils/api"; 
 
 const lightColors = {
   bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
@@ -159,7 +157,6 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
   );
 }
 
-// ---- Helper to format UTC timestamp to local time (Africa/Nairobi) ----
 function formatLocalDate(utcString) {
   if (!utcString) return "—";
   return new Date(utcString).toLocaleString('en-KE', {
@@ -184,14 +181,12 @@ export default function Donations() {
 
   async function loadDonations() {
     setLoading(true);
-    const { ok, source, rows } = await fetchDonations();
-    if (ok) {
-      setDonations(Array.isArray(rows) ? rows : []);
-      if (source === "local") {
-        toast.info("Showing locally saved donations — the payment API isn't reachable right now.");
-      }
-    } else {
+    try {
+      const data = await apiRequest('/api/donations');
+      setDonations(Array.isArray(data) ? data : []);
+    } catch (err) {
       toast.error("Couldn't load donations.");
+      console.error(err);
     }
     setLoading(false);
   }
@@ -241,14 +236,18 @@ export default function Donations() {
 
   async function addDonation(payload) {
     setSaving(true);
-    const { ok, record } = await submitDonation({ ...payload, method: "manual" });
-    setSaving(false);
-    if (ok && record && !record.error) {
+    try {
+      const record = await apiRequest('/api/donations', {
+        method: 'POST',
+        body: { ...payload, method: 'manual' },
+      });
       setDonations((prev) => [record, ...prev]);
       toast.success(`Recorded ${payload.donor_name}'s donation.`);
       setModalOpen(false);
-    } else {
-      toast.error(record?.error || "Couldn't record that donation.");
+    } catch (err) {
+      toast.error(err.message || "Couldn't record that donation.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -320,7 +319,7 @@ export default function Donations() {
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-205"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
@@ -348,7 +347,7 @@ export default function Donations() {
           return (
             <div
               key={d.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-205"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",
@@ -370,7 +369,6 @@ export default function Donations() {
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {formatLocalDate(d.created_at)}
               </div>
-              {/* ---- STATUS BADGE – STATIC, NO CLICK ---- */}
               <div
                 style={{ background: s.bg, color: s.text }}
                 className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
