@@ -27,7 +27,10 @@ function Topbar({ theme, onToggleTheme }) {
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink/10 bg-cream/70 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-charcoal/70">
-      <SidebarTrigger className="text-ink/70 hover:bg-ink/5 hover:text-ink dark:text-cream/70 dark:hover:bg-white/5 dark:hover:text-cream" />
+      <SidebarTrigger
+        size="icon"
+        className="text-ink/70 hover:bg-ink/5 hover:text-ink dark:text-cream/70 dark:hover:bg-white/5 dark:hover:text-cream [&_svg]:size-5"
+      />
 
       <div>
         <h1 className="font-display text-xl tracking-wide">{greeting()}, {user?.name ?? 'Admin'}</h1>
