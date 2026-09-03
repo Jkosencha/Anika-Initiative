@@ -1,7 +1,9 @@
 
+import uuid
 from datetime import timedelta
 
-from flask import Blueprint, jsonify, request
+import cloudinary.uploader
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -17,6 +19,15 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 ACCESS_TOKEN_EXPIRY = timedelta(hours=8)
 REFRESH_TOKEN_EXPIRY = timedelta(days=30)
+
+ALLOWED_AVATAR_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+MAX_AVATAR_SIZE_BYTES = 4 * 1024 * 1024  # 4 MB
+
+
+def _extension_of(filename):
+    if "." not in filename:
+        return None
+    return filename.rsplit(".", 1)[1].lower()
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -176,4 +187,69 @@ def update_me():
     user.name = name
 
     db.session.commit()
+    return jsonify(user.to_dict())
+
+
+@auth_bp.route("/me/avatar", methods=["POST"])
+@jwt_required()
+def upload_avatar():
+    """
+    Upload/replace your own profile picture.
+    ---
+    tags:
+      - Auth
+    summary: Upload your avatar
+    security:
+      - Bearer: []
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: avatar
+        in: formData
+        type: file
+        required: true
+        description: jpg, jpeg, png, gif or webp -- max 4MB
+    responses:
+      200:
+        description: Updated
+      400:
+        description: Missing file, bad extension, or file too large
+      502:
+        description: Upload to storage provider failed
+    """
+    if "avatar" not in request.files:
+        return jsonify({"error": "No avatar file provided"}), 400
+
+    file = request.files["avatar"]
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
+
+    extension = _extension_of(file.filename)
+    if extension not in ALLOWED_AVATAR_EXTENSIONS:
+        return jsonify({
+            "error": f"Unsupported file type '.{extension}'. Allowed: {sorted(ALLOWED_AVATAR_EXTENSIONS)}"
+        }), 400
+
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_AVATAR_SIZE_BYTES:
+        return jsonify({"error": "File too large. Max 4MB."}), 400
+
+    user = User.query.get_or_404(int(get_jwt_identity()))
+
+    try:
+        result = cloudinary.uploader.upload(
+            file,
+            folder="anika_avatars",
+            public_id=f"user-{user.id}-{uuid.uuid4()}",
+            resource_type="image",
+        )
+    except Exception as exc:  # cloudinary raises assorted exception types
+        current_app.logger.error("Cloudinary avatar upload failed: %s", exc)
+        return jsonify({"error": "Image upload to storage provider failed"}), 502
+
+    user.avatar_url = result["secure_url"]
+    db.session.commit()
+
     return jsonify(user.to_dict())
