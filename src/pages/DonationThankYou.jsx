@@ -19,7 +19,8 @@ export default function DonationThankYou() {
 
     const toastId = toast.loading("Confirming your donation…");
 
-    fetch(`${API_BASE}/donations/verify/${encodeURIComponent(reference)}`)
+    // --- FIX: include /api/ prefix in the URL ---
+    fetch(`${API_BASE}/api/donations/verify/${encodeURIComponent(reference)}`)
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Could not verify this donation");
