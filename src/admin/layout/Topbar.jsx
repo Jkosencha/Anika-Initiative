@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, Moon, Sun, Bell, Check, Trash2 } from 'lucide-react'
 import { useAdminNotifications } from './useAdminNotifications'
+import { useAuth } from '../auth/AuthContext'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -19,6 +20,7 @@ function today() {
 }
 
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
+  const { user } = useAuth()
   const [notifOpen, setNotifOpen] = useState(false)
   const { notifications, unreadCount, markRead, markAllRead, clearAll } = useAdminNotifications()
 
@@ -29,7 +31,7 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
       </button>
 
       <div>
-        <h1 className="font-display text-xl tracking-wide">{greeting()}, Admin</h1>
+        <h1 className="font-display text-xl tracking-wide">{greeting()}, {user?.name ?? 'Admin'}</h1>
         <p className="text-sm text-ink/50 dark:text-cream/50">{today()}</p>
       </div>
 
