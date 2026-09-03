@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Send, Check, Clock, Users, Zap } from "lucide-react";
-import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast, fetchWhatsAppStats } from "../../lib/api";
+import { fetchWhatsAppBroadcasts, addWhatsAppBroadcast, fetchWhatsAppStats, fetchWhatsAppInbox } from "../../lib/api";
 import { useAdminColors } from "../theme";
 
 
@@ -51,25 +51,38 @@ export default function WhatsAppBroadcast() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [sending, setSending] = useState(false);
   const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 });
+  const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
     fetchWhatsAppBroadcasts().then(({ rows }) => {
       if (rows && rows.length) setHistory(rows);
     });
     fetchWhatsAppStats().then(setWaStats);
+    fetchWhatsAppInbox().then(({ rows }) => {
+      if (rows && rows.length) setConversations(rows);
+    });
   }, []);
 
   const MAX_CHARS = 1024;
 
-  const contactBase = 1284;
+  // Audience sizes come from the real conversation list when it exists, so the
+  // counts match what the assistant actually knows. A fallback base keeps the
+  // composer sane before the first registrations/bot threads are created.
+  const fallbackBase = 1284;
+  const liveContacts = conversations.length > 0 ? conversations.length : fallbackBase;
+  const liveOptIns =
+    conversations.length > 0
+      ? conversations.filter((c) => !c.optedOut).length
+      : Math.round(fallbackBase * 0.62);
+
   const effectiveAudience = useMemo(() => {
-    if (audience === "All opted-in") return Math.round(contactBase * 0.62);
-    if (audience === "All contacts") return contactBase;
-    if (audience === "Opted-in registrants") return 321;
-    if (audience === "Alliance contacts") return 214;
-    if (audience === "Nairobi artists") return 402;
-    return 150;
-  }, [audience]);
+    if (audience === "All opted-in") return liveOptIns;
+    if (audience === "All contacts") return liveContacts;
+    if (audience === "Opted-in registrants") return Math.round(liveContacts * 0.25);
+    if (audience === "Alliance contacts") return Math.round(liveContacts * 0.16);
+    if (audience === "Nairobi artists") return Math.round(liveContacts * 0.3);
+    return liveOptIns;
+  }, [audience, liveContacts, liveOptIns]);
 
   const audienceSize = adjustForOptOuts({ audience, value: effectiveAudience }, waStats.optedOut);
 
@@ -77,8 +90,8 @@ export default function WhatsAppBroadcast() {
     const totalSent = history.reduce((s, h) => s + h.recipients, 0);
     const delivered = history.filter((h) => h.status === "Delivered").length;
     const scheduled = history.filter((h) => h.status === "Scheduled").length;
-    return { count: history.length, totalSent, delivered, scheduled, fresh: Math.round(contactBase * 0.38) };
-  }, [history]);
+    return { count: history.length, totalSent, delivered, scheduled, fresh: Math.round(liveContacts * 0.38) };
+  }, [history, liveContacts]);
 
   function send() {
     if (!message.trim()) return;

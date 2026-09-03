@@ -9,6 +9,7 @@ from app.models.whatsapp_settings import (
     DEFAULT_FLOWS,
     DEFAULT_GREETING,
 )
+import time
 
 whatsapp_bp = Blueprint("whatsapp", __name__)
 
@@ -238,6 +239,62 @@ def get_settings():
     return jsonify(_get_or_create_settings().to_dict())
 
 
+
+@whatsapp_bp.post("/api/whatsapp-settings")
+def create_settings():
+    """
+    Create/upsert the WhatsApp assistant settings (admin). If a record with
+    key "assistant" already exists it is updated instead, so the frontend
+    can safely save on first use.
+    ---
+    tags:
+      - WhatsApp
+    summary: Create or update assistant settings (upsert)
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            key: {type: string}
+            menuEnabled: {type: boolean}
+            greeting: {type: string}
+            answers: {type: object}
+            flows: {type: object}
+    responses:
+      200:
+        description: Settings saved (existing record updated)
+      201:
+        description: Settings created
+    """
+    data = request.get_json(silent=True) or {}
+    settings = WhatsAppSettings.query.filter_by(
+        key=data.get("key", "assistant")
+    ).first()
+    if settings:
+        if "menuEnabled" in data:
+            settings.menu_enabled = bool(data["menuEnabled"])
+        if "greeting" in data:
+            settings.greeting = data["greeting"]
+        if "answers" in data:
+            settings.answers = data["answers"]
+        if "flows" in data:
+            settings.flows = data["flows"]
+        db.session.commit()
+        return jsonify(settings.to_dict()), 200
+    settings = WhatsAppSettings(
+        key=data.get("key", "assistant"),
+        menu_enabled=bool(data.get("menuEnabled", True)),
+        greeting=data.get("greeting", DEFAULT_GREETING),
+        answers=data.get("answers") or DEFAULT_ANSWERS,
+        flows=data.get("flows") or DEFAULT_FLOWS,
+    )
+    db.session.add(settings)
+    db.session.commit()
+    return jsonify(settings.to_dict()), 201
+
+
 @whatsapp_bp.patch("/api/whatsapp-settings/<int:settings_id>")
 def update_settings(settings_id):
     """
@@ -304,5 +361,189 @@ def whatsapp_stats():
                 1 for c in rows if c.intent == "escalation" and not c.resolved
             ),
             "unread": sum(c.unread or 0 for c in rows),
+        }
+    )
+
+
+# ---- Webhook (Anika Assistant) -------------------------------------------
+
+@whatsapp_bp.get("/api/whatsapp/webhook")
+def whatsapp_webhook_verify():
+    """
+    Meta webhook verification handshake (GET).
+    ---
+    tags:
+      - WhatsApp
+    summary: Verify the webhook subscription with Meta
+    parameters:
+      - name: hub.mode
+        in: query
+        type: string
+        required: true
+      - name: hub.verify_token
+        in: query
+        type: string
+        required: true
+      - name: hub.challenge
+        in: query
+        type: string
+        required: true
+    responses:
+      200:
+        description: Returns the challenge when verified
+      403:
+        description: Verification token mismatch
+    """
+    from app.services import whatsapp_cloud
+
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+    result = whatsapp_cloud.verify_webhook(mode, token, challenge)
+    if result is None:
+        current_app.logger.warning("WhatsApp webhook verification rejected")
+        return jsonify({"error": "Verification failed"}), 403
+    return result, 200
+
+
+@whatsapp_bp.post("/api/whatsapp/webhook")
+def whatsapp_webhook_receive():
+    """
+    Receive inbound WhatsApp messages from Meta and let the assistant answer.
+    ---
+    tags:
+      - WhatsApp
+    summary: Inbound message webhook (Anika Assistant)
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+    responses:
+      200:
+        description: Acknowledged (assistant handled the message)
+      404:
+        description: Not a WhatsApp business account event
+    """
+    from app.services import anika_assistant
+
+    data = request.get_json(silent=True) or {}
+    if data.get("object") != "whatsapp_business_account":
+        return jsonify({"error": "Unknown webhook event"}), 404
+
+    anika_assistant.handle_inbound_message(data)
+    return jsonify({"status": "received"}), 200
+
+
+@whatsapp_bp.post("/api/whatsapp/simulate")
+def whatsapp_simulate():
+    """
+    Run the Anika Assistant on a visitor message (dashboard live test).
+
+    Builds a synthetic Meta webhook payload so the exact same bot engine as
+    production processes the message. The reply is persisted to the inbox but
+    never pushed through the WhatsApp Cloud API, regardless of credentials.
+    ---
+    tags:
+      - WhatsApp
+    summary: Simulate a visitor message through the assistant
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required: [phone, message]
+          properties:
+            name: {type: string}
+            phone: {type: string}
+            message: {type: string}
+    responses:
+      200:
+        description: Assistant reply
+      400:
+        description: Validation error
+    """
+    from app.services import anika_assistant
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "Visitor").strip()
+    phone = (data.get("phone") or "").strip()
+    message = (data.get("message") or "").strip()
+    if not phone or not message:
+        return jsonify({"error": "phone and message are required"}), 400
+
+    payload = {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "simulated_waid",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "contacts": [
+                                {"profile": {"name": name}, "wa_id": phone}
+                            ],
+                            "messages": [
+                                {
+                                    "from": phone,
+                                    "id": f"sim_{int(time.time() * 1000)}",
+                                    "type": "text",
+                                    "text": {"body": message},
+                                }
+                            ],
+                        },
+                        "field": "messages",
+                    }
+                ],
+            }
+        ],
+    }
+
+    handled = anika_assistant.handle_inbound_message(payload, send_out=False)
+    if not handled:
+        return jsonify({"status": "ignored", "message": message}), 200
+
+    conversation = WhatsAppConversation.query.filter_by(phone=phone).first()
+    reply = None
+    if conversation:
+        for msg in reversed(conversation.messages or []):
+            if msg.get("from") == "me":
+                reply = msg.get("text")
+                break
+
+    return jsonify(
+        {
+            "status": "replied",
+            "reply": reply or "",
+            "conversation": conversation.to_dict() if conversation else None,
+        }
+    ), 200
+
+
+@whatsapp_bp.get("/api/whatsapp/status")
+def whatsapp_status():
+    """
+    Report whether the WhatsApp Cloud API is configured for real sending.
+    ---
+    tags:
+      - WhatsApp
+    summary: Assistant connection status
+    responses:
+      200:
+        description: Configuration status
+    """
+    from app.services import whatsapp_cloud
+
+    cfg = current_app.config
+    return jsonify(
+        {
+            "configured": whatsapp_cloud.is_configured(),
+            "tokenSet": bool(cfg.get("WHATSAPP_TOKEN")),
+            "phoneIdSet": bool(cfg.get("WHATSAPP_PHONE_ID")),
+            "verifyTokenSet": bool(cfg.get("WHATSAPP_VERIFY_TOKEN")),
+            "simulated": not whatsapp_cloud.is_configured(),
         }
     )

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Pen, Trash2 } from "lucide-react";
 import {
   fetchEvents,
   addEvent as apiAddEvent,
@@ -138,7 +138,7 @@ function occupancyColor(ev) {
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">
         {label}
       </div>
@@ -156,27 +156,27 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   );
 }
 
-function AddEventModal({ onClose, onAdd, colors }) {
-  const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [pillar, setPillar] = useState("Arts & Culture");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+function AddEventModal({ onClose, onAdd, colors, initial }) {
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [location, setLocation] = useState(initial?.location ?? "");
+  const [capacity, setCapacity] = useState(initial?.capacity ?? "");
+  const [pillar, setPillar] = useState(initial?.pillar ?? "Arts & Culture");
+  const [date, setDate] = useState(initial?.date ?? "");
+  const [time, setTime] = useState(initial?.time ?? "");
 
   function submit(e) {
     e.preventDefault();
     if (!title.trim()) return;
     onAdd({
-      id: Date.now(),
+      id: initial?.id ?? Date.now(),
       title: title.trim(),
       date,
       time,
       location: location.trim() || "Nairobi",
       pillar,
-      capacity: parseInt(capacity, 10) || 0,
-      registered: 0,
-      status: "Live",
+      capacity: parseInt(capacity, 10) || (initial?.capacity || 0),
+      registered: initial?.registered ?? 0,
+      status: initial?.status ?? "Live",
     });
     onClose();
   }
@@ -191,7 +191,7 @@ function AddEventModal({ onClose, onAdd, colors }) {
       >
         <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
           <h2 className="font-bold text-lg" style={{ color: colors.text }}>
-            Create event
+            {initial ? "Update event" : "Create event"}
           </h2>
           <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
             <X size={18} color={colors.muted} />
@@ -286,7 +286,7 @@ function AddEventModal({ onClose, onAdd, colors }) {
             Cancel
           </button>
           <button type="submit" style={{ background: colors.buttonBg, color: colors.buttonText }} className="text-sm font-semibold px-4 py-2 rounded-lg">
-            Create event
+            {initial ? "Update event" : "Create event"}
           </button>
         </div>
       </form>
@@ -299,6 +299,7 @@ export default function AdminEvents() {
   const [events, setEvents] = useState(SEED);
   const [tab, setTab] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editEvent, setEditEvent] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
@@ -323,35 +324,51 @@ export default function AdminEvents() {
     return { total: events.length, upcoming: upcoming.length, totalRegistered, draft, fillRate };
   }, [events]);
 
-  function addEvent(ev) {
-    apiAddEvent(ev);
-    setEvents((prev) => [ev, ...prev]);
+  // Re-sync the table from the backend after a successful API mutation so
+  // seat counts that change on the server (registrations bumping an event to
+  // "Full", etc.) are reflected. Falls back silently when the API is offline.
+  async function refreshFromApi() {
+    const res = await fetchEvents();
+    if (res.source === "api" && Array.isArray(res.rows)) setEvents(res.rows);
   }
 
-  function cycleStatus(id) {
-    setEvents((prev) =>
-      prev.map((ev) => {
-        if (ev.id !== id) return ev;
-        const next = STATUSES[(STATUSES.indexOf(ev.status) + 1) % STATUSES.length];
-        apiUpdateEvent(id, { status: next });
-        return { ...ev, status: next };
-      })
-    );
+  function saveEvent(ev) {
+    const existing = events.find((x) => x.id === ev.id);
+    if (existing) {
+      // Editing an existing event.
+      const patch = { ...ev };
+      delete patch.id;
+      setEvents((prev) => prev.map((x) => (x.id === ev.id ? { ...x, ...ev } : x)));
+      apiUpdateEvent(ev.id, patch).then((res) => {
+        if (res.source === "api") refreshFromApi();
+      });
+    } else {
+      // Creating a brand-new event.
+      setEvents((prev) => [ev, ...prev]);
+      const payload = { ...ev };
+      delete payload.id;
+      apiAddEvent(payload).then((res) => {
+        if (res.source === "api") refreshFromApi();
+      });
+    }
+    setModalOpen(false);
+    setEditEvent(null);
   }
 
-  function togglePublished(id) {
+  function updateStatus(id, nextStatus) {
+    if (!STATUSES.includes(nextStatus)) return;
     setEvents((prev) =>
-      prev.map((ev) => {
-        if (ev.id !== id) return ev;
-        const next = ev.status === "Live" ? "Ended" : "Live";
-        apiUpdateEvent(id, { status: next });
-        return { ...ev, status: next };
-      })
+      prev.map((ev) => (ev.id !== id ? ev : { ...ev, status: nextStatus }))
     );
+    apiUpdateEvent(id, { status: nextStatus }).then((res) => {
+      if (res.source === "api") refreshFromApi();
+    });
   }
 
   function deleteEvent(id) {
-    apiDeleteEvent(id);
+    apiDeleteEvent(id).then((res) => {
+      if (res.source === "api") refreshFromApi();
+    });
     setEvents((prev) => prev.filter((ev) => ev.id !== id));
     setConfirmDelete(null);
   }
@@ -390,7 +407,7 @@ export default function AdminEvents() {
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[980px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-245"
           style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "2.2fr 1.1fr 1.4fr 0.9fr 0.8fr 1fr 0.8fr 0.9fr" }}
         >
           <div>EVENT</div>
@@ -415,7 +432,7 @@ export default function AdminEvents() {
           return (
             <div
               key={ev.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[980px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-245"
               style={{ borderColor: COLORS.border, gridTemplateColumns: "2.2fr 1.1fr 1.4fr 0.9fr 0.8fr 1fr 0.8fr 0.9fr" }}
             >
               <div>
@@ -454,23 +471,20 @@ export default function AdminEvents() {
                   </div>
                 ) : null}
               </div>
-              <button
-                onClick={() => cycleStatus(ev.id)}
-                title="Click to change status"
-                style={{ background: s.bg, color: s.text }}
-                className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              <select
+                value={ev.status}
+                onChange={(e) => updateStatus(ev.id, e.target.value)}
+                title="Change status"
+                style={{ background: s.bg, color: s.text, border: `1px solid ${s.dot}` }}
+                className="inline-flex w-fit items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold outline-none appearance-auto"
               >
-                <span style={{ background: s.dot }} className="w-1.5 h-1.5 rounded-full" />
-                {ev.status}
-              </button>
+                {STATUSES.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
               <div className="flex justify-end gap-1">
-                <button
-                  onClick={() => togglePublished(ev.id)}
-                  className="text-xs font-semibold px-2 py-1 rounded-lg"
-                  style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel, color: COLORS.text }}
-                  title={ev.status === "Live" ? "Mark as ended" : "Publish"}
-                >
-                  {ev.status === "Live" ? "End" : "Pub"}
+                <button onClick={() => setEditEvent(ev)} className="p-1.5 rounded-lg hover:bg-black/5" style={{ border: `1px solid ${COLORS.border}`, background: COLORS.panel, color: COLORS.text }} title="Edit event">
+                  <Pen size={14} />
                 </button>
                 <button onClick={() => setConfirmDelete(ev)} className="p-1.5 rounded-lg hover:bg-black/5" style={{ color: "#b23b3b" }} title="Delete event">
                   <Trash2 size={14} />
@@ -481,7 +495,8 @@ export default function AdminEvents() {
         })}
       </div>
 
-      {modalOpen && <AddEventModal onClose={() => setModalOpen(false)} onAdd={addEvent} colors={COLORS} />}
+      {modalOpen && <AddEventModal onClose={() => setModalOpen(false)} onAdd={saveEvent} colors={COLORS} />}
+      {editEvent && <AddEventModal initial={editEvent} onClose={() => setEditEvent(null)} onAdd={saveEvent} colors={COLORS} />}
 
       {confirmDelete && (
         <div

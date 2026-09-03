@@ -1,4 +1,16 @@
-/* ANIKA API client — talks to backend, falls back to local store if unreachable. */
+/* ============================================================
+   ANIKA - API client
+   Talks to the backend (Server) when it is running. If the API
+   is unreachable, submissions transparently fall back to the
+   local store so the product works end-to-end in demo mode.
+
+   Expected backend contract (REST):
+     POST /api/registrations
+     POST /api/applications
+     POST /api/donations
+     POST /api/inquiries
+     GET  /api/metrics
+   ============================================================ */
 
 import { addRecord, getRecords, updateRecord, deleteRecord, getMetrics } from './store';
 
@@ -223,7 +235,11 @@ export function updateWhatsAppMessage(id, patch) {
 }
 
 export function fetchWhatsAppSettings() {
-  return fetchCollection('whatsappSettings');
+  return fetchCollection('whatsappSettings').then((res) => {
+    // Backend returns a single settings object; normalise to an array.
+    if (res.rows && !Array.isArray(res.rows)) res.rows = [res.rows];
+    return res;
+  });
 }
 export function addWhatsAppSettings(payload) {
   return submit('whatsappSettings', payload);
@@ -234,14 +250,41 @@ export function updateWhatsAppSettings(id, patch) {
 
 /** Aggregate WhatsApp live-state (shared across Assistant / Inbox / Broadcast). */
 export async function fetchWhatsAppStats() {
-  const { rows } = await fetchCollection('whatsappInbox');
-  const list = Array.isArray(rows) ? rows : [];
-  return {
-    threads: list.length,
-    optedOut: list.filter((c) => c.optedOut).length,
-    escalated: list.filter((c) => c.intent === 'escalation' && !c.resolved).length,
-    unread: list.reduce((sum, c) => sum + (c.unread || 0), 0),
-  };
+  try {
+    const stats = await request('GET', '/whatsapp/stats');
+    return stats;
+  } catch {
+    const { rows } = await fetchCollection('whatsappInbox');
+    const list = Array.isArray(rows) ? rows : [];
+    return {
+      threads: list.length,
+      optedOut: list.filter((c) => c.optedOut).length,
+      escalated: list.filter((c) => c.intent === 'escalation' && !c.resolved).length,
+      unread: list.reduce((sum, c) => sum + (c.unread || 0), 0),
+    };
+  }
+}
+
+/**
+ * Run the real Anika Assistant bot engine on a visitor message (live test).
+ * The backend builds a synthetic Meta payload so the exact production logic
+ * (FAQ menu, HELP escalation, STOP opt-out, re-subscribe) processes it, and
+ * the resulting thread lands in the shared inbox.
+ */
+export async function simulateWhatsAppMessage({ name, phone, message }) {
+  const data = await request('POST', '/whatsapp/simulate', { name, phone, message }, 8000);
+  return data;
+}
+
+/** Whether the WhatsApp Cloud API is configured for real sends or simulated. */
+export async function fetchWhatsAppStatus() {
+  try {
+    const status = await request('GET', '/whatsapp/status');
+    if (!status?.configured && !status?.simulated) status.simulated = true;
+    return status;
+  } catch {
+    return { configured: false, tokenSet: false, phoneIdSet: false, verifyTokenSet: false, simulated: true };
+  }
 }
 
 export function fetchRegistrations() {

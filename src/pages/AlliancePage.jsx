@@ -47,6 +47,7 @@ export default function AlliancePage() {
         message: `Alliance membership application. Role: ${form.role || 'Artist'}`,
         whatsapp_opt_in: form.consent,
       })
+      setForm({ name: '', email: '', org: '', country: '', phone: '', role: '', consent: true })
       setStatus('done')
     } catch {
       setStatus('error')
@@ -168,122 +169,125 @@ export default function AlliancePage() {
               Share a few details and the ANIKA team will follow up via WhatsApp.
             </p>
 
-            {status === 'done' ? (
+            {status === 'done' && (
               <div className="mt-6 border border-anika-green bg-anika-green p-5 text-white">
                 <p className="font-display text-xl uppercase tracking-wide">Application received.</p>
                 <p className="mt-2 font-body text-base leading-6">
                   Thank you, {form.name || 'friend'}. We’ll be in touch on WhatsApp shortly.
                 </p>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                <div>
-                  <label htmlFor="a-name" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                    Full Name *
-                  </label>
-                  <input
-                    id="a-name"
-                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                    placeholder="Peter Kariuki"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="a-email" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                    Email
-                  </label>
-                  <input
-                    id="a-email"
-                    type="email"
-                    required
-                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                    placeholder="peter@example.com"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="a-org" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                      Organisation
-                    </label>
-                    <input
-                      id="a-org"
-                      className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                      placeholder="Lake Arts Collective"
-                      value={form.org}
-                      onChange={(e) => setForm({ ...form, org: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="a-country" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                      Country
-                    </label>
-                    <input
-                      id="a-country"
-                      className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                      placeholder="Kenya"
-                      value={form.country}
-                      onChange={(e) => setForm({ ...form, country: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="a-role" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                    I am a…
-                  </label>
-                  <select
-                    id="a-role"
-                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                    value={form.role}
-                    onChange={(e) => setForm({ ...form, role: e.target.value })}
-                  >
-                    <option value="">Select role</option>
-                    <option>Artist</option>
-                    <option>Cultural Organisation</option>
-                    <option>Enabler / Partner</option>
-                    <option>Institution</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="a-phone" className="mb-1 block font-body text-xs font-extrabold uppercase">
-                    WhatsApp Number *
-                  </label>
-                  <input
-                    id="a-phone"
-                    type="tel"
-                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                    placeholder="+254 712 345 678"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
-                </div>
-
-                <label className="flex cursor-pointer items-start gap-3 border border-anika-green/30 bg-anika-green/10 p-3">
-                  <input
-                    type="checkbox"
-                    checked={form.consent}
-                    onChange={(e) => setForm({ ...form, consent: e.target.checked })}
-                    className="mt-1 h-4 w-4 accent-green"
-                  />
-                  <span className="font-body text-sm leading-6 text-ink/80">
-                    I agree to receive Alliance updates via WhatsApp.
-                  </span>
-                </label>
-
-                {status === 'error' && (
-                  <p className="font-body text-sm font-semibold text-coral">
-                    Please provide your name, email and a valid WhatsApp number.
-                  </p>
-                )}
-
-                <button type="submit" disabled={status === 'submitting'} className="btn-primary w-full">
-                  {status === 'submitting' ? 'Submitting...' : 'Request Membership'}
-                  {status !== 'submitting' && <span aria-hidden>→</span>}
-                </button>
-              </form>
             )}
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <div>
+                <label htmlFor="a-name" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                  Full Name *
+                </label>
+                <input
+                  id="a-name"
+                  className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                  placeholder="Peter Kariuki"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="a-email" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                  Email
+                </label>
+                <input
+                  id="a-email"
+                  type="email"
+                  required
+                  className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                  placeholder="peter@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="a-org" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                    Organisation
+                  </label>
+                  <input
+                    id="a-org"
+                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                    placeholder="Lake Arts Collective"
+                    value={form.org}
+                    onChange={(e) => setForm({ ...form, org: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="a-country" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                    Country
+                  </label>
+                  <input
+                    id="a-country"
+                    className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                    placeholder="Kenya"
+                    value={form.country}
+                    onChange={(e) => setForm({ ...form, country: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="a-role" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                  I am a…
+                </label>
+                <select
+                  id="a-role"
+                  className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                >
+                  <option value="">Select role</option>
+                  <option>Artist</option>
+                  <option>Cultural Organisation</option>
+                  <option>Enabler / Partner</option>
+                  <option>Institution</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="a-phone" className="mb-1 block font-body text-xs font-extrabold uppercase">
+                  WhatsApp Number *
+                </label>
+                <input
+                  id="a-phone"
+                  type="tel"
+                  className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                  placeholder="+254 712 345 678"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
+
+              <label className="flex cursor-pointer items-start gap-3 border border-anika-green/30 bg-anika-green/10 p-3">
+                <input
+                  type="checkbox"
+                  checked={form.consent}
+                  onChange={(e) => setForm({ ...form, consent: e.target.checked })}
+                  className="mt-1 h-4 w-4 accent-green"
+                />
+                <span className="font-body text-sm leading-6 text-ink/80">
+                  I agree to receive Alliance updates via WhatsApp.
+                </span>
+              </label>
+
+              {status === 'error' && (
+                <p className="font-body text-sm font-semibold text-coral">
+                  Please provide your name, email and a valid WhatsApp number.
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={status === 'submitting'}
+                className="w-full rounded bg-[#EB4C47] px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {status === 'submitting' ? 'Submitting...' : 'Request Membership'}
+              </button>
+            </form>
           </Reveal>
         </div>
       </section>
