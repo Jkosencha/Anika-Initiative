@@ -117,3 +117,63 @@ def change_password():
     db.session.commit()
 
     return jsonify({"message": "Password changed"}), 200
+
+
+@auth_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_me():
+    """
+    Get the logged-in user's own profile.
+    ---
+    tags:
+      - Auth
+    summary: Get your own profile
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: The current user
+    """
+    user = User.query.get_or_404(int(get_jwt_identity()))
+    return jsonify(user.to_dict())
+
+
+@auth_bp.route("/me", methods=["PATCH"])
+@jwt_required()
+def update_me():
+    """
+    Update your own display name. Email, role, and active status are not
+    self-editable -- these are shared role logins (comms@..., programs@...,
+    etc), not personal accounts, so the login email has to stay whatever the
+    team has on record. Leadership can still correct it via /api/team.
+    ---
+    tags:
+      - Auth
+    summary: Update your own display name
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [name]
+          properties:
+            name: {type: string}
+    responses:
+      200:
+        description: Updated
+      400:
+        description: Validation error
+    """
+    user = User.query.get_or_404(int(get_jwt_identity()))
+    data = request.get_json(silent=True) or {}
+
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "name cannot be empty"}), 400
+    user.name = name
+
+    db.session.commit()
+    return jsonify(user.to_dict())
