@@ -12,14 +12,6 @@ const STATUS_STYLE = {
   Failed: { bg: "#f6d9d9", text: "#b23b3b", dot: "#b23b3b" },
 };
 
-const SEED_HISTORY = [
-  { id: 1, title: "Event reminder: Sema-Anika Forum", audience: "Opted-in registrants", channel: "Web + WhatsApp", recipients: 98, date: "Today 09:00", status: "Sent" },
-  { id: 2, title: "Pan-African Arts Alliance member call", audience: "Alliance contacts", channel: "WhatsApp", recipients: 214, date: "Yesterday 18:00", status: "Delivered" },
-  { id: 3, title: "Her Story open mic: talent invite", audience: "Nairobi artists", channel: "WhatsApp", recipients: 150, date: "Tomorrow 10:00", status: "Scheduled" },
-  { id: 4, title: "Funding intelligence newsletter", audience: "All opted-in", channel: "Email + WhatsApp", recipients: 402, date: "2 days ago", status: "Delivered" },
-  { id: 5, title: "Community broadcast: campaign dispatch", audience: "All opted-in", channel: "WhatsApp", recipients: 321, date: "3 days ago", status: "Failed" },
-];
-
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
     <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
@@ -44,7 +36,7 @@ function adjustForOptOuts(audienceSize, optedOut) {
 export default function WhatsAppBroadcast() {
   const COLORS = useAdminColors();
 
-  const [history, setHistory] = useState(SEED_HISTORY);
+  const [history, setHistory] = useState([]);
   const [audience, setAudience] = useState("All opted-in");
   const [message, setMessage] = useState("");
   const [when, setWhen] = useState("now");
@@ -55,7 +47,7 @@ export default function WhatsAppBroadcast() {
 
   useEffect(() => {
     fetchWhatsAppBroadcasts().then(({ rows }) => {
-      if (rows && rows.length) setHistory(rows);
+      setHistory(rows || []);
     });
     fetchWhatsAppStats().then(setWaStats);
     fetchWhatsAppInbox().then(({ rows }) => {

@@ -24,33 +24,6 @@ const INTENT_META = {
   general: { label: "General", bg: "#ececec", text: "#555555" },
 };
 
-const SEED = [
-  { id: 1, name: "Alex Kwame", phone: "+254 711 000 111", intent: "escalation", unread: 2, time: "08:12", preview: "HELP - I registered for the forum but haven’t received a confirmation yet.", messages: [
-    { from: "them", text: "HELP - I registered for the Sema-Anika forum but haven’t received a confirmation yet.", time: "08:10" },
-    { from: "me", text: "Hi Alex, sorry about that let me check your registration now.", time: "08:30" },
-    { from: "them", text: "Thanks! I used +233 711 000 111.", time: "09:02" },
-  ]},
-  { id: 2, name: "Sarah Ochieng", phone: "+254 722 222 333", intent: "faq", unread: 1, time: "09:41", last: "What events are coming up for artists this month?", messages: [
-    { from: "them", text: "What events are coming up for artists this month?", time: "09:40" },
-  ]},
-  { id: 3, name: "David Mensah", phone: "+233 24 555 666", intent: "alliance", unread: 1, time: "Yesterday", last: "How do I apply for Alliance membership from Ghana?", messages: [
-    { from: "them", text: "How do I apply for Alliance membership from Ghana?", time: "Yesterday 18:30" },
-    { from: "me", text: "Hi David! You can apply via the Alliance page or by sending your details here.", time: "Yesterday 19:05" },
-    { from: "them", text: "Great, I'll fill the form and send it across.", time: "Yesterday 19:20" },
-  ], resolved: true },
-  { id: 4, name: "Amina Yusuf", phone: "+255 744 333 444", intent: "donation", unread: 0, time: "Yesterday", last: "Can I make a one-time donation via M-Pesa?", messages: [
-    { from: "them", text: "Can I make a one-time donation via M-Pesa?", time: "Yesterday 18:00" },
-    { from: "me", text: "Yes! Tap Donate on the site and choose M-Pesa you'll get an instant receipt.", time: "Yesterday 18:20" },
-  ], resolved: true },
-  { id: 5, name: "Lynette Muthoni", phone: "+254 112 544 427", intent: "registration", unread: 1, time: "2 hours ago", last: "Please add me to the Poetry & Beat Night waitlist.", messages: [
-    { from: "them", text: "Please add me to the Griphon Poetry & Beat Night waitlist.", time: "2 hours ago" },
-  ]},
-  { id: 6, name: "Brian E.", phone: "+254 797 063 573", intent: "general", unread: 0, time: "3 days ago", last: "Hello, how can I partner with ANIKA?", messages: [
-    { from: "them", text: "Hello, how can I partner with ANIKA?", time: "3 days ago" },
-    { from: "me", text: "Thanks for reaching out! I've looped in our partnerships team.", time: "3 days ago" },
-  ], resolved: true },
-];
-
 
 function StatBox({ label, value, dotColor, colors }) {
   return (
@@ -66,18 +39,17 @@ function StatBox({ label, value, dotColor, colors }) {
 export default function WhatsAppInbox() {
   const COLORS = useAdminColors();
 
-  const [conversations, setConversations] = useState(SEED);
-  const [activeId, setActiveId] = useState(SEED[0].id);
+  const [conversations, setConversations] = useState([]);
+  const [activeId, setActiveId] = useState(null);
   const [q, setQ] = useState("");
   const [intent, setIntent] = useState("All");
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
     fetchWhatsAppInbox().then(({ rows }) => {
-      if (rows && rows.length) {
-        setConversations(rows);
-        setActiveId((cur) => rows.some((c) => c.id === cur) ? cur : rows[0].id);
-      }
+      const list = rows || [];
+      setConversations(list);
+      setActiveId((cur) => (list.some((c) => c.id === cur) ? cur : (list[0]?.id ?? null)));
     });
   }, []);
 
