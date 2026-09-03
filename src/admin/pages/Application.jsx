@@ -2,13 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { X, ChevronDown, Trash2, Search } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  fetchApplications,
-  updateApplication,
-  deleteApplication,
-} from "../../lib/api";
+import { apiRequest } from "../utils/api"; 
 
-// configuring light and dark theme
 const lightColors = {
   bg: "#fafaf8",
   border: "#e8e5df",
@@ -110,7 +105,6 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-
 
 function DeleteConfirmModal({ app, onClose, onConfirm, colors }) {
   if (!app) return null;
@@ -301,7 +295,6 @@ function ReviewModal({ app, onClose, onUpdateStatus, onDelete, colors }) {
 }
 
 export default function Applications() {
-
   const { theme, searchQuery } = useOutletContext();
   const COLORS = theme === 'dark' ? darkColors : lightColors;
 
@@ -315,41 +308,31 @@ export default function Applications() {
 
   const tabs = ["All", "New", "Shortlisted", "Accepted"];
 
-  // Load applications from the backend on mount.
   useEffect(() => {
     let cancelled = false;
-
     async function load() {
       setLoading(true);
       setLoadError(null);
       try {
-        // fetchApplications() is API-first with a local-store fallback, so
-        // this resolves { ok, source, rows } — source is 'api' or 'local'.
-        const { rows } = await fetchApplications();
-        if (!cancelled) setApplications(rows || []);
+        const data = await apiRequest('/api/applications');
+        if (!cancelled) setApplications(data || []);
       } catch (err) {
         if (!cancelled) setLoadError(err.message || "Failed to load applications.");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-
     load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // filter based on tab, global search (from context), and local search bar
   const filtered = useMemo(() => {
     let result = applications;
 
-    // filter by tab
     if (tab !== "All") {
       result = result.filter((a) => a.status === tab);
     }
 
-    // filter by global search (from context, e.g. from a main search)
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -359,7 +342,6 @@ export default function Applications() {
       );
     }
 
-    // filter by local search bar (on this page)
     if (localSearchTerm.trim()) {
       const q = localSearchTerm.toLowerCase().trim();
       result = result.filter(
@@ -374,27 +356,27 @@ export default function Applications() {
 
   async function updateStatus(id, status) {
     const previous = applications;
-    // optimistic update
     setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
     setReviewing((prev) => (prev && prev.id === id ? { ...prev, status } : prev));
 
-    // updateApplication() is API-first with a local-store fallback, so it
-    // resolves { ok, source, record } rather than throwing.
-    const result = await updateApplication(id, { status });
-    if (!result?.ok) {
-      setApplications(previous); // roll back on failure
+    try {
+      await apiRequest(`/api/applications/${id}`, {
+        method: 'PATCH',
+        body: { status },
+      });
+    } catch (err) {
+      setApplications(previous);
       toast.error("Failed to update status.");
     }
   }
 
   async function deleteApp(id) {
     const previous = applications;
-    // optimistic update
     setApplications((prev) => prev.filter((a) => a.id !== id));
-
-    const result = await deleteApplication(id);
-    if (!result?.ok) {
-      setApplications(previous); // roll back on failure
+    try {
+      await apiRequest(`/api/applications/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      setApplications(previous);
       toast.error("Failed to delete application.");
     }
   }
@@ -500,56 +482,54 @@ export default function Applications() {
           </div>
         )}
 
-        {!loading &&
-          !loadError &&
-          filtered.map((app) => (
-            <div
-              key={app.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0"
-              style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 2fr 1fr 1fr 0.8fr" }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  style={{ background: avatarColor(app.name) }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
-                >
-                  {initials(app.name)}
-                </div>
-                <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
-                  {app.name}
-                </span>
+        {!loading && !loadError && filtered.map((app) => (
+          <div
+            key={app.id}
+            className="grid items-center px-5 py-4 border-b last:border-b-0"
+            style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 2fr 1fr 1fr 0.8fr" }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                style={{ background: avatarColor(app.name) }}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0"
+              >
+                {initials(app.name)}
               </div>
-              <div className="text-sm" style={{ color: COLORS.muted }}>
-                {app.programme}
-              </div>
-              <div className="text-sm" style={{ color: COLORS.text }}>
-                {app.submitted}
-              </div>
-              <div>
-                <StatusBadge status={app.status} />
-              </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setReviewing(app)}
-                  style={{
-                    border: `1px solid ${COLORS.border}`,
-                    background: COLORS.panel,
-                    color: COLORS.text,
-                  }}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-                >
-                  Review
-                </button>
-                <button
-                  onClick={() => setDeleteTarget(app)}
-                  className="p-1.5 rounded-lg hover:bg-black/5"
-                  title="Delete application"
-                >
-                  <Trash2 size={14} color="#b23b3b" />
-                </button>
-              </div>
+              <span className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                {app.name}
+              </span>
             </div>
-          ))}
+            <div className="text-sm" style={{ color: COLORS.muted }}>
+              {app.programme}
+            </div>
+            <div className="text-sm" style={{ color: COLORS.text }}>
+              {app.submitted}
+            </div>
+            <div>
+              <StatusBadge status={app.status} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setReviewing(app)}
+                style={{
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.panel,
+                  color: COLORS.text,
+                }}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+              >
+                Review
+              </button>
+              <button
+                onClick={() => setDeleteTarget(app)}
+                className="p-1.5 rounded-lg hover:bg-black/5"
+                title="Delete application"
+              >
+                <Trash2 size={14} color="#b23b3b" />
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <ReviewModal

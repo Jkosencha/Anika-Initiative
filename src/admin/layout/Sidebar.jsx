@@ -2,9 +2,12 @@ import { NavLink } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { navSections } from '../nav'
 import { useAuth } from '../auth/AuthContext'
+import { getInitials } from '../utils/getInitials'
+import { useAdminNotifications } from './useAdminNotifications'
 
 function Sidebar({ open, onClose }) {
   const {user, logout} = useAuth()
+  const { badges } = useAdminNotifications()
 
   const visibleSections = navSections
     .map((section) => ({
@@ -53,34 +56,37 @@ function Sidebar({ open, onClose }) {
                 {section.label}
               </p>
               <ul className="space-y-1">
-                {section.items.map(({ label, to, icon: Icon, end, badge, badgeAccent }) => (
-                  <li key={to}>
-                    <NavLink
-                      to={to}
-                      end={end}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                          isActive
-                            ? 'bg-white text-coral'
-                            : 'text-cream/70 hover:bg-white/5 hover:text-cream'
-                        }`
-                      }
-                    >
-                      <Icon size={18} strokeWidth={2} />
-                      <span className="flex-1">{label}</span>
-                      {badge != null && (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            badgeAccent ? 'bg-coral text-white' : 'bg-white/10 text-cream/70'
-                          }`}
-                        >
-                          {badge}
-                        </span>
-                      )}
-                    </NavLink>
-                  </li>
-                ))}
+                {section.items.map(({ label, to, icon: Icon, end, badgeKey, badgeAccent }) => {
+                  const badge = badgeKey ? badges[badgeKey] : null
+                  return (
+                    <li key={to}>
+                      <NavLink
+                        to={to}
+                        end={end}
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                            isActive
+                              ? 'bg-white text-coral'
+                              : 'text-cream/70 hover:bg-white/5 hover:text-cream'
+                          }`
+                        }
+                      >
+                        <Icon size={18} strokeWidth={2} />
+                        <span className="flex-1">{label}</span>
+                        {badge != null && badge > 0 && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              badgeAccent ? 'bg-coral text-white' : 'bg-white/10 text-cream/70'
+                            }`}
+                          >
+                            {badge}
+                          </span>
+                        )}
+                      </NavLink>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           ))}
@@ -88,7 +94,7 @@ function Sidebar({ open, onClose }) {
 
         <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
-            {user?.initials}
+            {getInitials(user?.name)}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-cream">{user?.name}</p>

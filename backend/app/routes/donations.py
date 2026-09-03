@@ -1,25 +1,26 @@
+import logging
 import secrets
 import string
 from datetime import datetime
-import logging
 
 from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models import Donation
+from app.schemas.donation_schema import create_donation_schema, update_donation_schema
 from app.services.paystack import (
     PaystackError,
     initialize_transaction,
     verify_transaction,
     verify_webhook_signature,
 )
-from app.utils.validation import load_json_or_400
-from app.schemas.donation_schema import create_donation_schema, update_donation_schema
 from app.utils.contact_utils import create_contact_from_data
+from app.utils.decorators import require_permission
+from app.utils.validation import load_json_or_400
 
 donations_bp = Blueprint("donations", __name__, url_prefix="/api/donations")
 
-# TODO(auth): every route below is currently open...
+
 logger = logging.getLogger(__name__)
 
 
@@ -226,6 +227,7 @@ def create_donation():
 
 
 @donations_bp.get("")
+@require_permission("donations")
 def list_donations():
     """
     List donations with optional filters
@@ -266,6 +268,7 @@ def list_donations():
 
 
 @donations_bp.patch("/<int:donation_id>")
+@require_permission("donations")
 def update_donation(donation_id):
     """
     Update a donation (e.g. change status)
@@ -323,6 +326,7 @@ def update_donation(donation_id):
 
 
 @donations_bp.delete("/<int:donation_id>")
+@require_permission("donations")
 def delete_donation(donation_id):
     """
     Delete a donation
@@ -458,6 +462,7 @@ def verify_donation(reference):
 
 
 @donations_bp.get("/stats")
+@require_permission("donations")
 def donation_stats():
     """
     Aggregate donation statistics for dashboard

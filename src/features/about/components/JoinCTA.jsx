@@ -26,7 +26,7 @@ export default function JoinCTA() {
           className="mt-10 inline-flex items-center gap-2 rounded-full bg-ink px-8 py-4 font-body text-sm font-semibold uppercase tracking-wide text-cream transition hover:bg-ink/90"
         >
           {joinCta.ctaLabel}
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true"></span>
         </Link>
       </div>
     </section>

@@ -7,6 +7,7 @@ import DonutChart from '../components/charts/DonutChart'
 import EventCalendar from '../components/EventCalendar'
 import { useAdminColors, initials, avatarColor } from '../theme'
 import { fetchDonations, fetchRegistrations, fetchEvents, fetchWhatsAppStats, normalizeDonation } from '../../lib/api'
+import { storiesStore } from '../../data/storiesStore'
 
 const reach = [
   { country: 'Kenya', tag: 'HQ · Operational' },
@@ -16,15 +17,69 @@ const reach = [
   { country: 'South Africa', tag: 'Programme reach' },
 ]
 
-const recentActivity = [
-  { text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', to: '/admin/registrations', type: 'registration' },
-  { text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', to: '/admin/donations', type: 'donation' },
-  { text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', to: '/admin/partners', type: 'partnership' },
-  { text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', to: '/admin/stories', type: 'story' },
-]
-
 const MONTHS_BACK = 6
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+
+function timeAgo(dateInput) {
+  const date = new Date(dateInput)
+  const minutes = Math.floor((Date.now() - date.getTime()) / 60000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+// Merges registrations, donations, and stories into one feed. Partners is
+// left out on purpose — PartnerContext has no timestamp, so there's no real
+// "when" to sort it by.
+function buildRecentActivity(registrations, donations, stories) {
+  const items = []
+
+  registrations.forEach((r) => {
+    if (!r.createdAt) return
+    items.push({
+      id: `reg-${r.id}`,
+      text: `New registration for "${r.eventTitle ?? 'an event'}"`,
+      to: '/admin/registrations',
+      type: 'registration',
+      ts: r.createdAt,
+    })
+  })
+
+  donations.forEach((d) => {
+    if (!d.createdAt) return
+    items.push({
+      id: `don-${d.id}`,
+      text: `${d.currency} ${d.amount.toLocaleString()} donation ${
+        d.status === 'Pending' ? 'initiated' : 'received'
+      } from ${d.name}`,
+      to: '/admin/donations',
+      type: 'donation',
+      ts: d.createdAt,
+    })
+  })
+
+  stories.forEach((s) => {
+    const ts = s.updated ?? s.date
+    if (!ts) return
+    items.push({
+      id: `story-${s.id}`,
+      text: `Story updated: "${s.title}"`,
+      to: '/admin/stories',
+      type: 'story',
+      ts,
+    })
+  })
+
+  return items
+    .sort((a, b) => new Date(b.ts) - new Date(a.ts))
+    .slice(0, 4)
+    .map((item) => ({ ...item, time: timeAgo(item.ts) }))
+}
 
 function toKES(amount, currency) {
   return currency === 'USD' ? amount * 130 : amount
@@ -93,14 +148,13 @@ function Dashboard() {
   const [donations, setDonations] = useState([])
   const [registrations, setRegistrations] = useState([])
   const [events, setEvents] = useState([])
-  const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 })
+  const [waStats, setWaStats, stories, setStories] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 })
   const [loading, setLoading] = useState(true)
   const [newRegistrationsThisWeek, setNewRegistrationsThisWeek] = useState(0)
 
   const activityColor = {
     registration: COLORS.red,
     donation: COLORS.orange,
-    partnership: COLORS.green,
     story: COLORS.blue,
     whatsapp: '#25D366',
   }
@@ -129,8 +183,8 @@ function Dashboard() {
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents(), fetchWhatsAppStats()]).then(
-      ([donationsRes, registrationsRes, eventsRes, waRes]) => {
+    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents(), storiesStore.getAll().catch(() => [])]), fetchWhatsAppStats()]).then(
+      ([donationsRes, registrationsRes, eventsRes, waRes, storiesRows]) => {
         if (cancelled) return
         setDonations(donationsRes.rows.map(normalizeDonation))
         setRegistrations(registrationsRes.rows)
@@ -169,6 +223,10 @@ function Dashboard() {
       .sort((a, b) => a._date - b._date)
       .slice(0, 4)
   }, [events])
+  const recentActivity = useMemo(
+    () => buildRecentActivity(registrations, donations, stories),
+    [registrations, donations, stories]
+  )
 
   return (
     <div style={{ background: COLORS.bg, minHeight: '100%' }} className="rounded-lg p-6 font-sans">
@@ -308,6 +366,36 @@ function Dashboard() {
               </li>
             ))}
           </ul>
+          {loading ? (
+            <p className="text-sm" style={{ color: COLORS.muted }}>
+              Loading…
+            </p>
+          ) : recentActivity.length === 0 ? (
+            <p className="text-sm" style={{ color: COLORS.muted }}>
+              No recent activity yet.
+            </p>
+          ) : (
+            <ul>
+              {recentActivity.map((item) => (
+                <li key={item.id} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
+                  <Link
+                    to={item.to}
+                    className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-black/5"
+                  >
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: activityColor[item.type] }} />
+                    <div>
+                      <p className="text-sm" style={{ color: COLORS.text }}>
+                        {item.text}
+                      </p>
+                      <p className="text-xs" style={{ color: COLORS.muted }}>
+                        {item.time}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
 
         <Card

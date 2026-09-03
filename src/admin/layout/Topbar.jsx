@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, Moon, Sun, Bell, Check } from 'lucide-react'
+import { useAdminNotifications } from './useAdminNotifications'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -17,25 +18,9 @@ function today() {
   })
 }
 
-const initialNotifications = [
-  { id: 1, text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', read: false, to: '/admin/registrations' },
-  { id: 2, text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', read: false, to: '/admin/donations' },
-  { id: 3, text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', read: true, to: '/admin/partners' },
-  { id: 4, text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', read: true, to: '/admin/stories' },
-]
-
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
   const [notifOpen, setNotifOpen] = useState(false)
-  const [notifications, setNotifications] = useState(initialNotifications)
-  const unreadCount = notifications.filter((n) => !n.read).length
-
-  function markAllRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
-
-  function markRead(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+  const { notifications, unreadCount, markRead, markAllRead } = useAdminNotifications()
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink/10 bg-cream/70 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-charcoal/70">
@@ -89,6 +74,11 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
                   )}
                 </div>
                 <ul className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 && (
+                    <li className="px-4 py-6 text-center text-xs text-ink/40 dark:text-cream/40">
+                      No notifications yet
+                    </li>
+                  )}
                   {notifications.map((n) => (
                     <li key={n.id}>
                       <Link

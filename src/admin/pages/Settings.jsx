@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import {
   Building2,
@@ -14,7 +14,131 @@ import {
   FileText,
   AlertTriangle,
   Key,
+  Loader2,
+  X,
+  CheckCircle2,
 } from "lucide-react";
+
+// ---- API helpers -----------------------------------------------------
+const API_BASE = (() => {
+  const raw = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/+$/, "");
+  return raw.endsWith("/api") ? raw : `${raw}/api`;
+})();
+
+// Settings.jsx is not inside AuthContext, so it talks to the same
+// storage AuthContext.jsx uses directly: one JSON blob under this key,
+// shaped { user, token, refreshToken }. Keep this key and shape in sync
+// with AuthContext.jsx / utils/auth.js if either ever changes.
+const SESSION_KEY = "anika_admin_session";
+
+function readSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  return readSession()?.token || null;
+}
+
+function getRefreshToken() {
+  return readSession()?.refreshToken || null;
+}
+
+function updateStoredAccessToken(newToken) {
+  const session = readSession();
+  if (!session) return;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, token: newToken }));
+}
+
+// Session is unrecoverable (no refresh token, or the refresh call itself
+// failed). Clear it and tell AuthContext, the same way it already listens
+// for this event — ProtectedRoute then redirects to /admin/login on its
+// next render, same as a normal logout.
+function clearSessionAndNotify() {
+  localStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event("auth:unauthorized"));
+}
+
+// Refreshes the access token using the refresh token. Coalesces
+// concurrent calls so a burst of 401s doesn't fire multiple refreshes.
+let refreshInFlight = null;
+async function refreshAccessToken() {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data?.access_token) return null;
+      updateStoredAccessToken(data.access_token);
+      return data.access_token;
+    } catch {
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+async function doFetch(path, options, token) {
+  return fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+  });
+}
+
+async function apiFetch(path, options = {}) {
+  let token = getAuthToken();
+  let res = await doFetch(path, options, token);
+
+  // Access token expired/invalid — try a silent refresh, then retry once.
+  if (res.status === 401 && getRefreshToken()) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await doFetch(path, options, newToken);
+    } else {
+      clearSessionAndNotify();
+    }
+  } else if (res.status === 401) {
+    // No refresh token available at all — nothing to retry with.
+    clearSessionAndNotify();
+  }
+
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    // no JSON body (e.g. 204)
+  }
+
+  if (!res.ok) {
+    const message = (body && body.error) || `Request failed (${res.status})`;
+    const error = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+  return body;
+}
 
 // Same light/dark palette shape as Donations.jsx / Partners.jsx
 const lightColors = {
@@ -169,21 +293,12 @@ function ResetConfirmModal({
 
     setIsLoading(true);
     try {
-      // In a real app, you would verify the password with your backend
-      // For demo, we'll simulate password validation
-      // The password should be "admin123" for demo purposes
-      if (password.trim() !== "admin123") {
-        setPasswordError("Invalid password. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
       setPasswordError("");
-      await onConfirm(selectedData);
+      await onConfirm(selectedData, password);
       onClose();
       setPassword("");
     } catch (error) {
-      setPasswordError("An error occurred. Please try again.");
+      setPasswordError(error.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -322,7 +437,14 @@ function ResetConfirmModal({
             }}
             className="text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2"
           >
-            {isLoading ? "Resetting..." : "Yes, reset selected"}
+            {isLoading ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                Resetting...
+              </>
+            ) : (
+              "Yes, reset selected"
+            )}
           </button>
         </div>
       </div>
@@ -330,9 +452,72 @@ function ResetConfirmModal({
   );
 }
 
+// Result modal shown after a successful reset — same shell as Partners.jsx's
+// DeleteConfirmModal (overlay, panel, header with X, footer button) instead
+// of a native browser alert().
+function ResetResultModal({ isOpen, onClose, result, colors }) {
+  if (!isOpen || !result) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
+        className="w-full max-w-sm rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: colors.border }}>
+          <h2 className="flex items-center gap-2 font-bold text-lg" style={{ color: colors.text }}>
+            <CheckCircle2 size={18} color={colors.green} />
+            Reset complete
+          </h2>
+          <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-black/5">
+            <X size={18} color={colors.muted} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-3">
+          <p className="text-sm" style={{ color: colors.text }}>
+            <span className="font-bold">{result.types.join(", ")}</span> {result.types.length > 1 ? "were" : "was"} cleared from the admin desk.
+          </p>
+          {result.counts.length > 0 && (
+            <ul className="text-xs space-y-1" style={{ color: colors.muted }}>
+              {result.counts.map(({ label, count }) => (
+                <li key={label}>
+                  {count} {label} record{count === 1 ? "" : "s"} deleted
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="flex justify-end p-4 border-t" style={{ borderColor: colors.border }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ background: colors.buttonBg, color: colors.buttonText }}
+            className="text-sm font-semibold px-4 py-2 rounded-full"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+  
 export default function Settings() {
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+  const [saveError, setSaveError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const [org, setOrg] = useState({
     name: "ANIKA Initiative",
@@ -343,6 +528,7 @@ export default function Settings() {
   const [account, setAccount] = useState({
     name: "Admin",
     email: "admin@anikainitiative.org",
+    currentPassword: "",
     password: "",
     confirm: "",
   });
@@ -354,14 +540,70 @@ export default function Settings() {
     whatsappAlerts: true,
   });
 
-  const [saved, setSaved] = useState(false);
   const [zoneUnlocked, setZoneUnlocked] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [resetResult, setResetResult] = useState(null);
   const [selectedData, setSelectedData] = useState({
     partners: true,
     donations: true,
     applications: true,
   });
+
+  // Load current settings from the backend on mount.
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+
+    const loadSettings = async () => {
+      try {
+        const data = await apiFetch("/settings");
+        if (cancelled || !data) return;
+        
+        // Update org data
+        if (data.org) {
+          setOrg((prev) => ({ 
+            ...prev, 
+            name: data.org.name || prev.name,
+            email: data.org.email || prev.email,
+            phone: data.org.phone || prev.phone,
+          }));
+        }
+        
+        // Update notification preferences
+        if (data.notifications) {
+          setNotifications((prev) => ({ 
+            ...prev, 
+            ...data.notifications 
+          }));
+        }
+        
+        setLoadError(null);
+      } catch (err) {
+        if (!cancelled) {
+          if (err.status === 401) {
+            // apiFetch already tried a silent token refresh before this
+            // error surfaced, so a 401 here means the session is genuinely
+            // gone. It has also already dispatched auth:unauthorized, so
+            // ProtectedRoute is about to redirect to /admin/login — this
+            // message just covers the brief moment before that happens.
+            setLoadError("Your session has expired. Redirecting to login…");
+          } else {
+            setLoadError(err.message || "Failed to load settings. Please try again.");
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function toggleDataSelection(type) {
     setSelectedData((prev) => ({
@@ -379,26 +621,74 @@ export default function Settings() {
     });
   }
 
-  function doReset(selectedTypes) {
-    // Placeholder for the real reset call once this is wired to a backend.
-    console.log("Resetting selected data:", selectedTypes);
-    
-    // Show which data was reset
+  async function doReset(selectedTypes, password) {
+    const result = await apiFetch("/settings/reset", {
+      method: "POST",
+      body: JSON.stringify({ password, types: selectedTypes }),
+    });
+
     const types = [];
     if (selectedTypes.partners) types.push("Partners");
     if (selectedTypes.donations) types.push("Donations");
     if (selectedTypes.applications) types.push("Applications");
-    
-    alert(`✅ Reset completed: ${types.join(", ")} were cleared.`);
-    
+
+    const counts = result?.deleted
+      ? Object.entries(result.deleted).map(([label, count]) => ({ label, count }))
+      : [];
+
     closeConfirm();
     setZoneUnlocked(false);
+    setResetResult({ types, counts });
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setSaveError("");
+    setSaved(false);
+
+    if (account.password && account.password !== account.confirm) {
+      setSaveError("New password and confirmation don't match.");
+      return;
+    }
+    if (account.password && !account.currentPassword) {
+      setSaveError("Enter your current password to set a new one.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await Promise.all([
+        apiFetch("/settings/org", {
+          method: "PUT",
+          body: JSON.stringify(org),
+        }),
+        apiFetch("/settings/notifications", {
+          method: "PUT",
+          body: JSON.stringify(notifications),
+        }),
+        (account.name || account.email || account.password)
+          ? apiFetch("/settings/account", {
+              method: "PUT",
+              body: JSON.stringify({
+                name: account.name,
+                email: account.email,
+                ...(account.password
+                  ? { password: account.password, currentPassword: account.currentPassword }
+                  : {}),
+              }),
+            })
+          : Promise.resolve(),
+      ]);
+
+      setAccount((prev) => ({ ...prev, currentPassword: "", password: "", confirm: "" }));
+      setSaved(true);
+      setSaveError("");
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setSaveError(err.message || "Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function updateOrg(key, value) {
@@ -413,12 +703,36 @@ export default function Settings() {
     setNotifications((prev) => ({ ...prev, [key]: value }));
   }
 
+  // Show loading spinner while fetching settings
+  if (isLoading) {
+    return (
+      <div 
+        style={{ background: COLORS.bg, minHeight: "100%" }} 
+        className="p-6 font-sans rounded-lg flex items-center justify-center"
+      >
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin" style={{ color: COLORS.muted }} />
+          <p style={{ color: COLORS.muted }} className="text-sm">
+            Loading settings...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">
       <style>{`
         .settings-input::placeholder {
           color: ${COLORS.inputPlaceholder};
           opacity: 1;
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
         }
       `}</style>
 
@@ -433,13 +747,49 @@ export default function Settings() {
         </div>
         <button
           onClick={handleSave}
-          style={{ background: COLORS.buttonBg, color: COLORS.buttonText }}
-          className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5"
+          disabled={isSaving}
+          style={{
+            background: COLORS.buttonBg,
+            color: COLORS.buttonText,
+            opacity: isSaving ? 0.6 : 1,
+            cursor: isSaving ? "not-allowed" : "pointer",
+          }}
+          className="text-xs font-bold tracking-wide px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition-opacity"
         >
-          {saved ? <Check size={14} /> : null}
-          {saved ? "SAVED" : "SAVE CHANGES"}
+          {isSaving ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              SAVING...
+            </>
+          ) : saved ? (
+            <>
+              <Check size={14} />
+              SAVED
+            </>
+          ) : (
+            "SAVE CHANGES"
+          )}
         </button>
       </div>
+
+      {loadError && (
+        <div
+          className="mb-4 rounded-lg px-4 py-3 text-sm flex items-center gap-2"
+          style={{ background: COLORS.warningBg, color: COLORS.warning }}
+        >
+          <AlertTriangle size={16} />
+          {loadError}
+        </div>
+      )}
+      {saveError && (
+        <div
+          className="mb-4 rounded-lg px-4 py-3 text-sm flex items-center gap-2"
+          style={{ background: COLORS.warningBg, color: COLORS.red }}
+        >
+          <AlertTriangle size={16} />
+          {saveError}
+        </div>
+      )}
 
       <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <SectionCard
@@ -496,6 +846,15 @@ export default function Settings() {
               value={account.email}
               onChange={(e) => updateAccount("email", e.target.value)}
               placeholder="you@anikainitiative.org"
+            />
+          </Field>
+          <Field label="Current password" colors={COLORS}>
+            <TextInput
+              colors={COLORS}
+              type="password"
+              value={account.currentPassword}
+              onChange={(e) => updateAccount("currentPassword", e.target.value)}
+              placeholder="Required to change your password"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -725,6 +1084,13 @@ export default function Settings() {
         colors={COLORS}
         selectedData={selectedData}
         onDataToggle={toggleDataSelection}
+      />
+
+      <ResetResultModal
+        isOpen={!!resetResult}
+        onClose={() => setResetResult(null)}
+        result={resetResult}
+        colors={COLORS}
       />
     </div>
   );

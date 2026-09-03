@@ -1,11 +1,11 @@
-import os
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
+from config import BASE_DIR, Config
 from flask import Flask, jsonify
 
-from config import Config, BASE_DIR
-from app.extensions import db, cors, swagger, mail
+from app.extensions import cors, db, jwt, mail, swagger
 from app.utils.cloudinary_config import init_cloudinary
 
 SWAGGER_TEMPLATE = {
@@ -37,6 +37,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
+    jwt.init_app(app)
 
     app.config["SWAGGER"] = SWAGGER_CONFIG
     swagger.template = SWAGGER_TEMPLATE
@@ -66,28 +67,32 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
-    from app.models.donation import Donation
     from app.models.application import Application
+    from app.models.contact import Contact
+    from app.models.donation import Donation
     from app.models.gallery import GalleryImage
     from app.models.story import Story
-    from app.models.contact import Contact
+    from app.models.user import User
     from app.models.event import Event
     from app.models.registration import Registration
     from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_broadcast import WhatsAppBroadcast
     from app.models.whatsapp_settings import WhatsAppSettings
+    from app.models.settings import Settings
 
     from app.routes import (
-        health_bp,
-        donations_bp,
         applications_bp,
-        gallery_bp,
-        stories_bp,
+        auth_bp,
         contacts_bp,
+        donations_bp,
+        gallery_bp,
+        health_bp,
+        stories_bp,
         events_bp,
         registrations_bp,
         whatsapp_bp,
         metrics_bp,
+        settings_bp,
     )
 
     app.register_blueprint(health_bp)
@@ -96,10 +101,12 @@ def create_app(config_class=Config):
     app.register_blueprint(gallery_bp)
     app.register_blueprint(stories_bp)
     app.register_blueprint(contacts_bp)
+    app.register_blueprint(auth_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(registrations_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(metrics_bp)
+    app.register_blueprint(settings_bp)
 
     with app.app_context():
         db.create_all()

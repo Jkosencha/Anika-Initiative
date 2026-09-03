@@ -4,21 +4,17 @@ import Reveal from '../components/Reveal';
 
 const Gallery = () => {
   const [allImages, setAllImages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAllModal, setShowAllModal] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        // --- CHANGE: fetch from the API instead of static JSON ---
         const response = await fetch("/api/gallery");
         if (!response.ok) {
           throw new Error("Hey mehn failed to load gallery");
         }
         const data = await response.json();
-        // The API returns objects with { id, caption, src, upload_date }
-        // We'll map 'caption' to 'alt' for consistency with the existing UI
         const mapped = data.map(img => ({
           src: img.src,
           alt: img.caption,
@@ -27,33 +23,16 @@ const Gallery = () => {
         setAllImages(mapped);
       } catch (error) {
         console.error("Howdy! Error loading gallery:", error);
-        // Fallback: you can keep the hardcoded images or leave empty
         setAllImages([
           { src: "/anika team.jpg", alt: "Anika Team" },
           { src: "/jaaziya.jpg", alt: "Jaaziya" },
           { src: "/KWAJ.jpg", alt: "KWAJ" },
         ]);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchImages();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#E6A15E] mx-auto">
-            <p className="mt-4 text-gray-600 text-base">
-              Loading gallery....Dilettante
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const galleryItems = allImages.slice(0, 6);
 
@@ -73,42 +52,49 @@ const Gallery = () => {
   };
 
   return (
-    <div className="font-body bg-[#FAF7F2] text-[#1E1A18] min-h-screen">
-      {/* Hero Section */}
-      <Reveal>
-        <section className="relative overflow-hidden bg-charcoal text-cream py-16 text-cream md:py-12">
-          <img
-            src="/anika-flower.png"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
-          />
-          <div className="relative z-10 mx-auto max-w-6xl px-6">
+    <div className="font-body bg-cream text-[#1E1A18] min-h-screen">
+      <section className="relative overflow-hidden bg-charcoal text-cream py-16 md:py-12">
+        <img
+          src="/anika-flower.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-10 w-md rotate-0 opacity-90"
+        />
+        <div className="relative z-10 mx-auto max-w-6xl px-6">
+          <Reveal>
             <h1 className="text-5xl md:text-7xl font-bold text-white font-display tracking-wider leading-tight">
               GALLERY
             </h1>
+          </Reveal>
+          <Reveal delay={150}>
             <p className="mt-4 max-w-2xl text-lg text-[#E6A15E] font-editorial italic">
               The rooms, the mics, the faces. Art airing in real time.
             </p>
-          </div>
-        </section>
-      </Reveal>
+          </Reveal>
+        </div>
+      </section>
 
       {/* Gallery Grid Section */}
-      <Reveal>
-        <section className="mx-auto max-w-6xl px-6 py-16">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
-            <div>
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+          <div>
+            <Reveal>
               <span className="text-[#E6A15E] font-semibold text-sm tracking-[0.2em] uppercase">
                 Moments
               </span>
+            </Reveal>
+            <Reveal delay={100}>
               <h2 className="text-3xl md:text-4xl font-bold mt-2 text-[#1E1A18]">
                 The rooms, the mics, the faces.
               </h2>
+            </Reveal>
+            <Reveal delay={200}>
               <p className="mt-2 max-w-2xl text-base text-gray-600">
                 Art airing in real time. Moments where something shifts.
               </p>
-            </div>
+            </Reveal>
+          </div>
+          <Reveal delay={300}>
             <button
               onClick={handleViewAll}
               className="mt-4 md:mt-0 inline-flex items-center gap-2 text-[#E6A15E] font-medium hover:gap-3 transition-all duration-300 group cursor-pointer"
@@ -116,12 +102,13 @@ const Gallery = () => {
               <span>View all</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
-          </div>
+          </Reveal>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {galleryItems.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {galleryItems.map((item, index) => (
+            <Reveal key={item.src} delay={index * 100}>
               <div
-                key={item.src}
                 className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 bg-gray-200 aspect-[4/3] cursor-pointer"
                 onClick={() => openLightbox(item)}
               >
@@ -136,10 +123,10 @@ const Gallery = () => {
                   </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      </Reveal>
+            </Reveal>
+          ))}
+        </div>
+      </section>
 
       {/* Lightbox */}
       {selectedImage && (

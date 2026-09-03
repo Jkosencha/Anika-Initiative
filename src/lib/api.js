@@ -16,7 +16,7 @@ import { addRecord, getRecords, updateRecord, deleteRecord, getMetrics } from '.
 
 export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
-// Maps logical kinds to their REST collection path (plural).
+// kind -> REST collection path
 const KIND_COLLECTION = {
   registration: 'registrations',
   application: 'applications',
@@ -32,24 +32,113 @@ const COLLECTION_KIND = Object.fromEntries(
   Object.entries(KIND_COLLECTION).map(([k, v]) => [v, k])
 );
 
-async function request(method, path, body, timeoutMs = 4000) {
+// --- Auth ---
+// Public forms (registration/donation/inquiry) call this with no session —
+// token is only attached when one exists, so they're unaffected.
+const SESSION_KEY = 'anika_admin_session';
+
+function readSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  return readSession()?.token || null;
+}
+
+function getRefreshToken() {
+  return readSession()?.refreshToken || null;
+}
+
+function updateStoredAccessToken(newToken) {
+  const session = readSession();
+  if (!session) return;
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ ...session, token: newToken }));
+}
+
+// Only clears if a session existed — avoids false logout events for anonymous callers.
+function clearSessionAndNotify() {
+  if (!readSession()) return;
+  localStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event('auth:unauthorized'));
+}
+
+// Coalesces concurrent refresh calls.
+let refreshInFlight = null;
+async function refreshAccessToken() {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data?.access_token) return null;
+      updateStoredAccessToken(data.access_token);
+      return data.access_token;
+    } catch {
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+async function doRequest(method, path, body, token, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
+    return await fetch(`${API_BASE}${path}`, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
-    if (!res.ok) throw new Error(`API ${path} responded ${res.status}`);
-    return await res.json();
   } finally {
     clearTimeout(timer);
   }
 }
 
-// Kind -> local store collection name mapping for fallbacks.
+async function request(method, path, body, timeoutMs = 4000) {
+  const token = getAuthToken();
+  let res = await doRequest(method, path, body, token, timeoutMs);
+
+  if (res.status === 401) {
+    if (getRefreshToken()) {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        res = await doRequest(method, path, body, newToken, timeoutMs);
+      } else {
+        clearSessionAndNotify();
+      }
+    } else {
+      clearSessionAndNotify();
+    }
+  }
+
+  if (!res.ok) throw new Error(`API ${path} responded ${res.status}`);
+  return await res.json();
+}
+
+// kind -> local store collection name
 const STORE_COLLECTION = {
   registration: 'registrations',
   application: 'applications',
@@ -62,7 +151,7 @@ const STORE_COLLECTION = {
   team: 'team',
 };
 
-/** Fetch a collection from the API; fall back to the local store. */
+/** Fetch a collection. API-first, falls back to local store. */
 export async function fetchCollection(kind) {
   try {
     const rows = await request('GET', `/${KIND_COLLECTION[kind]}`);
@@ -72,7 +161,7 @@ export async function fetchCollection(kind) {
   }
 }
 
-/** Create a record. API-first; falls back to the local store. */
+/** Create a record. API-first, falls back to local store. */
 async function submit(kind, payload) {
   try {
     const data = await request('POST', `/${KIND_COLLECTION[kind]}`, payload);
@@ -83,7 +172,7 @@ async function submit(kind, payload) {
   }
 }
 
-/** Update an existing record. API-first; falls back to the local store. */
+/** Update a record. API-first, falls back to local store. */
 export async function patchRecord(kind, id, patch) {
   try {
     const data = await request('PATCH', `/${KIND_COLLECTION[kind]}/${id}`, patch);
@@ -94,7 +183,7 @@ export async function patchRecord(kind, id, patch) {
   }
 }
 
-/** Delete a record. API-first; falls back to the local store. */
+/** Delete a record. API-first, falls back to local store. */
 export async function removeRecord(kind, id) {
   try {
     await request('DELETE', `/${KIND_COLLECTION[kind]}/${id}`);
@@ -105,7 +194,7 @@ export async function removeRecord(kind, id) {
   }
 }
 
-// --- Named creation helpers (back-compatible) -------------------------------
+// --- creation helpers ---
 export function submitRegistration(payload) {
   return submit('registration', payload);
 }
@@ -119,7 +208,7 @@ export function submitInquiry(payload) {
   return submit('inquiry', payload);
 }
 
-// --- Generic collection helpers ---------------------------------------------
+// --- collection helpers ---
 export function fetchEvents() {
   return fetchCollection('event');
 }
@@ -228,11 +317,7 @@ export function deleteDonation(id) {
   return removeRecord('donation', id);
 }
 
-/**
- * The real backend (Donation.to_dict) and the local fallback seed use different
- * field names (donor/created_at vs name/createdAt, and only the backend has a
- * status). This gives callers one consistent shape regardless of source.
- */
+/** Normalizes backend (donor/created_at) vs local (name/createdAt) donation shapes. */
 export function normalizeDonation(d) {
   return {
     id: d.id,
@@ -245,7 +330,7 @@ export function normalizeDonation(d) {
   };
 }
 
-// --- Team --------------------------------------------------------------------
+// --- Team ---
 export function fetchTeam() {
   return fetchCollection('team');
 }
@@ -267,5 +352,4 @@ export async function fetchMetrics() {
   }
 }
 
-// expose the identifier map for utilities (kept small, no unused API surface)
 export { COLLECTION_KIND };
