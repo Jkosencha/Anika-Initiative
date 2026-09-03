@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, Moon, Sun, Bell, Check } from 'lucide-react'
+import { useAuth } from '../auth/AuthContext'
+import { fetchDonations, fetchRegistrations, normalizeDonation } from '../../lib/api'
+import { storiesStore } from '../../data/storiesStore'
+import { buildActivityFeed } from '../utils/activityFeed'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -17,24 +21,64 @@ function today() {
   })
 }
 
-const initialNotifications = [
-  { id: 1, text: 'New registration for "Open Mic: Air It Out"', time: '12 minutes ago', read: false, to: '/admin/registrations' },
-  { id: 2, text: 'M-Pesa donation of KES 2,500 received', time: '1 hour ago', read: false, to: '/admin/donations' },
-  { id: 3, text: 'Partnership enquiry from Creatives Garage', time: '3 hours ago', read: true, to: '/admin/partners' },
-  { id: 4, text: 'Story submitted: "A Room Becomes a Stage"', time: 'Yesterday', read: true, to: '/admin/stories' },
-]
+const READ_KEY_PREFIX = 'anika_read_notifications_'
+
+function getReadIds(userId) {
+  try {
+    const raw = localStorage.getItem(READ_KEY_PREFIX + userId)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function saveReadIds(userId, ids) {
+  localStorage.setItem(READ_KEY_PREFIX + userId, JSON.stringify([...ids]))
+}
 
 function Topbar({ onMenuClick, theme, onToggleTheme }) {
+  const { user } = useAuth()
   const [notifOpen, setNotifOpen] = useState(false)
-  const [notifications, setNotifications] = useState(initialNotifications)
+  const [notifications, setNotifications] = useState([])
   const unreadCount = notifications.filter((n) => !n.read).length
 
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    Promise.all([fetchDonations(), fetchRegistrations(), storiesStore.getAll().catch(() => [])]).then(
+      ([donationsRes, registrationsRes, storiesRows]) => {
+        if (cancelled) return
+        const feed = buildActivityFeed(
+          registrationsRes.rows,
+          donationsRes.rows.map(normalizeDonation),
+          storiesRows ?? [],
+          6
+        )
+        const readIds = getReadIds(user.id)
+        setNotifications(feed.map((item) => ({ ...item, read: readIds.has(item.id) })))
+      }
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
   function markAllRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+    setNotifications((prev) => {
+      const next = prev.map((n) => ({ ...n, read: true }))
+      saveReadIds(user.id, new Set(next.map((n) => n.id)))
+      return next
+    })
   }
 
   function markRead(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+    setNotifications((prev) => {
+      const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      const readIds = getReadIds(user.id)
+      readIds.add(id)
+      saveReadIds(user.id, readIds)
+      return next
+    })
   }
 
   return (
@@ -44,7 +88,7 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
       </button>
 
       <div>
-        <h1 className="font-display text-xl tracking-wide">{greeting()}, Admin</h1>
+        <h1 className="font-display text-xl tracking-wide">{greeting()}, {user?.name ?? 'Admin'}</h1>
         <p className="text-sm text-ink/50 dark:text-cream/50">{today()}</p>
       </div>
 
@@ -89,30 +133,36 @@ function Topbar({ onMenuClick, theme, onToggleTheme }) {
                   )}
                 </div>
                 <ul className="max-h-80 overflow-y-auto">
-                  {notifications.map((n) => (
-                    <li key={n.id}>
-                      <Link
-                        to={n.to}
-                        onClick={() => {
-                          markRead(n.id)
-                          setNotifOpen(false)
-                        }}
-                        className="flex w-full items-start gap-2.5 border-b border-ink/5 px-4 py-3 text-left last:border-b-0 hover:bg-ink/5 dark:border-white/5 dark:hover:bg-white/5"
-                      >
-                        <span
-                          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                            n.read ? 'bg-transparent' : 'bg-coral'
-                          }`}
-                        />
-                        <span>
-                          <p className={`text-sm ${n.read ? 'text-ink/60 dark:text-cream/60' : 'font-semibold text-ink dark:text-cream'}`}>
-                            {n.text}
-                          </p>
-                          <p className="mt-0.5 text-xs text-ink/40 dark:text-cream/40">{n.time}</p>
-                        </span>
-                      </Link>
+                  {notifications.length === 0 ? (
+                    <li className="px-4 py-6 text-center text-sm text-ink/40 dark:text-cream/40">
+                      Nothing new.
                     </li>
-                  ))}
+                  ) : (
+                    notifications.map((n) => (
+                      <li key={n.id}>
+                        <Link
+                          to={n.to}
+                          onClick={() => {
+                            markRead(n.id)
+                            setNotifOpen(false)
+                          }}
+                          className="flex w-full items-start gap-2.5 border-b border-ink/5 px-4 py-3 text-left last:border-b-0 hover:bg-ink/5 dark:border-white/5 dark:hover:bg-white/5"
+                        >
+                          <span
+                            className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                              n.read ? 'bg-transparent' : 'bg-coral'
+                            }`}
+                          />
+                          <span>
+                            <p className={`text-sm ${n.read ? 'text-ink/60 dark:text-cream/60' : 'font-semibold text-ink dark:text-cream'}`}>
+                              {n.text}
+                            </p>
+                            <p className="mt-0.5 text-xs text-ink/40 dark:text-cream/40">{n.time}</p>
+                          </span>
+                        </Link>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </div>
             </>
