@@ -5,7 +5,14 @@ import { useAuth } from '../auth/AuthContext'
 import { getInitials } from '../utils/getInitials'
 import { useAdminNotifications } from './useAdminNotifications'
 
-function Sidebar({ open, onClose }) {
+const ROLE_LABELS = {
+  leadership: 'Leadership',
+  comms: 'Comms',
+  programs: 'Programs',
+  mel: 'M&E',
+}
+
+function Sidebar({ open, onClose, onOpenAccount }) {
   const {user, logout} = useAuth()
   const { badges } = useAdminNotifications()
 
@@ -93,14 +100,24 @@ function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
-            {getInitials(user?.name)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-cream">{user?.name}</p>
-            <p className="truncate text-xs text-cream/50">{user?.roleLabel}</p>
-          </div>
-          <button onClick={logout} className="text-xs font-medium text-cream/50 hover:text-cream">Exit</button>
+          <button
+            onClick={onOpenAccount}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left hover:bg-white/5"
+            aria-label="My account"
+          >
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
+                {getInitials(user?.name)}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-cream">{user?.name}</p>
+              <p className="truncate text-xs text-cream/50">{ROLE_LABELS[user?.role] ?? user?.role}</p>
+            </div>
+          </button>
+          <button onClick={logout} className="shrink-0 text-xs font-medium text-cream/50 hover:text-cream">Exit</button>
         </div>
       </aside>
     </>

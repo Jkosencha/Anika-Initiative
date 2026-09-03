@@ -8,6 +8,7 @@ import EventCalendar from '../components/EventCalendar'
 import { useAdminColors, initials, avatarColor } from '../theme'
 import { fetchDonations, fetchRegistrations, fetchEvents, fetchWhatsAppStats, normalizeDonation } from '../../lib/api'
 import { storiesStore } from '../../data/storiesStore'
+import { buildActivityFeed } from '../utils/activityFeed'
 
 const reach = [
   { country: 'Kenya', tag: 'HQ · Operational' },
@@ -208,7 +209,7 @@ function Dashboard() {
       .slice(0, 4)
   }, [events])
   const recentActivity = useMemo(
-    () => buildRecentActivity(registrations, donations, stories),
+    () => buildActivityFeed(registrations, donations, stories),
     [registrations, donations, stories]
   )
   const liveActivity = [...recentActivity]

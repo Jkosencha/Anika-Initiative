@@ -4,9 +4,31 @@ from logging.handlers import RotatingFileHandler
 
 from config import BASE_DIR, Config
 from flask import Flask, jsonify
+from sqlalchemy import inspect, text
 
 from app.extensions import cors, db, jwt, mail, swagger
 from app.utils.cloudinary_config import init_cloudinary
+
+# db.create_all() only creates missing tables, never alters existing ones --
+# so columns added to a model after the table already exists (e.g. on
+# someone's already-seeded local db) need to be patched in by hand here.
+# Safe to run on every boot: skips any column that's already there.
+_PENDING_COLUMNS = [
+    ("users", "avatar_url", "VARCHAR(500)"),
+]
+
+
+def _apply_pending_migrations():
+    inspector = inspect(db.engine)
+    with db.engine.connect() as conn:
+        for table, column, ddl_type in _PENDING_COLUMNS:
+            if not inspector.has_table(table):
+                continue
+            existing = {c["name"] for c in inspector.get_columns(table)}
+            if column in existing:
+                continue
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
+            conn.commit()
 
 SWAGGER_TEMPLATE = {
     "swagger": "2.0",
@@ -92,6 +114,7 @@ def create_app(config_class=Config):
         registrations_bp,
         whatsapp_bp,
         metrics_bp,
+        team_bp,
         settings_bp,
     )
 
@@ -106,10 +129,12 @@ def create_app(config_class=Config):
     app.register_blueprint(registrations_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(metrics_bp)
+    app.register_blueprint(team_bp)
     app.register_blueprint(settings_bp)
 
     with app.app_context():
         db.create_all()
+        _apply_pending_migrations()
 
     @app.errorhandler(404)
     def not_found(_err):

@@ -81,6 +81,36 @@ def send_user_confirmation(application):
     logger.info("Confirmation email sent to %s for application #%s", application.email, application.id)
 
 
+def send_team_invite_email(user, password):
+    """
+    Email a newly-invited team member their login credentials.
+    """
+    subject = "You've been added to the ANIKA dashboard"
+
+    origins = current_app.config.get("CORS_ORIGINS") or []
+    frontend_url = origins[0] if origins else "http://localhost:5173"
+
+    body = (
+        f"Hi {user.name},\n\n"
+        f"An account has been created for you on the ANIKA admin dashboard as {user.role}.\n\n"
+        f"Log in at: {frontend_url}/admin/login\n"
+        f"Email: {user.email}\n"
+        f"Temporary password: {password}\n\n"
+        f"Please log in and change your password as soon as possible.\n\n"
+        f"Best regards,\nThe Anika Initiative Team"
+    )
+
+    msg = Message(
+        subject=subject,
+        recipients=[user.email],
+        body=body,
+        sender=current_app.config.get("MAIL_DEFAULT_SENDER", "noreply@example.com"),
+    )
+
+    mail.send(msg)
+    logger.info("Invite email sent to %s (role=%s)", user.email, user.role)
+
+
 def send_status_update_email(application, new_status):
     """
     Send an email to the applicant when their application status changes.
