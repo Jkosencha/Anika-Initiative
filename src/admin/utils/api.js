@@ -69,6 +69,11 @@ async function refreshAccessToken() {
 
 
 export async function apiRequest(path, { method = 'GET', body, headers = {}, ...rest } = {}) {
+    // FormData (file uploads) must be sent as-is -- the browser sets its own
+    // multipart Content-Type with the right boundary, so don't JSON-stringify
+    // it or force application/json like every other call does.
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
     const doFetch = async () => {
         const session = getSession();
         const token = session?.token;
@@ -76,11 +81,11 @@ export async function apiRequest(path, { method = 'GET', body, headers = {}, ...
         const response = await fetch(`${API_BASE_URL}${path}`, {
             method,
             headers: {
-                'Content-Type': 'application/json',
+                ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...headers,
             },
-            body: body !== undefined ? JSON.stringify(body) : undefined,
+            body: isFormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
             ...rest,
         });
         // No JSON body on some responses (e.g. 204 No Content from delete_story)
