@@ -12,7 +12,6 @@ flasgger = "*"
 psycopg2-binary = "*"
 requests = "*"
 marshmallow = "*"
-flask-jwt-extended = "*"
 flask = "*"
 flask-mail = "*"
 

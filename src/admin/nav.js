@@ -49,7 +49,7 @@ export const navSections = [
   {
     label: 'Insight',
     items: [
-      { label: 'Contributions', to: '/admin/donations', icon: DollarSign, allowedRoles: PAGE_ACCESS.donations },
+      { label: 'Contributions', to: '/admin/donations', icon: DollarSign, badgeKey: 'donations', allowedRoles: PAGE_ACCESS.donations },
       { label: 'Impact', to: '/admin/impact', icon: BarChart3, allowedRoles: PAGE_ACCESS.impact },
       { label: 'Reports', to: '/admin/reports', icon: FileBarChart, allowedRoles: PAGE_ACCESS.reports },
     ],

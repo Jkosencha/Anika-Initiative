@@ -78,6 +78,7 @@ def create_app(config_class=Config):
     from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_broadcast import WhatsAppBroadcast
     from app.models.whatsapp_settings import WhatsAppSettings
+    from app.models.settings import Settings
 
     from app.routes import (
         applications_bp,
@@ -91,6 +92,7 @@ def create_app(config_class=Config):
         registrations_bp,
         whatsapp_bp,
         metrics_bp,
+        settings_bp,
     )
 
     app.register_blueprint(health_bp)
@@ -104,6 +106,7 @@ def create_app(config_class=Config):
     app.register_blueprint(registrations_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(metrics_bp)
+    app.register_blueprint(settings_bp)
 
     with app.app_context():
         db.create_all()
