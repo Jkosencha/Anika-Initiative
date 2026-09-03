@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Reveal from './Reveal';
 import { fetchEvents, submitRegistration } from '../lib/api';
+import { normalizePhone, sanitizePhoneInput } from '../lib/phone';
 import { 
   Calendar as CalendarIcon, 
   Clock as ClockIcon, 
@@ -168,12 +169,17 @@ export default function EventsList() {
       eventId === FEATURED_EVENT.id
         ? FEATURED_EVENT.title
         : (events.find(ev => ev.id === eventId)?.title || 'ANIKA Event');
+    const normalizedPhone = normalizePhone(currentForm.whatsappNumber);
+    if (!normalizedPhone) {
+      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Enter a valid international phone number, including the country code.' }));
+      return;
+    }
 
     setLoading(prev => ({ ...prev, [eventId]: true }));
     try {
       await submitRegistration({
         name: currentForm.fullName,
-        phone: currentForm.whatsappNumber,
+        phone: normalizedPhone,
         eventTitle,
         consent: currentForm.optIn,
         source: 'web',
@@ -417,7 +423,7 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
             required
             placeholder="+254 712 345 678"
             value={currentForm.whatsappNumber}
-            onChange={(e) => handleInputChange(eventId, 'whatsappNumber', e.target.value)}
+            onChange={(e) => handleInputChange(eventId, 'whatsappNumber', sanitizePhoneInput(e.target.value))}
             className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
           />
         </div>

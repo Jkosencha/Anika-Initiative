@@ -17,6 +17,8 @@ import {
   Loader2,
   X,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 // ---- API helpers -----------------------------------------------------
@@ -215,17 +217,43 @@ function Field({ label, colors, children }) {
   );
 }
 
-function TextInput({ colors, ...props }) {
+function TextInput({ colors, className = "", style, ...props }) {
   return (
     <input
       {...props}
-      className="settings-input px-3 py-2 rounded-lg text-sm outline-none w-full"
+      className={`settings-input px-3 py-2 rounded-lg text-sm outline-none w-full ${className}`}
       style={{
         border: `1px solid ${colors.border}`,
         background: colors.inputBg,
         color: colors.text,
+        ...style,
       }}
     />
+  );
+}
+
+function PasswordInput({ colors, className = "", style, ...props }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <TextInput
+        colors={colors}
+        {...props}
+        type={visible ? "text" : "password"}
+        className={`pr-9 ${className}`}
+        style={style}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        tabIndex={-1}
+        aria-label={visible ? "Hide password" : "Show password"}
+        className="absolute right-2.5 top-1/2 -translate-y-1/2"
+        style={{ color: colors.muted }}
+      >
+        {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
   );
 }
 
@@ -261,6 +289,64 @@ function ToggleRow({ label, sub, checked, onChange, colors }) {
         )}
       </div>
       <Toggle checked={checked} onChange={onChange} colors={colors} />
+    </div>
+  );
+}
+
+function PasswordChangeConfirmModal({ isOpen, onClose, onConfirm, colors, isLoading }) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4 z-50"
+      style={{ background: "rgba(20,18,15,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: colors.panel, border: `1px solid ${colors.border}` }}
+        className="w-full max-w-md rounded-2xl shadow-xl overflow-hidden"
+      >
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Key size={20} color={colors.text} />
+            <h2 className="font-bold text-lg" style={{ color: colors.text }}>
+              Confirm password change
+            </h2>
+          </div>
+          <p className="text-sm" style={{ color: colors.muted }}>
+            You'll be signed out immediately after this and need to log back in
+            with your new password. Continue?
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: colors.border }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            className="text-sm font-semibold px-3 py-2"
+            style={{ color: colors.muted }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isLoading}
+            style={{
+              background: colors.buttonBg,
+              color: colors.buttonText,
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
+            className="text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2"
+          >
+            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Key size={14} />}
+            Change password
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -388,9 +474,8 @@ function ResetConfirmModal({
               <Key size={14} />
               Enter admin password to confirm:
             </label>
-            <TextInput
+            <PasswordInput
               colors={colors}
-              type="password"
               autoFocus
               value={password}
               onChange={(e) => {
@@ -542,6 +627,7 @@ export default function Settings() {
 
   const [zoneUnlocked, setZoneUnlocked] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [resetResult, setResetResult] = useState(null);
   const [selectedData, setSelectedData] = useState({
     partners: true,
@@ -641,7 +727,7 @@ export default function Settings() {
     setResetResult({ types, counts });
   }
 
-  async function handleSave(e) {
+  function handleSaveClick(e) {
     e.preventDefault();
     setSaveError("");
     setSaved(false);
@@ -655,6 +741,19 @@ export default function Settings() {
       return;
     }
 
+    // Password changes go through a confirmation modal first — org and
+    // notification-only saves proceed immediately, same as before.
+    if (account.password) {
+      setShowPasswordConfirm(true);
+      return;
+    }
+
+    performSave();
+  }
+
+  async function performSave() {
+    const isPasswordChange = Boolean(account.password);
+    setShowPasswordConfirm(false);
     setIsSaving(true);
     try {
       await Promise.all([
@@ -681,6 +780,15 @@ export default function Settings() {
       ]);
 
       setAccount((prev) => ({ ...prev, currentPassword: "", password: "", confirm: "" }));
+
+      if (isPasswordChange) {
+        // Password changed on the backend — the old token/session is stale
+        // by design. Force a fresh login rather than silently continuing
+        // on a session tied to the now-old password.
+        clearSessionAndNotify();
+        return;
+      }
+
       setSaved(true);
       setSaveError("");
       setTimeout(() => setSaved(false), 3000);
@@ -746,7 +854,7 @@ export default function Settings() {
           </p>
         </div>
         <button
-          onClick={handleSave}
+          onClick={handleSaveClick}
           disabled={isSaving}
           style={{
             background: COLORS.buttonBg,
@@ -791,7 +899,7 @@ export default function Settings() {
         </div>
       )}
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <form onSubmit={handleSaveClick} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <SectionCard
           icon={Building2}
           title="Organisation profile"
@@ -849,9 +957,8 @@ export default function Settings() {
             />
           </Field>
           <Field label="Current password" colors={COLORS}>
-            <TextInput
+            <PasswordInput
               colors={COLORS}
-              type="password"
               value={account.currentPassword}
               onChange={(e) => updateAccount("currentPassword", e.target.value)}
               placeholder="Required to change your password"
@@ -859,18 +966,16 @@ export default function Settings() {
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="New password" colors={COLORS}>
-              <TextInput
+              <PasswordInput
                 colors={COLORS}
-                type="password"
                 value={account.password}
                 onChange={(e) => updateAccount("password", e.target.value)}
                 placeholder="••••••••"
               />
             </Field>
             <Field label="Confirm password" colors={COLORS}>
-              <TextInput
+              <PasswordInput
                 colors={COLORS}
-                type="password"
                 value={account.confirm}
                 onChange={(e) => updateAccount("confirm", e.target.value)}
                 placeholder="••••••••"
@@ -1076,6 +1181,14 @@ export default function Settings() {
           </div>
         </SectionCard>
       </form>
+
+      <PasswordChangeConfirmModal
+        isOpen={showPasswordConfirm}
+        onClose={() => setShowPasswordConfirm(false)}
+        onConfirm={performSave}
+        colors={COLORS}
+        isLoading={isSaving}
+      />
 
       <ResetConfirmModal
         isOpen={confirmReset}

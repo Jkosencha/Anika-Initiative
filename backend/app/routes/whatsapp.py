@@ -9,6 +9,7 @@ from app.models.whatsapp_settings import (
     DEFAULT_FLOWS,
     DEFAULT_GREETING,
 )
+from app.utils.phone import normalize_phone
 import time
 
 whatsapp_bp = Blueprint("whatsapp", __name__)
@@ -69,6 +70,9 @@ def create_conversation():
     phone = (data.get("phone") or "").strip()
     if not name or not phone:
         return jsonify({"error": "name and phone are required"}), 400
+    phone = normalize_phone(phone)
+    if not phone:
+      return jsonify({"error": "phone must be a valid international number including country code"}), 400
     conv = WhatsAppConversation(
         name=name,
         phone=phone,
@@ -473,6 +477,9 @@ def whatsapp_simulate():
     message = (data.get("message") or "").strip()
     if not phone or not message:
         return jsonify({"error": "phone and message are required"}), 400
+    phone = normalize_phone(phone)
+    if not phone:
+      return jsonify({"error": "phone must be a valid international number including country code"}), 400
 
     payload = {
         "object": "whatsapp_business_account",

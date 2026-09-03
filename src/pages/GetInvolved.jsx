@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
 import { submitApplication } from '../lib/api';
+import { normalizePhone, phoneError } from '../lib/phone';
 
 // validation for email and phone helpers
 const validateEmail = (email) => {
@@ -24,24 +25,13 @@ const validateEmail = (email) => {
 };
 
 const validatePhone = (phone) => {
-  if (!phone) return { valid: false, message: "Phone number is required." };
-  const cleaned = phone.replace(/[^0-9]/g, '');
-  if (cleaned.length === 9) {
-    return { valid: true, normalized: '0' + cleaned };
-  }
-  if (cleaned.length === 10 && cleaned.startsWith('0')) {
-    return { valid: true, normalized: cleaned };
-  }
-  if (cleaned.length === 12 && cleaned.startsWith('254')) {
-    return { valid: true, normalized: cleaned };
-  }
-  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
+  const normalized = normalizePhone(phone);
+  return normalized ? { valid: true, normalized } : { valid: false, message: phoneError(phone) };
 };
 
 // stripping phone number
 const formatPhoneInput = (value) => {
-  const digits = value.replace(/[^0-9]/g, '');
-  return digits.slice(0, 12);
+  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
 };
 
 const roles = [
@@ -279,6 +269,19 @@ const GetInvolved = () => {
         toast.error(err.message || "Something went wrong. Please try again.");
         setIsSubmitting(false);
         return;
+    // Validating phone number if it aint newsletter
+    let normalizedPhone = formData.phone || undefined;
+    if (!isNewsletter) {
+      const phone = formData.phone;
+      const result = validatePhone(phone);
+      if (!result.valid) {
+        toast.error(result.message);
+        setIsSubmitting(false);
+        return;
+      }
+      if (result.normalized) {
+        normalizedPhone = result.normalized;
+        setFormData((previous) => ({ ...previous, phone: result.normalized }));
       }
     }
 
@@ -301,7 +304,7 @@ const GetInvolved = () => {
       await submitApplication({
         name: formData.name,
         email: formData.email,
-        phone: formData.phone || undefined,
+        phone: normalizedPhone,
         organisation: formData.organisation || undefined,
         country: formData.country || undefined,
         subject: formData.subject || currentRole.subject,

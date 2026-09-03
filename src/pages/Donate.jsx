@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import Reveal from "../components/Reveal";
 import Counter from "../components/Counter";
 import { submitDonation } from "../lib/api";
+import { normalizePhone, phoneError } from "../lib/phone";
 
 // ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
@@ -23,24 +24,15 @@ const validateEmail = (email) => {
 };
 
 const validatePhone = (phone) => {
-  if (!phone) return { valid: false, message: "Phone number is required." };
-  const cleaned = phone.replace(/[^0-9]/g, '');
-  if (cleaned.length === 9) {
-    return { valid: true, normalized: '0' + cleaned };
-  }
-  if (cleaned.length === 10 && cleaned.startsWith('0')) {
-    return { valid: true, normalized: cleaned };
-  }
-  if (cleaned.length === 12 && cleaned.startsWith('254')) {
-    return { valid: true, normalized: cleaned };
-  }
-  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
+  const normalized = normalizePhone(phone);
+  return normalized
+    ? { valid: true, normalized }
+    : { valid: false, message: phoneError(phone) };
 };
 
 // Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
-  const digits = value.replace(/[^0-9]/g, '');
-  return digits.slice(0, 12);
+  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
 };
 
 const DonationPage = () => {
@@ -122,14 +114,7 @@ const DonationPage = () => {
     // Normalize phone for submission: remove leading 0, add 254 if needed
     let normalizedPhone = phoneNumber;
     if (donationMethod === "mpesa") {
-      const cleaned = phoneNumber.replace(/[^0-9]/g, '');
-      if (cleaned.startsWith('0')) {
-        normalizedPhone = '254' + cleaned.slice(1);
-      } else if (cleaned.length === 9) {
-        normalizedPhone = '254' + cleaned;
-      } else if (cleaned.startsWith('254')) {
-        normalizedPhone = cleaned;
-      }
+      normalizedPhone = validatePhone(phoneNumber).normalized;
     }
 
     const { ok, source, record } = await submitDonation({
