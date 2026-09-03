@@ -4,7 +4,7 @@
    here in the browser so the full flow still works end-to-end.
    ============================================================ */
 
-const STORAGE_KEY = 'anika_db_v1';
+const STORAGE_KEY = 'anika_db_v2';
 
 function uid() {
   return `rec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -22,105 +22,8 @@ function seed() {
         type: 'alliance',
         org: 'Lake Arts Collective',
         note: 'Interested in cross-border residencies.',
-        consent: true,
-        status: 'PENDING',
-        createdAt: new Date(now - 86400000 * 2).toISOString(),
-      },
-    ],
-    donations: [
-      {
-        id: uid(),
-        name: 'Mariam K.',
-        phone: '+254 733 555 777',
-        amount: 5000,
-        currency: 'KES',
-        isRecurring: true,
-        method: 'M-Pesa',
-        consent: true,
-        createdAt: new Date(now - 86400000 * 4).toISOString(),
-      },
-      {
-        id: uid(),
-        name: 'Priya S.',
-        phone: '+44 7700 900123',
-        amount: 50,
-        currency: 'USD',
-        isRecurring: false,
-        method: 'Card',
-        consent: true,
-        createdAt: new Date(now - 3600000 * 20).toISOString(),
-      },
-    ],
-    inquiries: [
-      {
-        id: uid(),
-        name: 'Sarah Ochieng',
-        phone: '+254 722 222 333',
-        action: 'register',
-        note: 'Tell me when the next youth lab opens.',
-        consent: true,
-        createdAt: new Date(now - 3600000 * 2).toISOString(),
-      },
-    ],
-    events: [],
-    whatsAppInbox: [
-      {
-        id: uid(),
-        name: 'Alex Kwame',
-        phone: '+254 711 000 111',
-        intent: 'escalation',
-        unread: 2,
-        time: '08:12',
-        preview: 'HELP - I registered for the forum but haven’t received a confirmation yet.',
-        resolved: false,
-        optedOut: false,
-        messages: [
-          { from: 'them', text: 'HELP - I registered for the Sema-Anika forum but haven’t received a confirmation yet.', time: '08:10' },
-          { from: 'me', text: 'Hi Alex, sorry about that let me check your registration now.', time: '08:30' },
-          { from: 'them', text: 'Thanks! I used +233 711 000 111.', time: '09:02' },
-        ],
-        createdAt: new Date(now - 3600000 * 3).toISOString(),
-      },
-      {
-        id: uid(),
-        name: 'Sarah Ochieng',
-        phone: '+254 722 222 333',
-        intent: 'faq',
-        unread: 1,
-        time: '09:41',
-        preview: 'What events are coming up for artists this month?',
-        resolved: false,
-        optedOut: false,
-        messages: [
-          { from: 'them', text: 'What events are coming up for artists this month?', time: '09:40' },
-        ],
-        createdAt: new Date(now - 3600000 * 2).toISOString(),
-      },
-      {
-        id: uid(),
-        name: 'David Mensah',
-        phone: '+233 24 555 666',
-        intent: 'alliance',
-        unread: 1,
-        time: 'Yesterday',
-        preview: 'How do I apply for Alliance membership from Ghana?',
-        resolved: false,
-        optedOut: false,
-        messages: [
-          { from: 'them', text: 'How do I apply for Alliance membership from Ghana?', time: 'Yesterday 18:30' },
-          { from: 'me', text: 'Hi David! You can apply via the Alliance page or by sending your details here.', time: 'Yesterday 19:05' },
-          { from: 'them', text: 'Great, I will fill the form and send it across.', time: 'Yesterday 19:20' },
-        ],
-        createdAt: new Date(now - 86400000).toISOString(),
-      },
-      {
-        id: uid(),
-        name: 'Amina Yusuf',
-        phone: '+255 744 333 444',
-        intent: 'donation',
-        unread: 0,
-        time: 'Yesterday',
-        preview: 'Can I make a one-time donation via M-Pesa?',
+        whatsAppInbox: [],
+        whatsAppBroadcasts: [],
         resolved: true,
         optedOut: false,
         messages: [

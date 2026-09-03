@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Reveal from './Reveal';
-import { fetchEvents, submitRegistration } from '../lib/api';
-import { normalizePhone, sanitizePhoneInput } from '../lib/phone';
+import { fetchPublicEvents, submitRegistration } from '../lib/api';
+import { composePhone, COUNTRY_CODES, sanitizeLocalPhoneInput } from '../lib/phone';
 import { 
   Calendar as CalendarIcon, 
   Clock as ClockIcon, 
@@ -11,86 +11,6 @@ import {
   ChevronDown as ChevronDownIcon,
   ChevronUp as ChevronUpIcon
 } from 'lucide-react';
-
-const FEATURED_EVENT = {
-  id: 'evt-featured',
-  pillar: 'PERFORMANCE',
-  title: 'Sema-Anika Festival 2026: Voices of East Africa',
-  image: '/SEMA%20ANIKA%20POSTER.jpg',
-  dateStr: '15-18 May 2026',
-  timeStr: '10:00 AM - 8:00 PM EAT',
-  location: 'Kenya Cultural Centre, Nairobi',
-  seats: '500+ seats',
-  description: 'Our flagship annual gathering brings together 150+ regional artists, spoken-word poets, environmentalists and human-rights activists for four days of public theatre, street installations and legislative poetry art.',
-  quote: 'When art opens the room, policy learns to listen.'
-};
-
-const OTHER_EVENTS = [
-  {
-    id: 'evt-1',
-    pillar: 'PERFORMANCE',
-    pillarColor: '#EB4C47',
-    badgeBg: 'bg-coral',
-    dateNum: '06',
-    dateMonth: 'SEP',
-    title: 'Open Mic',
-    image: '/slim.jpg',
-    location: 'Nairobi',
-    dateStr: 'Saturday, 06 Sept 2026',
-    timeStr: '18:00 EAT',
-    seats: '80 seats',
-    description: 'Monthly open-mic where artists air the unsaid: poetry, rap, spoken word. The only rule is to air it out.',
-    quote: 'Art brings into the open what is hidden, unheard, difficult to express, or too easily ignored.'
-  },
-  {
-    id: 'evt-2',
-    pillar: 'DIALOGUE',
-    pillarColor: '#2D9CDB',
-    badgeBg: 'bg-[#219653]',
-    dateNum: '20',
-    dateMonth: 'SEP',
-    title: 'Community Dialogue Forum',
-    image: '/listener.jpg',
-    location: 'Nairobi',
-    dateStr: 'Sunday, 20 Sept 2026',
-    timeStr: '14:00 EAT',
-    seats: '120 seats',
-    description: "A guided conversation where lived experience meets policy, with art opening the room to what's hard to say.",
-    quote: 'Every story aired is a step toward a world where no voice is left unheard.'
-  },
-  {
-    id: 'evt-3',
-    pillar: 'WORKSHOP',
-    pillarColor: '#F2994A',
-    badgeBg: 'bg-[#E2A03F]',
-    dateNum: '05',
-    dateMonth: 'OCT',
-    title: 'Art Therapy Workshop Series',
-    image: '/image6.jpg',
-    location: 'Nairobi',
-    dateStr: 'Monday, 05 Oct 2026',
-    timeStr: '10:00 EAT',
-    seats: '30 seats',
-    description: 'Hands-on sessions using creative practice for healing, expression and wellbeing.',
-    quote: 'The stage is a mirror. Poetry is what we do when we refuse to look away.'
-  },
-  {
-    id: 'evt-4',
-    pillar: 'PERFORMANCE',
-    pillarColor: '#EB4C47',
-    badgeBg: 'bg-coral',
-    dateNum: '26',
-    dateMonth: 'NOV',
-    title: 'Heritage Arts Festival',
-    image: '/KWAJ.jpg',
-    location: 'Nairobi',
-    dateStr: 'Thursday, 26 Nov 2026',
-    timeStr: '11:00 EAT',
-    seats: '300 seats',
-    description: 'A celebration of African heritage through performance, visual art and cultural exchange.',
-    quote: 'When she speaks, the whole room leans in. That is healing.'
-  }
-];
 
 const PILLAR_STYLE = {
   PERFORMANCE: { color: '#EB4C47', badge: 'bg-coral' },
@@ -126,14 +46,12 @@ export default function EventsList() {
   const [formStates, setFormStates] = useState({});
   const [loading, setLoading] = useState({});
   const [successMsg, setSuccessMsg] = useState({});
-  const [events, setEvents] = useState(OTHER_EVENTS);
+  const [events, setEvents] = useState([]);
 
-  // Load events from the backend when available; fall back to the static list.
+  // Events are managed from the admin dashboard.
   useEffect(() => {
-    fetchEvents().then(({ rows }) => {
-      if (rows && rows.length) {
-        setEvents(rows.map(mapApiEvent));
-      }
+    fetchPublicEvents().then(({ rows }) => {
+      setEvents(Array.isArray(rows) ? rows.map(mapApiEvent) : []);
     });
   }, []);
 
@@ -164,14 +82,11 @@ export default function EventsList() {
 
   const handleRegister = async (e, eventId) => {
     e.preventDefault();
-    const currentForm = formStates[eventId] || { fullName: '', whatsappNumber: '', optIn: true };
-    const eventTitle =
-      eventId === FEATURED_EVENT.id
-        ? FEATURED_EVENT.title
-        : (events.find(ev => ev.id === eventId)?.title || 'ANIKA Event');
-    const normalizedPhone = normalizePhone(currentForm.whatsappNumber);
-    if (!normalizedPhone) {
-      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Enter a valid international phone number, including the country code.' }));
+    const currentForm = formStates[eventId] || { fullName: '', countryCode: '254', localNumber: '', optIn: true };
+    const eventTitle = events.find(ev => ev.id === eventId)?.title || 'ANIKA Event';
+    const phone = composePhone(currentForm.countryCode, currentForm.localNumber);
+    if (currentForm.localNumber.length !== 9) {
+      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Enter a country code and 9-digit WhatsApp number.' }));
       return;
     }
 
@@ -179,13 +94,13 @@ export default function EventsList() {
     try {
       await submitRegistration({
         name: currentForm.fullName,
-        phone: normalizedPhone,
+        phone,
         eventTitle,
         consent: currentForm.optIn,
         source: 'web',
       });
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Confirmed! Registration details sent via WhatsApp.' }));
-      setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', whatsappNumber: '', optIn: true } }));
+      setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', countryCode: '254', localNumber: '', optIn: true } }));
     } catch {
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Could not confirm right now. Please try again.' }));
     } finally {
@@ -221,63 +136,7 @@ export default function EventsList() {
       {/* 2. MAIN CONTAINER */}
       <main className="mx-auto max-w-6xl space-y-12 px-6 py-12">
 
-        {/* 2A. UPCOMING FEATURED EVENT */}
-        <Reveal>
-        <section>
-          <span className="text-xs font-bold text-coral uppercase tracking-wider block mb-3">
-            UPCOMING EVENT
-          </span>
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md grid grid-cols-1 md:grid-cols-12">
-            
-            {/* Poster Image */}
-            <div className="relative h-80 overflow-hidden bg-black md:col-span-5 md:h-104">
-              <img 
-                src={FEATURED_EVENT.image} 
-                alt={FEATURED_EVENT.title} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Details & Action */}
-            <div className="flex flex-col justify-between space-y-5 p-6 md:col-span-7 md:p-10">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 leading-snug">
-                  {FEATURED_EVENT.title}
-                </h2>
-                <p className="text-xs font-semibold text-coral mt-1">
-                  {FEATURED_EVENT.dateStr}
-                </p>
-                <p className="text-xs font-semibold text-[#219653] mt-0.5">
-                  {FEATURED_EVENT.location}
-                </p>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
-                  {FEATURED_EVENT.description}
-                </p>
-              </div>
-
-              <div>
-                <button
-                  onClick={() => toggleForm(FEATURED_EVENT.id)}
-                  className="bg-coral hover:bg-[#d43f3a] text-white font-bold text-xs uppercase px-6 py-3 rounded tracking-wider transition-colors inline-flex items-center gap-2"
-                >
-                  {openFormId === FEATURED_EVENT.id ? 'CLOSE FORM' : 'REGISTER FOR FESTIVAL'}
-                  {openFormId === FEATURED_EVENT.id ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Inline Form Drawer for Featured Event */}
-          {openFormId === FEATURED_EVENT.id && (
-            <div className="-mt-1 rounded-b-lg border-x border-b border-gray-200 bg-white p-6 shadow-md md:p-8">
-              {renderRegistrationForm(FEATURED_EVENT.id, formStates, handleInputChange, handleRegister, loading, successMsg)}
-            </div>
-          )}
-        </section>
-        </Reveal>
-
-
-        {/* 2B. OTHER EVENTS SECTION */}
+        {/* EVENTS SECTION */}
         <Reveal>
         <section className="space-y-6">
           <span className="text-xs font-bold text-coral uppercase tracking-wider block">
@@ -312,6 +171,11 @@ export default function EventsList() {
 
           {/* Event List */}
           <div className="space-y-4">
+            {filteredEvents.length === 0 && (
+              <p className="border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+                No upcoming events have been published yet.
+              </p>
+            )}
             {filteredEvents.map((evt) => (
               <div key={evt.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
                 
@@ -386,7 +250,7 @@ export default function EventsList() {
 
 // Helper function rendering the form inside drawers
 function renderRegistrationForm(eventId, formStates, handleInputChange, handleRegister, loading, successMsg) {
-  const currentForm = formStates[eventId] || { fullName: '', whatsappNumber: '', optIn: true };
+  const currentForm = formStates[eventId] || { fullName: '', countryCode: '254', localNumber: '', optIn: true };
 
   if (successMsg[eventId]) {
     return (
@@ -418,14 +282,27 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
 
         <div>
           <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">WhatsApp Number *</label>
-          <input
-            type="tel"
-            required
-            placeholder="+254 712 345 678"
-            value={currentForm.whatsappNumber}
-            onChange={(e) => handleInputChange(eventId, 'whatsappNumber', sanitizePhoneInput(e.target.value))}
-            className="w-full rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
-          />
+          <div className="flex gap-2">
+            <select
+              value={currentForm.countryCode}
+              onChange={(e) => handleInputChange(eventId, 'countryCode', e.target.value)}
+              className="w-28 rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
+              aria-label="Country code"
+            >
+              {COUNTRY_CODES.map(({ code, country }) => <option key={code} value={code}>+{code} {country}</option>)}
+            </select>
+            <input
+              type="tel"
+              required
+              inputMode="numeric"
+              maxLength={9}
+              placeholder="712 345 678"
+              value={currentForm.localNumber}
+              onChange={(e) => handleInputChange(eventId, 'localNumber', sanitizeLocalPhoneInput(e.target.value))}
+              className="min-w-0 flex-1 rounded border border-gray-300 bg-white p-3 text-sm focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20"
+            />
+          </div>
+          <p className="mt-1 text-[10px] text-gray-500">Enter 9 digits after the country code.</p>
         </div>
       </div>
 
