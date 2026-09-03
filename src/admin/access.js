@@ -27,6 +27,7 @@ export const DEFAULT_PAGE_ACCESS = {
   team: [LEADERSHIP],
   settings: [LEADERSHIP],
   roles: [LEADERSHIP],
+  newsletter: [LEADERSHIP, COMMS],  
 }
 
 const OVERRIDE_KEY = 'anika_role_access_overrides_v1'

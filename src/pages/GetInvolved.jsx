@@ -8,7 +8,7 @@ import {
   Send,
   Mic,
   Mail,
-  MessageCircle,
+  MessageCircle,   // kept might be used elsewhere 
   CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -125,7 +125,7 @@ const GetInvolved = () => {
     subject: "artist",
     message: "",
   });
-  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  // const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [selectedRole, setSelectedRole] = useState("artist");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -179,6 +179,96 @@ const GetInvolved = () => {
       return;
     }
 
+    // NEWSLETTER SUBSCRIPTION PATH 
+    if (isNewsletter) {
+      const loadingToast = toast.loading("Subscribing you...");
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/subscribe`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: formData.email,
+              name: formData.name,
+            }),
+          }
+        );
+        const data = await response.json();
+
+        toast.dismiss(loadingToast);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Subscription failed.");
+        }
+
+        // Check for duplicate / already subscribed messages
+        const msg = data.message || "";
+        if (
+          msg === "You're already subscribed to our newsletter!" ||
+          msg === "You're already an approved subscriber!" ||
+          msg === "You already have a pending application. We'll notify you once it's reviewed."
+        ) {
+          let title = "Already Subscribed!";
+          let description = "You're already on our newsletter list.";
+          if (msg.includes("pending application")) {
+            title = "Pending Approval";
+            description = "You already have a pending application. We'll notify you once it's reviewed.";
+          } else if (msg.includes("approved")) {
+            title = "Already Approved!";
+            description = "You're already an approved subscriber. You'll receive our newsletters.";
+          }
+          toast.info(
+            <div>
+              <p className="font-semibold text-sm">{title}</p>
+              <p className="mt-1 text-base text-gray-600">{description}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Check your email for our latest updates.
+              </p>
+            </div>,
+            {
+              duration: 5000,
+              icon: <Mail className="w-4 h-4 text-blue-500" />,
+            }
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Successful new subscription
+        toast.success(
+          <div>
+            <p className="font-semibold text-sm">Howdy! You're subscribed!</p>
+            <p className="mt-1 text-base text-gray-600">
+              Thanks for subscribing to updates from ANIKA.
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              You'll hear from us with stories, events and campaign updates.
+            </p>
+          </div>,
+          {
+            duration: 6000,
+            icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+          }
+        );
+
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          organisation: "",
+          country: "",
+          subject: currentRole.subject,
+          message: "",
+        });
+        setIsSubmitting(false);
+        return;
+      } catch (err) {
+        toast.dismiss(loadingToast);
+        toast.error(err.message || "Something went wrong. Please try again.");
+        setIsSubmitting(false);
+        return;
     // Validating phone number if it aint newsletter
     let normalizedPhone = formData.phone || undefined;
     if (!isNewsletter) {
@@ -195,9 +285,20 @@ const GetInvolved = () => {
       }
     }
 
-    const loadingToast = toast.loading(
-      isNewsletter ? "Subscribing you..." : "Sending your message...",
-    );
+    // REGULAR APPLICATION PATH (volunteer, artist, partner)
+    // Validating phone number
+    const phone = formData.phone;
+    const result = validatePhone(phone);
+    if (!result.valid) {
+      toast.error(result.message);
+      setIsSubmitting(false);
+      return;
+    }
+    if (result.normalized) {
+      setFormData((previous) => ({ ...previous, phone: result.normalized }));
+    }
+
+    const loadingToast = toast.loading("Sending your message...");
 
     try {
       await submitApplication({
@@ -208,7 +309,7 @@ const GetInvolved = () => {
         country: formData.country || undefined,
         subject: formData.subject || currentRole.subject,
         message: formData.message || undefined,
-        whatsapp_opt_in: whatsappOptIn,
+        // whatsapp_opt_in: whatsappOptIn,
       });
 
       toast.dismiss(loadingToast);
@@ -217,28 +318,18 @@ const GetInvolved = () => {
 
       toast.success(
         <div>
-          <p className="font-semibold text-sm">
-            {isNewsletter ? "Howdy! You're subscribed " : "Howdy! Message Sent "}
-          </p>
+          <p className="font-semibold text-sm">Howdy! Message Sent</p>
           <p className="mt-1 text-base text-gray-600">
-            {isNewsletter ? (
-              <>Thanks for subscribing to updates from ANIKA.</>
-            ) : (
-              <>
-                Thanks for reaching out as a <strong>{roleLabel}</strong>.
-              </>
-            )}
+            Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {isNewsletter
-              ? "You'll hear from us with stories, events and campaign updates."
-              : "We will get back to you within 48 hours. Check your inbox for a confirmation email."}
+            We will get back to you within 48 hours. Check your inbox for a confirmation email.
           </p>
         </div>,
         {
           duration: 6000,
           icon: <CheckCircle className="w-4 h-4 text-green-500" />,
-        },
+        }
       );
 
       setFormData({
@@ -250,7 +341,7 @@ const GetInvolved = () => {
         subject: currentRole.subject,
         message: "",
       });
-      setWhatsappOptIn(false);
+      // setWhatsappOptIn(false);
     } catch (err) {
       toast.dismiss(loadingToast);
       toast.error(err.message || "Something went wrong. Please try again.");
@@ -261,7 +352,6 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-cream text-[#1E1A18] font-body">
-      {/* Hero Section – text revealed individually */}
       <section className="relative overflow-hidden bg-charcoal text-cream py-16 md:py-12">
         <img
           src="/anika-flower.png"
@@ -285,7 +375,6 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      {/* Ways to get involved cards – revealed with delay and toned-down background */}
       <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {waysToGetInvolved.map((way, index) => {
@@ -314,7 +403,6 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      {/* Form Section – text elements revealed individually */}
       <section className="px-4 py-16 bg-cream" id="get-involved-form">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-10">
@@ -522,6 +610,7 @@ const GetInvolved = () => {
                 )}
               </div>
 
+              {/* 
               <label
                 htmlFor="whatsappOptIn"
                 className="mt-6 flex items-start gap-3 rounded-lg border border-gray-200 bg-white/70 p-4 cursor-pointer"
@@ -542,6 +631,8 @@ const GetInvolved = () => {
                   </span>
                 </span>
               </label>
+              */}
+              
 
               <button
                 type="submit"

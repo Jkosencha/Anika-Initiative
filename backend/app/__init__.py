@@ -89,6 +89,8 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
+    
+    # Import all models
     from app.models.annual_report import AnnualReport
     from app.models.application import Application
     from app.models.contact import Contact
@@ -103,6 +105,8 @@ def create_app(config_class=Config):
     from app.models.whatsapp_broadcast import WhatsAppBroadcast
     from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_settings import WhatsAppSettings
+    from app.models.newsletter import NewsletterSubscriber   
+
     from app.routes import (
         applications_bp,
         auth_bp,
@@ -119,7 +123,9 @@ def create_app(config_class=Config):
         stories_bp,
         whatsapp_bp,
     )
+    from app.routes.newsletter import newsletter_bp          
 
+    # Register blueprints
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
     app.register_blueprint(applications_bp)
@@ -134,6 +140,7 @@ def create_app(config_class=Config):
     app.register_blueprint(team_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(newsletter_bp)                    
 
     with app.app_context():
         db.create_all()

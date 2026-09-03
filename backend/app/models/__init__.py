@@ -12,6 +12,7 @@ from .user import User
 from .whatsapp_broadcast import WhatsAppBroadcast
 from .whatsapp_conversation import WhatsAppConversation
 from .whatsapp_settings import WhatsAppSettings
+from app.models.newsletter import NewsletterSubscriber
 
 __all__ = [
     "AnnualReport",
@@ -27,4 +28,5 @@ __all__ = [
     "WhatsAppBroadcast",
     "WhatsAppConversation",
     "WhatsAppSettings",
+    "NewsletterSubscriber"
 ]
