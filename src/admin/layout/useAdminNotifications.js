@@ -33,7 +33,7 @@ function persistReadSet(set) {
 }
 
 function getTimestamp(row) {
-  const raw = row?.created_at ?? row?.createdAt ?? row?.created ?? row?.date ?? null
+  const raw = row?.updated_at ?? row?.updatedAt ?? row?.created_at ?? row?.createdAt ?? row?.created ?? row?.date ?? null
   const t = raw ? new Date(raw).getTime() : NaN
   return Number.isNaN(t) ? 0 : t
 }
@@ -124,6 +124,14 @@ async function loadOnce() {
         to: '/admin/donations',
         ts: getTimestamp(d),
       })),
+      ...inbox
+        .filter((c) => (c.unread || 0) > 0)
+        .map((c) => ({
+          id: `whatsapp-${c.id}`,
+          text: `${c.unread} unread WhatsApp ${c.unread === 1 ? 'message' : 'messages'} from ${c.name || 'a contact'}`,
+          to: '/admin/whatsapp/inbox',
+          ts: getTimestamp(c),
+        })),
     ]
       .filter((n) => n.ts > 0)
       .sort((a, b) => b.ts - a.ts)

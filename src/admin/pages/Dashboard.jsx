@@ -40,13 +40,14 @@ function buildRecentActivity(registrations, donations, stories) {
   const items = []
 
   registrations.forEach((r) => {
-    if (!r.createdAt) return
+    const createdAt = r.created_at ?? r.createdAt
+    if (!createdAt) return
     items.push({
       id: `reg-${r.id}`,
       text: `New registration for "${r.eventTitle ?? 'an event'}"`,
       to: '/admin/registrations',
       type: 'registration',
-      ts: r.createdAt,
+      ts: createdAt,
     })
   })
 
@@ -172,7 +173,10 @@ function Dashboard() {
         setStories(storiesRows)
         const now = Date.now()
         setNewRegistrationsThisWeek(
-          registrationsRes.rows.filter((r) => r.createdAt && now - new Date(r.createdAt).getTime() < WEEK_MS).length
+          registrationsRes.rows.filter((r) => {
+            const createdAt = r.created_at ?? r.createdAt
+            return createdAt && now - new Date(createdAt).getTime() < WEEK_MS
+          }).length
         )
         setLoading(false)
       }
