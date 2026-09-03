@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity
 
 from ..extensions import db
+from ..models.export_log import ExportLog
 from ..models.annual_report import AnnualReport
 from ..models.report_schedule import ReportSchedule
 from ..utils.decorators import require_permission, require_role
@@ -52,7 +53,7 @@ def _validate_schedule_payload(data):
     return None
 
 
-# --- Schedules -------------------------------------------------------------
+# SCHEDULES
 
 @reports_bp.get("/schedules")
 @require_permission("reports")
@@ -128,8 +129,19 @@ def delete_schedule(schedule_id):
     db.session.commit()
     return jsonify({"deleted": True, "id": schedule_id}), 200
 
+# EXPORT HISTORY
 
-# --- Annual report -----------------------------------------------------------
+@reports_bp.get("/exports")
+@require_permission("reports")
+def list_exports():
+    """History of scheduled reports that actually fired and were emailed.
+    Empty until the dispatch job exists and runs for the first time --
+    that's expected, not a bug: nothing's fired yet, so nothing's here yet."""
+    exports = ExportLog.query.order_by(ExportLog.generated_at.desc()).limit(50).all()
+    return jsonify([e.to_dict() for e in exports]), 200
+
+
+# ANNUAL REPORT
 
 @reports_bp.get("/annual")
 def get_annual_report_public():
