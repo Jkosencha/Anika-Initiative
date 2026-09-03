@@ -2,7 +2,34 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models.registration import Registration, REGISTRATION_STATUSES
+from app.models.event import Event
 from app.models.whatsapp_conversation import WhatsAppConversation
+
+
+def find_event_by_title(title):
+    """Find an event by its title (case-insensitive)."""
+    if not title:
+        return None
+    return Event.query.filter(
+        db.func.lower(Event.title) == title.strip().lower()
+    ).first()
+
+
+def sync_event_seats(event, delta):
+    """Bump an event's registered count and flip status between Live/Full.
+
+    Registered count never goes below 0. If the event hits capacity it is
+    marked Full (unless already Ended); freeing a seat returns it to Live.
+    """
+    if not event:
+        return
+    event.registered = max(0, (event.registered or 0) + delta)
+    if event.status == "Ended":
+        return
+    if event.capacity and event.registered >= event.capacity:
+        event.status = "Full"
+    elif event.status == "Full" and event.registered < (event.capacity or 0):
+        event.status = "Live"
 
 registrations_bp = Blueprint("registrations", __name__, url_prefix="/api/registrations")
 
@@ -54,6 +81,9 @@ def create_registration():
     )
     db.session.add(registration)
 
+    # Keep the linked event's seat count in sync with real registrations.
+    sync_event_seats(find_event_by_title(event_title), +1)
+
     # Open/update a WhatsApp thread for the registrant (assistant flow).
     conversation = WhatsAppConversation.query.filter_by(phone=phone).first()
     message = {
@@ -81,6 +111,17 @@ def create_registration():
     current_app.logger.info(
         "Registration created: id=%s event=%r", registration.id, event_title
     )
+
+    # Auto-send the WhatsApp confirmation (Anika Assistant outbound flow).
+    try:
+        from app.services import anika_assistant
+
+        anika_assistant.send_registration_confirmation(registration)
+    except Exception:
+        current_app.logger.exception(
+            "Failed to run registration confirmation for #%s", registration.id
+        )
+
     return jsonify(registration.to_dict()), 201
 
 
@@ -150,7 +191,14 @@ def update_registration(reg_id):
             return jsonify(
                 {"error": f"Invalid status. Must be one of {REGISTRATION_STATUSES}"}
             ), 400
+        old_status = reg.status
         reg.status = data["status"]
+        if old_status != reg.status:
+            event = find_event_by_title(reg.event_title)
+            if old_status == "Canceled" and reg.status != "Canceled":
+                sync_event_seats(event, +1)
+            elif reg.status == "Canceled" and old_status != "Canceled":
+                sync_event_seats(event, -1)
     for field in ("name", "phone", "email", "eventTitle", "consent", "source"):
         if field in data:
             setattr(reg, field, data[field])
@@ -178,6 +226,8 @@ def delete_registration(reg_id):
         description: Registration not found
     """
     reg = Registration.query.get_or_404(reg_id)
+    if reg.status != "Canceled":
+        sync_event_seats(find_event_by_title(reg.event_title), -1)
     db.session.delete(reg)
     db.session.commit()
     return jsonify({"message": "Registration deleted", "id": reg_id})

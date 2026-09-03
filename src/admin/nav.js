@@ -42,6 +42,7 @@ export const navSections = [
     items: [
       { label: 'Stories', to: '/admin/stories', icon: BookOpen, allowedRoles: PAGE_ACCESS.stories},
       { label: 'Gallery', to: '/admin/gallery', icon: Image, allowedRoles: PAGE_ACCESS.gallery },
+      { label: 'WhatsApp assistant', to: '/admin/whatsapp/assistant', icon: Bot, allowedRoles: PAGE_ACCESS.whatsappAssistant },
       { label: 'WhatsApp broadcast', to: '/admin/whatsapp/broadcast', icon: Megaphone, allowedRoles: PAGE_ACCESS.whatsappBroadcast },
       { label: 'WhatsApp inbox', to: '/admin/whatsapp/inbox', icon: Inbox, badge: 3, badgeAccent: true, allowedRoles: PAGE_ACCESS.whatsappInbox },
     ],

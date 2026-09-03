@@ -6,7 +6,6 @@ import {
   Clock as ClockIcon, 
   MapPin as MapPinIcon, 
   Users as UsersIcon, 
-  ArrowRight as ArrowRightIcon, 
   CheckCircle2 as CheckIcon,
   ChevronDown as ChevronDownIcon,
   ChevronUp as ChevronUpIcon
@@ -101,14 +100,14 @@ const PILLAR_STYLE = {
 // Maps the backend /api/events public shape to the card shape used below.
 function mapApiEvent(ev) {
   const style = PILLAR_STYLE[ev.pillar] || PILLAR_STYLE.PERFORMANCE;
-  const dateMatch = /(\d{1,2})[\/\s-]?(\w{3})?/.exec(ev.dateStr || '');
+  const dateMatch = /(\d{1,2})[/\s-]?(\w{3})?/.exec(ev.dateStr || '');
   return {
     id: ev.id,
     pillar: ev.pillar,
     pillarColor: style.color,
     badgeBg: style.badge,
-    dateNum: dateMatch?.[1] || '—',
-    dateMonth: (dateMatch?.[2] || '').toUpperCase() || '—',
+    dateNum: dateMatch?.[1] || '-',
+    dateMonth: (dateMatch?.[2] || '').toUpperCase() || '-',
     title: ev.title,
     image: ev.image,
     location: ev.location,
@@ -189,7 +188,7 @@ export default function EventsList() {
   };
 
   return (
-    <div className="bg-[#FFF] min-h-screen text-gray-900 font-sans">
+    <div className="bg-[#ede8df] min-h-screen text-gray-900 font-sans">
       
       {/* 1. HERO SECTION */}
       <Reveal>
@@ -440,10 +439,9 @@ function renderRegistrationForm(eventId, formStates, handleInputChange, handleRe
       <button
         type="submit"
         disabled={loading[eventId]}
-        className="inline-flex items-center gap-2 rounded bg-[#EB4C47] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#d43f3a]"
+        className="inline-flex items-center rounded bg-[#EB4C47] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-[#d43f3a]"
       >
         {loading[eventId] ? 'CONFIRMING...' : 'CONFIRM SEAT'}
-        <ArrowRightIcon className="w-3.5 h-3.5" />
       </button>
     </form>
   );

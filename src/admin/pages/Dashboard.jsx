@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DollarSign, CalendarDays, UserPlus, Globe, MapPin, ChevronRight } from 'lucide-react'
+import { DollarSign, CalendarDays, UserPlus, Globe, MapPin, ChevronRight, Bot } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import TrendBarChart from '../components/charts/TrendBarChart'
 import DonutChart from '../components/charts/DonutChart'
 import EventCalendar from '../components/EventCalendar'
 import { useAdminColors, initials, avatarColor } from '../theme'
-import { fetchDonations, fetchRegistrations, fetchEvents, normalizeDonation } from '../../lib/api'
+import { fetchDonations, fetchRegistrations, fetchEvents, fetchWhatsAppStats, normalizeDonation } from '../../lib/api'
 
 const reach = [
   { country: 'Kenya', tag: 'HQ · Operational' },
@@ -93,6 +93,7 @@ function Dashboard() {
   const [donations, setDonations] = useState([])
   const [registrations, setRegistrations] = useState([])
   const [events, setEvents] = useState([])
+  const [waStats, setWaStats] = useState({ threads: 0, optedOut: 0, escalated: 0, unread: 0 })
   const [loading, setLoading] = useState(true)
   const [newRegistrationsThisWeek, setNewRegistrationsThisWeek] = useState(0)
 
@@ -101,16 +102,40 @@ function Dashboard() {
     donation: COLORS.orange,
     partnership: COLORS.green,
     story: COLORS.blue,
+    whatsapp: '#25D366',
   }
+
+  // WhatsApp items are injected at the top of the activity feed.
+  const liveActivity = useMemo(() => {
+    const items = [...recentActivity]
+    if (waStats.escalated > 0) {
+      items.unshift({
+        text: `${waStats.escalated} WhatsApp ${waStats.escalated === 1 ? 'conversation needs' : 'conversations need'} a human reply (HELP routed)`,
+        time: 'Routing from the assistant',
+        to: '/admin/whatsapp/inbox',
+        type: 'whatsapp',
+      })
+    }
+    if (waStats.unread > 0) {
+      items.unshift({
+        text: `${waStats.unread} unread WhatsApp ${waStats.unread === 1 ? 'message' : 'messages'} in the inbox`,
+        time: 'Answered by Anika Assistant',
+        to: '/admin/whatsapp/inbox',
+        type: 'whatsapp',
+      })
+    }
+    return items
+  }, [waStats])
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents()]).then(
-      ([donationsRes, registrationsRes, eventsRes]) => {
+    Promise.all([fetchDonations(), fetchRegistrations(), fetchEvents(), fetchWhatsAppStats()]).then(
+      ([donationsRes, registrationsRes, eventsRes, waRes]) => {
         if (cancelled) return
         setDonations(donationsRes.rows.map(normalizeDonation))
         setRegistrations(registrationsRes.rows)
         setEvents(eventsRes.rows)
+        setWaStats(waRes || { threads: 0, optedOut: 0, escalated: 0, unread: 0 })
         const now = Date.now()
         setNewRegistrationsThisWeek(
           registrationsRes.rows.filter((r) => r.createdAt && now - new Date(r.createdAt).getTime() < WEEK_MS).length
@@ -185,6 +210,25 @@ function Dashboard() {
         <StatCard label="ACTIVE COUNTRIES" value="5" sub="KE · UG · RW · GH · ZA" icon={Globe} bg={COLORS.blue} to="#where-we-reach" />
       </div>
 
+      <Link
+        to="/admin/whatsapp/assistant"
+        className="mb-5 flex items-center gap-4 rounded-xl border p-4 transition-transform hover:-translate-y-0.5 hover:shadow-md"
+        style={{ background: '#1c1a17', borderColor: '#1c1a17' }}
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: '#25D366' }}>
+          <Bot size={20} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-white">Anika Assistant</p>
+          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            {waStats.threads > 0
+              ? `${waStats.threads} conversations handled · ${waStats.unread} unread · ${waStats.escalated} escalations`
+              : 'Configure replies, test the bot live or reply from the inbox.'}
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
+      </Link>
+
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr]">
         <Card title="Donation trend" colors={COLORS} to="/admin/donations">
           <TrendBarChart data={donationTrend} colors={COLORS} />
@@ -245,7 +289,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         <Card title="Recent activity" colors={COLORS}>
           <ul>
-            {recentActivity.map((item) => (
+            {liveActivity.map((item) => (
               <li key={item.text} className="border-t first:border-t-0" style={{ borderColor: COLORS.border }}>
                 <Link
                   to={item.to}

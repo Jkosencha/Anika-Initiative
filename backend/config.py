@@ -42,6 +42,16 @@ class Config:
         for o in os.environ.get("CORS_ORIGINS", "http://localhost:5173").split(",")
         if o.strip()
     ]
+
+    # WhatsApp Business Cloud API (Meta). When TOKEN / PHONE_ID are empty the
+    # assistant still runs in simulated mode: inbound messages are processed
+    # and stored, but outbound sends are logged instead of hitting Graph API.
+    WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN", "")
+    WHATSAPP_PHONE_ID = os.environ.get("WHATSAPP_PHONE_ID", "")
+    WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
+    WHATSAPP_BASE_URL = os.environ.get(
+        "WHATSAPP_BASE_URL", "https://graph.facebook.com/v21.0"
+    )
      # Cloudinary (gallery image storage)
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
     CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
