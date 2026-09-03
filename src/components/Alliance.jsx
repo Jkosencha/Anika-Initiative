@@ -29,7 +29,7 @@ export default function Alliance({ onAirItOut }) {
               A collective voice for African arts
             </li>
           </ul>
-          <button type="button" onClick={onAirItOut} className="mt-8 rounded bg-[#EB4C47] px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a]">
+          <button type="button" onClick={onAirItOut} className="mt-8 rounded bg-coral px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a]">
             Apply for Membership
           </button>
         </div>
@@ -48,7 +48,7 @@ export default function Alliance({ onAirItOut }) {
           <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
             <input className="field" placeholder="Full name" aria-label="Full name" />
             <input className="field" placeholder="Country" aria-label="Country" />
-            <button type="submit" className="w-full rounded bg-[#EB4C47] px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a]">
+            <button type="submit" className="w-full rounded bg-coral px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a]">
               Request Membership Info
             </button>
           </form>

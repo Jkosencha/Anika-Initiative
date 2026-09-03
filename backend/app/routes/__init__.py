@@ -10,6 +10,7 @@ from .health import health_bp
 from .metrics import metrics_bp
 from .registrations import registrations_bp
 from .reports import reports_bp
+from .team import team_bp
 from .settings import settings_bp
 from .whatsapp import whatsapp_bp
 
@@ -26,5 +27,6 @@ __all__ = [
     "reports_bp",
     "settings_bp",
     "stories_bp",
+    "team_bp",
     "whatsapp_bp",
 ]

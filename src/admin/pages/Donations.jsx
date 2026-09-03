@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { apiRequest } from "../utils/api"; 
+import { normalizePhone, sanitizePhoneInput } from "../../lib/phone";
 
 const lightColors = {
   bg: "#fafaf8", border: "#e8e5df", text: "#1c1a17", muted: "#8c8579",
@@ -84,7 +85,9 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!donor.trim() || !amt || amt <= 0) return;
-    onAdd({ donor_name: donor.trim(), amount: amt, phone: phone.trim() || undefined, status });
+    const normalizedPhone = phone.trim() ? normalizePhone(phone) : undefined;
+    if (phone.trim() && !normalizedPhone) return;
+    onAdd({ donor_name: donor.trim(), amount: amt, phone: normalizedPhone, status });
   }
 
   return (
@@ -123,7 +126,7 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>Phone number</label>
             <input
-              value={phone} onChange={(e) => setPhone(e.target.value)}
+              value={phone} onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))}
               className="px-3 py-2 rounded-lg text-sm outline-none"
               style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               placeholder="0712345678"
@@ -319,7 +322,7 @@ export default function Donations() {
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-205"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
@@ -347,7 +350,7 @@ export default function Donations() {
           return (
             <div
               key={d.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-205"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",

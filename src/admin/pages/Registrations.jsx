@@ -8,6 +8,7 @@ import {
   deleteRegistration,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
+import { normalizePhone, sanitizePhoneInput } from "../../lib/phone";
 
 const STATUS_STYLE = {
   Confirmed: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -26,17 +27,6 @@ function avatarColor(name) {
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
-
-const SEED = [
-  { id: 1, name: "Jane Wanjiku", event: "Sema-Anika Community Dialogue Forum", phone: "+254 712 345 678", date: "Today 09:14", source: "Web", consent: true, status: "Confirmed" },
-  { id: 2, name: "Kofi Mensah", event: "Griphon x ANIKA: Poetry & Beat Night", phone: "+233 24 556 778", date: "Today 08:02", source: "WhatsApp", consent: true, status: "Confirmed" },
-  { id: 3, name: "Amina Hassan", event: "Her Story: Open Mic & Development Forum", phone: "+255 744 123 456", date: "Yesterday", source: "Web", consent: false, status: "Pending" },
-  { id: 4, name: "Brian Otieno", event: "Try My Shoe: Youth Storytelling Lab", phone: "+254 701 222 333", date: "Yesterday", source: "WhatsApp", consent: true, status: "Confirmed" },
-  { id: 5, name: "Sarah Ochieng", event: "Sema-Anika Community Dialogue Forum", phone: "+254 722 222 333", date: "2 days ago", source: "Web", consent: true, status: "Confirmed" },
-  { id: 6, name: "David Mensah", event: "Y-Talks: Citizens' Civic Art Forum", phone: "+233 24 555 666", date: "2 days ago", source: "WhatsApp", consent: true, status: "Waitlist" },
-  { id: 7, name: "Mariam Kiprop", event: "Gaining Grip: Healing Lab", phone: "+254 733 555 777", date: "3 days ago", source: "Web", consent: false, status: "Canceled" },
-  { id: 8, name: "Priya Shah", event: "Her Story: Open Mic & Development Forum", phone: "+44 7700 900123", date: "3 days ago", source: "Web", consent: true, status: "Pending" },
-];
 
 function toCSV(rows) {
   const header = ["Attendee", "Event", "Phone", "Date", "Source", "WhatsApp Opt-in", "Status"];
@@ -60,7 +50,7 @@ function downloadCSV(rows, filename) {
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
         <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
@@ -73,17 +63,18 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
 function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [event, setEvent] = useState((eventOptions && eventOptions[0]) || "Sema-Anika Community Dialogue Forum");
+  const [event, setEvent] = useState(eventOptions?.[0] || "");
   const [consent, setConsent] = useState(true);
 
   function submit(e) {
     e.preventDefault();
-    if (!name.trim()) return;
+    const normalizedPhone = normalizePhone(phone);
+    if (!name.trim() || !event || !normalizedPhone) return;
     onAdd({
       id: Date.now(),
       name: name.trim(),
       event,
-      phone: phone.trim() ? phone : "+254 7•• ••• 000",
+      phone: normalizedPhone,
       date: "Today " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       source: "Manual",
       consent,
@@ -106,12 +97,13 @@ function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>WhatsApp number</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+254 712 000 000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
+            <input value={phone} onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))} placeholder="+254 712 000 000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>Event</label>
-            <select value={event} onChange={(e) => setEvent(e.target.value)} className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text, appearance: "auto" }}>
-              {(eventOptions && eventOptions.length ? eventOptions : SEED.map((r) => r.event).filter((v, i, a) => a.indexOf(v) === i)).map((e) => <option key={e} value={e}>{e}</option>)}
+            <select required value={event} onChange={(e) => setEvent(e.target.value)} disabled={!eventOptions.length} className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text, appearance: "auto" }}>
+              {!eventOptions.length && <option value="">Create an event before adding a registration</option>}
+              {eventOptions.map((e) => <option key={e} value={e}>{e}</option>)}
             </select>
           </div>
           <label className="flex items-center gap-2 text-sm" style={{ color: colors.text }}>
@@ -131,7 +123,7 @@ function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
 export default function AdminRegistrations() {
   const COLORS = useAdminColors();
 
-  const [rows, setRows] = useState(SEED);
+  const [rows, setRows] = useState([]);
   const [tab, setTab] = useState("All");
   const [q, setQ] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -140,10 +132,9 @@ export default function AdminRegistrations() {
 
   useEffect(() => {
     fetchRegistrations().then(({ rows: stored }) => {
-      if (stored && stored.length) {
-        // Normalise store records (which use eventTitle) to the page's shape.
-        setRows(stored.map((r) => ({ ...r, event: r.event || r.eventTitle || "" })));
-      }
+      setRows(Array.isArray(stored)
+        ? stored.map((r) => ({ ...r, event: r.event || r.eventTitle || "" }))
+        : []);
     });
     fetchEvents().then(({ rows: evs }) => {
       if (evs && evs.length) setEventOptions(evs.map((e) => e.title).filter(Boolean));
@@ -248,7 +239,7 @@ export default function AdminRegistrations() {
       </div>
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
-        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[980px]" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-245" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
           <div>ATTENDEE</div><div>EVENT</div><div>PHONE</div><div>DATE</div><div>SOURCE</div><div>WHATSAPP</div><div>STATUS</div>
         </div>
         {filtered.length === 0 && (
@@ -257,7 +248,7 @@ export default function AdminRegistrations() {
         {filtered.map((r) => {
           const s = STATUS_STYLE[r.status] || STATUS_STYLE.Pending;
           return (
-            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[980px]" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
+            <div key={r.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-245" style={{ borderColor: COLORS.border, gridTemplateColumns: "1.6fr 2fr 1.2fr 1fr 0.8fr 0.9fr 1fr" }}>
               <div className="flex items-center gap-3">
                 <div style={{ background: avatarColor(r.name) }} className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">{initials(r.name)}</div>
                 <span className="font-semibold text-sm" style={{ color: COLORS.text }}>{r.name}</span>

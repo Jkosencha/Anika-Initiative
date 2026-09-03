@@ -1,9 +1,10 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
-from app.models.registration import Registration, REGISTRATION_STATUSES
 from app.models.event import Event
+from app.models.registration import REGISTRATION_STATUSES, Registration
 from app.models.whatsapp_conversation import WhatsAppConversation
+from app.utils.phone import normalize_phone
 
 
 def find_event_by_title(title):
@@ -69,6 +70,9 @@ def create_registration():
     event_title = (data.get("eventTitle") or data.get("event") or "").strip()
     if not name or not phone or not event_title:
         return jsonify({"error": "name, phone and eventTitle are required"}), 400
+    phone = normalize_phone(phone)
+    if not phone:
+      return jsonify({"error": "phone must be a valid international number including country code"}), 400
 
     registration = Registration(
         name=name,
@@ -186,6 +190,11 @@ def update_registration(reg_id):
     """
     reg = Registration.query.get_or_404(reg_id)
     data = request.get_json(silent=True) or {}
+    if "phone" in data:
+      data["phone"] = normalize_phone(data["phone"])
+      if not data["phone"]:
+        return jsonify({"error": "phone must be a valid international number including country code"}), 400
+
     if "status" in data:
         if data["status"] not in REGISTRATION_STATUSES:
             return jsonify(
@@ -199,9 +208,11 @@ def update_registration(reg_id):
                 sync_event_seats(event, +1)
             elif reg.status == "Canceled" and old_status != "Canceled":
                 sync_event_seats(event, -1)
-    for field in ("name", "phone", "email", "eventTitle", "consent", "source"):
+    for field in ("name", "phone", "email", "consent", "source"):
         if field in data:
             setattr(reg, field, data[field])
+    if "eventTitle" in data:
+      reg.event_title = data["eventTitle"]
     db.session.commit()
     return jsonify(reg.to_dict())
 

@@ -7,13 +7,13 @@ import {
   Gift,
   Users,
   Mic,
-  Globe,
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from "../components/Reveal";
 import Counter from "../components/Counter";
 import { submitDonation } from "../lib/api";
+import { normalizePhone, phoneError } from "../lib/phone";
 
 // ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
@@ -24,24 +24,15 @@ const validateEmail = (email) => {
 };
 
 const validatePhone = (phone) => {
-  if (!phone) return { valid: false, message: "Phone number is required." };
-  const cleaned = phone.replace(/[^0-9]/g, '');
-  if (cleaned.length === 9) {
-    return { valid: true, normalized: '0' + cleaned };
-  }
-  if (cleaned.length === 10 && cleaned.startsWith('0')) {
-    return { valid: true, normalized: cleaned };
-  }
-  if (cleaned.length === 12 && cleaned.startsWith('254')) {
-    return { valid: true, normalized: cleaned };
-  }
-  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or +254712345678)." };
+  const normalized = normalizePhone(phone);
+  return normalized
+    ? { valid: true, normalized }
+    : { valid: false, message: phoneError(phone) };
 };
 
 // Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
-  const digits = value.replace(/[^0-9]/g, '');
-  return digits.slice(0, 12);
+  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
 };
 
 const DonationPage = () => {
@@ -59,7 +50,7 @@ const DonationPage = () => {
 
   // Impact stats – removed icons, only numbers and labels remain
   const impactStats = [
-    { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-[#eb4c47]" },
+    { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-coral" },
     { label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
     { label: "AFRICAN COUNTRIES", value: 14, suffix: "", color: "text-[#e8a850]" },
     { label: "LIVES IMPACTED", value: 2500, suffix: "+", color: "text-[#3a7599]" },
@@ -123,14 +114,7 @@ const DonationPage = () => {
     // Normalize phone for submission: remove leading 0, add 254 if needed
     let normalizedPhone = phoneNumber;
     if (donationMethod === "mpesa") {
-      const cleaned = phoneNumber.replace(/[^0-9]/g, '');
-      if (cleaned.startsWith('0')) {
-        normalizedPhone = '254' + cleaned.slice(1);
-      } else if (cleaned.length === 9) {
-        normalizedPhone = '254' + cleaned;
-      } else if (cleaned.startsWith('254')) {
-        normalizedPhone = cleaned;
-      }
+      normalizedPhone = validatePhone(phoneNumber).normalized;
     }
 
     const { ok, source, record } = await submitDonation({
@@ -263,7 +247,7 @@ const DonationPage = () => {
               <Reveal delay={150}>
                 <div className="bg-[#faf5ef] p-6 rounded-2xl border border-[#e8e2d8]">
                   <div className="flex items-start gap-4">
-                    <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-[#E6A15E] p-2 rounded-full shrink-0">
                       <Gift className="w-5 h-5 text-white" />
                     </div>
                     <div>

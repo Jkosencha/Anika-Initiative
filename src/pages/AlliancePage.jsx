@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
 import { submitApplication } from '../lib/api'
+import { normalizePhone, sanitizePhoneInput } from '../lib/phone'
 
 const BENEFITS = [
   { title: 'Residencies', text: 'Priority access to cross-border artistic residencies.', accent: 'gold' },
@@ -31,7 +32,7 @@ export default function AlliancePage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.email.trim() || form.phone.trim().length < 9) {
+    if (!form.name.trim() || !form.email.trim() || !normalizePhone(form.phone)) {
       setStatus('error')
       return
     }
@@ -40,7 +41,7 @@ export default function AlliancePage() {
       await submitApplication({
         name: form.name,
         email: form.email || undefined,
-        phone: form.phone,
+        phone: normalizePhone(form.phone),
         organisation: form.org || undefined,
         country: form.country || undefined,
         subject: ROLE_SUBJECT[form.role] || 'partnership',
@@ -258,7 +259,7 @@ export default function AlliancePage() {
                   className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
                   placeholder="+254 712 345 678"
                   value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  onChange={(e) => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })}
                 />
               </div>
 
@@ -283,7 +284,7 @@ export default function AlliancePage() {
               <button
                 type="submit"
                 disabled={status === 'submitting'}
-                className="w-full rounded bg-[#EB4C47] px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a] disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full rounded bg-coral px-5 py-3 font-body text-sm font-bold uppercase tracking-[0.15em] text-white transition-colors hover:bg-[#d43f3a] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {status === 'submitting' ? 'Submitting...' : 'Request Membership'}
               </button>

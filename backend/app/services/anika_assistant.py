@@ -16,10 +16,10 @@ from flask import current_app
 from app.extensions import db
 from app.models.whatsapp_conversation import WhatsAppConversation
 from app.models.whatsapp_settings import (
-    WhatsAppSettings,
     DEFAULT_ANSWERS,
     DEFAULT_FLOWS,
     DEFAULT_GREETING,
+    WhatsAppSettings,
 )
 from app.services import whatsapp_cloud
 
@@ -69,9 +69,11 @@ def resolve_reply(text, settings):
 
     if flows.get("optOut", True) and _mentions(_STOP_WORDS, stripped):
         return (
-            "You have been unsubscribed from ANIKA updates. "
-            "You will not receive any more messages from us. "
-            "Reply any time to opt back in.",
+            (
+                "You have been unsubscribed from ANIKA updates. "
+                "You will not receive any more messages from us. "
+                "Reply any time to opt back in."
+            ),
             {"opt_out": True, "escalate": False, "intent": "general"},
         )
 

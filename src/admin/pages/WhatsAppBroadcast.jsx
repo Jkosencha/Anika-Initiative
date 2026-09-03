@@ -22,7 +22,7 @@ const SEED_HISTORY = [
 
 function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   return (
-    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-[120px]">
+    <div style={{ background: bg }} className="rounded-xl p-5 flex flex-col justify-between min-h-30">
       <div style={{ color: textColor, opacity: 0.85 }} className="text-xs font-bold tracking-wide">{label}</div>
       <div>
         <div style={{ color: textColor }} className="text-3xl font-extrabold leading-tight">{value}</div>
@@ -207,13 +207,13 @@ export default function WhatsAppBroadcast() {
       </div>
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
-        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[760px]" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
+        <div className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-190" style={{ color: COLORS.muted, borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
           <div>CAMPAIGN</div><div>AUDIENCE</div><div>RECIPIENTS</div><div>STATUS / DATE</div>
         </div>
         {history.map((h) => {
           const s = STATUS_STYLE[h.status] || STATUS_STYLE.Sent;
           return (
-            <div key={h.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[760px]" style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
+            <div key={h.id} className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-190" style={{ borderColor: COLORS.border, gridTemplateColumns: "2fr 1.2fr 0.9fr 1fr" }}>
               <div>
                 <div className="font-semibold text-sm" style={{ color: COLORS.text }}>{h.title}</div>
                 <div className="text-xs mt-0.5" style={{ color: COLORS.muted }}>{h.channel} • {h.date}</div>
