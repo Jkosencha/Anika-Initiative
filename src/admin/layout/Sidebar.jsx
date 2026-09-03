@@ -1,9 +1,20 @@
 import { NavLink } from 'react-router-dom'
-import { X } from 'lucide-react'
 import { navSections } from '../nav'
 import { useAuth } from '../auth/AuthContext'
 import { getInitials } from '../utils/getInitials'
 import { useAdminNotifications } from './useAdminNotifications'
+import {
+  Sidebar as SidebarPrimitive,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar'
 
 const ROLE_LABELS = {
   leadership: 'Leadership',
@@ -12,9 +23,13 @@ const ROLE_LABELS = {
   mel: 'M&E',
 }
 
-function Sidebar({ open, onClose, onOpenAccount }) {
-  const {user, logout} = useAuth()
+function Sidebar({ onOpenAccount }) {
+  const { user, logout } = useAuth()
   const { badges } = useAdminNotifications()
+  const { isMobile, setOpenMobile } = useSidebar()
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false)
+  }
 
   const visibleSections = navSections
     .map((section) => ({
@@ -24,58 +39,35 @@ function Sidebar({ open, onClose, onOpenAccount }) {
     .filter((section) => section.items.length > 0)
 
   return (
-    <>
-      {open && (
-        <button
-          aria-label="Close sidebar"
-          onClick={onClose}
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
-        />
-      )}
-
-      <style>{`
-        .admin-nav { scrollbar-width: none; -ms-overflow-style: none; }
-        .admin-nav::-webkit-scrollbar { display: none; }
-      `}</style>
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-charcoal text-cream
-          transition-transform duration-200 lg:static lg:translate-x-0
-          ${open ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <div className="relative flex items-center justify-center px-5 pt-5">
-          <img src="/anika-logo.png" alt="Anika Initiative" className="h-32 w-auto object-contain" />
-          <button
-            onClick={onClose}
-            className="absolute right-5 top-5 text-cream/70 hover:text-cream lg:hidden"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <p className="px-6 pb-4 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-cream/40">
+    <SidebarPrimitive className="border-sidebar-border">
+      <SidebarHeader className="items-center gap-0 pt-5">
+        <img src="/anika-logo.png" alt="Anika Initiative" className="h-32 w-auto object-contain" />
+        <p className="px-6 pb-3 pt-1 text-center text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/40">
           Admin Desk
         </p>
+      </SidebarHeader>
 
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
-          {visibleSections.map((section) => (
-            <div key={section.label}>
-              <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-cream/40">
-                {section.label}
-              </p>
-              <ul className="space-y-1">
+      <SidebarContent className="gap-6 px-3 pb-6">
+        {visibleSections.map((section) => (
+          <SidebarGroup key={section.label} className="p-0">
+            <SidebarGroupLabel className="px-3 text-sidebar-foreground/40">
+              {section.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 {section.items.map(({ label, to, icon: Icon, end, badgeKey, badgeAccent }) => {
                   const badge = badgeKey ? badges[badgeKey] : null
                   return (
-                    <li key={to}>
+                    <SidebarMenuItem key={to}>
                       <NavLink
                         to={to}
                         end={end}
-                        onClick={onClose}
+                        onClick={closeOnMobile}
                         className={({ isActive }) =>
                           `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                             isActive
                               ? 'bg-white text-coral'
-                              : 'text-cream/70 hover:bg-white/5 hover:text-cream'
+                              : 'text-sidebar-foreground/70 hover:bg-white/5 hover:text-sidebar-foreground'
                           }`
                         }
                       >
@@ -84,43 +76,45 @@ function Sidebar({ open, onClose, onOpenAccount }) {
                         {badge != null && badge > 0 && (
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              badgeAccent ? 'bg-coral text-white' : 'bg-white/10 text-cream/70'
+                              badgeAccent ? 'bg-coral text-white' : 'bg-white/10 text-sidebar-foreground/70'
                             }`}
                           >
                             {badge}
                           </span>
                         )}
                       </NavLink>
-                    </li>
+                    </SidebarMenuItem>
                   )
                 })}
-              </ul>
-            </div>
-          ))}
-        </nav>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
 
-        <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
-          <button
-            onClick={onOpenAccount}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left hover:bg-white/5"
-            aria-label="My account"
-          >
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
-            ) : (
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
-                {getInitials(user?.name)}
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-cream">{user?.name}</p>
-              <p className="truncate text-xs text-cream/50">{ROLE_LABELS[user?.role] ?? user?.role}</p>
+      <SidebarFooter className="flex-row items-center gap-3 border-t border-sidebar-border px-4 py-4">
+        <button
+          onClick={onOpenAccount}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-1 text-left hover:bg-white/5"
+          aria-label="My account"
+        >
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coral text-sm font-semibold text-white">
+              {getInitials(user?.name)}
             </div>
-          </button>
-          <button onClick={logout} className="shrink-0 text-xs font-medium text-cream/50 hover:text-cream">Exit</button>
-        </div>
-      </aside>
-    </>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-sidebar-foreground">{user?.name}</p>
+            <p className="truncate text-xs text-sidebar-foreground/50">{ROLE_LABELS[user?.role] ?? user?.role}</p>
+          </div>
+        </button>
+        <button onClick={logout} className="shrink-0 text-xs font-medium text-sidebar-foreground/50 hover:text-sidebar-foreground">
+          Exit
+        </button>
+      </SidebarFooter>
+    </SidebarPrimitive>
   )
 }
 

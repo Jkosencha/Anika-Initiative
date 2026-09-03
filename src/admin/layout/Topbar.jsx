@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Menu, Moon, Sun, Bell, Check, Trash2 } from 'lucide-react'
 import { useAdminNotifications } from './useAdminNotifications'
 import { useAuth } from '../auth/AuthContext'
+import { useSidebar } from '@/components/ui/sidebar'
 
 function greeting() {
   const hour = new Date().getHours()
@@ -19,14 +20,15 @@ function today() {
   })
 }
 
-function Topbar({ onMenuClick, theme, onToggleTheme }) {
+function Topbar({ theme, onToggleTheme }) {
   const { user } = useAuth()
+  const { toggleSidebar } = useSidebar()
   const [notifOpen, setNotifOpen] = useState(false)
   const { notifications, unreadCount, markRead, markAllRead, clearAll } = useAdminNotifications()
 
   return (
     <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink/10 bg-cream/70 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-charcoal/70">
-      <button onClick={onMenuClick} className="text-ink/70 hover:text-ink dark:text-cream/70 dark:hover:text-cream lg:hidden">
+      <button onClick={toggleSidebar} aria-label="Toggle sidebar" className="text-ink/70 hover:text-ink dark:text-cream/70 dark:hover:text-cream md:hidden">
         <Menu size={22} />
       </button>
 
