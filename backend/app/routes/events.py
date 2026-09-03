@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
-from app.models.event import Event, EVENT_STATUSES
+from app.models.event import EVENT_STATUSES, Event
 
 events_bp = Blueprint("events", __name__, url_prefix="/api/events")
 

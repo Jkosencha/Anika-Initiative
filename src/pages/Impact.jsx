@@ -1,4 +1,3 @@
-import React from 'react'
 import ImpactHeader from '../components/impact/ImpactHeader'
 import ImpactStats from '../components/impact/ImpactStats'
 import { caseStudies, impactStats } from '../data/impact'

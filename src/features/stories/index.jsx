@@ -4,7 +4,6 @@ import PillarFilter from "./components/PillarFilter.jsx";
 import StoryGrid from "./components/StoryGrid.jsx";
 import { useSearchParams } from "react-router-dom";
 import { storiesStore } from "../../data/storiesStore";
-import Reveal from "./components/Reveal.jsx";
 
 export default function Stories() {
   const [searchParams] = useSearchParams();

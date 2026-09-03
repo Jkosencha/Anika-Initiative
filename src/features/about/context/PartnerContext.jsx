@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 // Default partners that match both admin and website
 const DEFAULT_PARTNERS = [
@@ -17,7 +17,7 @@ export function PartnerProvider({ children }) {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         return DEFAULT_PARTNERS;
       }
     }

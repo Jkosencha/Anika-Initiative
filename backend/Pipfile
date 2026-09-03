@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 flask-sqlalchemy = "*"
 flask-cors = "*"
+flask-jwt-extended = "*"
 python-dotenv = "*"
 cloudinary = "*"
 flasgger = "*"

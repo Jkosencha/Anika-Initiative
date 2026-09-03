@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { programs } from '../data/programs'
 import { methodologies, methodologyQuote } from '../data/methodologies'
 import ProgramsHeader from '../components/programs/ProgramsHeader'

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { X, Trash2, Pencil, Check, Upload } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
@@ -104,7 +104,7 @@ function DeleteConfirmModal({ item, onClose, onConfirm, colors }) {
   );
 }
 
-function Tile({ item, onEdit, onDelete, onCaptionChange, onOpen, colors, onDeleteClick }) {
+function Tile({ item, onCaptionChange, onOpen, colors, onDeleteClick }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(item.caption);
 
@@ -245,10 +245,6 @@ export default function Gallery() {
   const fileInputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
-  useEffect(() => {
-    fetchImages();
-  }, []);
-
   const fetchImages = async () => {
     try {
       const data = await apiRequest('/api/gallery');
@@ -261,6 +257,10 @@ export default function Gallery() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
 
   const uploadFile = async (file, caption = '') => {
     if (!file || !(file instanceof File)) {

@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { X, Search, Trash2, Pencil, Eye } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { X, Search, Trash2, Eye } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { apiRequest } from "../utils/api"; 
 
@@ -56,13 +56,14 @@ const TYPE_STYLE = {
   Other: { bg: "#e8e8e8", text: "#666666" },
 };
 
-const MANUAL_SOURCES = [
-  "Website form",
-  "M-Pesa",
-  "Referral",
-  "Email",
-  "Phone call",
-];
+const TAB_TO_TYPE = {
+  Artists: "Artist",
+  Youth: "Youth",
+  Donors: "Donor",
+  Partners: "Partner",
+  Volunteers: "Volunteer",
+  Newsletter: "Newsletter",
+};
 
 function initials(name) {
   return name
@@ -377,14 +378,6 @@ export default function Contacts() {
   const [viewTarget, setViewTarget] = useState(null);
 
   const tabs = ["All", "Artists", "Youth", "Donors", "Partners", "Volunteers", "Newsletter"];
-  const tabToType = {
-    Artists: "Artist",
-    Youth: "Youth",
-    Donors: "Donor",
-    Partners: "Partner",
-    Volunteers: "Volunteer",
-    Newsletter: "Newsletter",
-  };
 
   const fetchContacts = async () => {
     setLoading(true);
@@ -433,7 +426,7 @@ export default function Contacts() {
 
   const filtered = useMemo(() => {
     let rows = contacts;
-    if (tab !== "All") rows = rows.filter((c) => c.type === tabToType[tab]);
+    if (tab !== "All") rows = rows.filter((c) => c.type === TAB_TO_TYPE[tab]);
     if (query.trim()) {
       const q = query.toLowerCase();
       rows = rows.filter(
@@ -544,7 +537,7 @@ export default function Contacts() {
           className="rounded-xl overflow-hidden overflow-x-auto"
         >
           <div
-            className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[920px]"
+            className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-230"
             style={{
               color: COLORS.muted,
               borderColor: COLORS.border,
@@ -573,7 +566,7 @@ export default function Contacts() {
           {filtered.map((c) => (
             <div
               key={c.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[920px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-230"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns:

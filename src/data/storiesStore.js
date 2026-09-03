@@ -75,7 +75,7 @@ async function request(path, options = {}) {
       } else if (body?.errors) {
         message = JSON.stringify(body.errors);
       }
-    } catch (_) {
+    } catch {
       // Keep the default HTTP error message if the response is not JSON.
     }
 
@@ -96,8 +96,6 @@ const fileToBase64 = (file) =>
     reader.readAsDataURL(file);
   });
 
-const isBase64Image = (str) => !!str && str.startsWith("data:image/");
-
 const getImageUrl = (thumbnail) => {
   if (!thumbnail) return "/placeholder-image.jpg";
   return thumbnail;
@@ -117,7 +115,7 @@ export const storiesStore = {
   getBySlug: async (slug) => {
     try {
       return await request(`/stories/${encodeURIComponent(slug)}`);
-    } catch (error) {
+    } catch {
       return null;
     }
   },

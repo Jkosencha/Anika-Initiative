@@ -7,7 +7,6 @@ import {
   Gift,
   Users,
   Mic,
-  Globe,
   CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -59,7 +58,7 @@ const DonationPage = () => {
 
   // Impact stats – removed icons, only numbers and labels remain
   const impactStats = [
-    { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-[#eb4c47]" },
+    { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-coral" },
     { label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
     { label: "AFRICAN COUNTRIES", value: 14, suffix: "", color: "text-[#e8a850]" },
     { label: "LIVES IMPACTED", value: 2500, suffix: "+", color: "text-[#3a7599]" },
@@ -263,7 +262,7 @@ const DonationPage = () => {
               <Reveal delay={150}>
                 <div className="bg-[#faf5ef] p-6 rounded-2xl border border-[#e8e2d8]">
                   <div className="flex items-start gap-4">
-                    <div className="bg-[#E6A15E] p-2 rounded-full flex-shrink-0">
+                    <div className="bg-[#E6A15E] p-2 rounded-full shrink-0">
                       <Gift className="w-5 h-5 text-white" />
                     </div>
                     <div>

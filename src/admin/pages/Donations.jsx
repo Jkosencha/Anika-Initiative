@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
@@ -319,7 +319,7 @@ export default function Donations() {
 
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }} className="rounded-xl overflow-hidden overflow-x-auto">
         <div
-          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-[820px]"
+          className="grid text-xs font-bold tracking-wide px-5 py-3 border-b min-w-205"
           style={{
             color: COLORS.muted,
             borderColor: COLORS.border,
@@ -347,7 +347,7 @@ export default function Donations() {
           return (
             <div
               key={d.id}
-              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-[820px]"
+              className="grid items-center px-5 py-4 border-b last:border-b-0 min-w-205"
               style={{
                 borderColor: COLORS.border,
                 gridTemplateColumns: "1.4fr 1fr 1.8fr 1.3fr 1.5fr 1fr",

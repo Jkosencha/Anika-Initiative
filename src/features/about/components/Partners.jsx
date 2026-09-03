@@ -86,6 +86,9 @@ export default function Partners() {
     () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
   )
   const [isPaused, setIsPaused] = useState(false)
+  const pages = chunk(partners || [], CARDS_PER_PAGE_DESKTOP)
+  const [index, setIndex] = useState(0)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     const mql = window.matchMedia(MOBILE_QUERY)
@@ -93,15 +96,6 @@ export default function Partners() {
     mql.addEventListener('change', handleChange)
     return () => mql.removeEventListener('change', handleChange)
   }, [])
-
-  // If no partners, don't render the section
-  if (!partners || partners.length === 0) {
-    return null
-  }
-
-  const pages = chunk(partners, CARDS_PER_PAGE_DESKTOP)
-  const [index, setIndex] = useState(0)
-  const timerRef = useRef(null)
 
   const goTo = (i) => setIndex((i + pages.length) % pages.length)
   const next = () => goTo(index + 1)
@@ -113,6 +107,11 @@ export default function Partners() {
     return () => clearInterval(timerRef.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, isPaused, pages.length, isMobile])
+
+  // If no partners, don't render the section
+  if (!partners || partners.length === 0) {
+    return null
+  }
 
   // Mobile: every partner shown at once in a continuous, looping marquee.
   const marqueeItems = [...partners, ...partners]
