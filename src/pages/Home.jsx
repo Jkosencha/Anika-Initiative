@@ -7,6 +7,7 @@ import { whatsappUrl } from '../lib/whatsapp'
 import { fetchEvents } from '../lib/api'
 import { storiesStore } from '../data/storiesStore'
 import { PILLARS } from '../data/pillars'
+import { parseEventDate } from '../lib/eventDate'
 
 // Same storage key + defaults as the admin "Impact metrics" editor
 // (src/admin/pages/Impact.jsx) — these stats are admin-edited there,
@@ -67,7 +68,7 @@ function Home() {
         const now = new Date()
         const upcoming = (rows || [])
           .filter((e) => e.status === 'Live' || e.status === 'Full')
-          .map((e) => ({ ...e, _date: new Date(e.date) }))
+          .map((e) => ({ ...e, _date: parseEventDate(e.date) }))
           .filter((e) => !Number.isNaN(e._date.getTime()) && e._date >= now)
           .sort((a, b) => a._date - b._date)
           .slice(0, 3)

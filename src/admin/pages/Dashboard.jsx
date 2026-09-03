@@ -9,6 +9,7 @@ import { useAdminColors, initials, avatarColor } from '../theme'
 import { fetchDonations, fetchRegistrations, fetchEvents, fetchWhatsAppStats, normalizeDonation } from '../../lib/api'
 import { storiesStore } from '../../data/storiesStore'
 import { buildActivityFeed } from '../utils/activityFeed'
+import { parseEventDate } from '../../lib/eventDate'
 
 const reach = [
   { country: 'Kenya', tag: 'HQ · Operational' },
@@ -144,7 +145,7 @@ function Dashboard() {
   const upcomingEvents = useMemo(() => {
     const now = new Date()
     return events
-      .map((e) => ({ ...e, _date: new Date(e.date) }))
+      .map((e) => ({ ...e, _date: parseEventDate(e.date) }))
       .filter((e) => !Number.isNaN(e._date.getTime()) && e._date >= now)
       .sort((a, b) => a._date - b._date)
       .slice(0, 4)
