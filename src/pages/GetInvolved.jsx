@@ -14,9 +14,8 @@ import {
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
 import { submitApplication } from '../lib/api';
-import { normalizePhone, phoneError } from '../lib/phone';
 
-// validation for email and phone helpers
+// ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email) return { valid: false, message: "Email is required." };
@@ -24,14 +23,40 @@ const validateEmail = (email) => {
   return { valid: true };
 };
 
+// Phone validation: digits only, max 12, accepts 0712345678 or 254712345678
 const validatePhone = (phone) => {
-  const normalized = normalizePhone(phone);
-  return normalized ? { valid: true, normalized } : { valid: false, message: phoneError(phone) };
+  if (!phone) return { valid: false, message: "Phone number is required." };
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return { valid: true, normalized: '0' + cleaned };
+  }
+  if (cleaned.length === 10 && cleaned.startsWith('0')) {
+    return { valid: true, normalized: cleaned };
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('254')) {
+    return { valid: true, normalized: cleaned };
+  }
+  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or 254712345678)." };
 };
 
-// stripping phone number
+// Format phone to international +254... for the backend
+const formatPhoneForBackend = (phone) => {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) {
+    return '+254' + digits.slice(1);
+  }
+  if (digits.startsWith('254')) {
+    return '+' + digits;
+  }
+  // if it's 9 digits (without leading 0) we already added 0 in validate, so this won't happen
+  return phone; // fallback
+};
+
+// Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
-  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
+  const digits = value.replace(/[^0-9]/g, '');
+  return digits.slice(0, 12);
 };
 
 const roles = [
@@ -273,7 +298,6 @@ const GetInvolved = () => {
     }
 
     // --- REGULAR APPLICATION PATH (volunteer, artist, partner) ---
-    // Phone validation using the new normalizePhone
     let normalizedPhone = formData.phone || undefined;
     if (formData.phone) {
       const result = validatePhone(formData.phone);
@@ -282,7 +306,7 @@ const GetInvolved = () => {
         setIsSubmitting(false);
         return;
       }
-      normalizedPhone = result.normalized;
+      normalizedPhone = formatPhoneForBackend(result.normalized);
       setFormData((previous) => ({ ...previous, phone: result.normalized }));
     }
 
@@ -502,13 +526,13 @@ const GetInvolved = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="0712345678 or +254712345678"
+                        placeholder="0712345678 or 254712345678"
                         maxLength="12"
                         required
                         className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        Format: 0712345678 or +254712345678 (max 12 digits)
+                        Enter digits only (max 12)
                       </p>
                     </div>
 

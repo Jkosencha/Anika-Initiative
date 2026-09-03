@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import Reveal from "../components/Reveal";
 import Counter from "../components/Counter";
 import { submitDonation } from "../lib/api";
-import { normalizePhone, phoneError } from "../lib/phone";
 
 // ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
@@ -23,16 +22,39 @@ const validateEmail = (email) => {
   return { valid: true };
 };
 
+// Phone validation: digits only, max 12, accepts 0712345678 or 254712345678
 const validatePhone = (phone) => {
-  const normalized = normalizePhone(phone);
-  return normalized
-    ? { valid: true, normalized }
-    : { valid: false, message: phoneError(phone) };
+  if (!phone) return { valid: false, message: "Phone number is required." };
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return { valid: true, normalized: '0' + cleaned };
+  }
+  if (cleaned.length === 10 && cleaned.startsWith('0')) {
+    return { valid: true, normalized: cleaned };
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('254')) {
+    return { valid: true, normalized: cleaned };
+  }
+  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or 254712345678)." };
+};
+
+// Format phone to international +254... for the backend
+const formatPhoneForBackend = (phone) => {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) {
+    return '+254' + digits.slice(1);
+  }
+  if (digits.startsWith('254')) {
+    return '+' + digits;
+  }
+  return phone;
 };
 
 // Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
-  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
+  const digits = value.replace(/[^0-9]/g, '');
+  return digits.slice(0, 12);
 };
 
 const DonationPage = () => {
@@ -41,14 +63,13 @@ const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState(500);
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [sendWhatsApp, setSendWhatsApp] = useState(false);
+  // WhatsApp checkbox removed
   const [donationMethod, setDonationMethod] = useState("mpesa");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const presetAmountsKES = [100, 500, 1000, 5000];
   const presetMethodsUSD = [5, 10, 25, 50];
 
-  // Impact stats – removed icons, only numbers and labels remain
   const impactStats = [
     { label: "ARTISTS SUPPORTED", value: 150, suffix: "+", color: "text-coral" },
     { label: "EVENTS HELD", value: 100, suffix: "+", color: "text-[#389a51]" },
@@ -80,7 +101,6 @@ const DonationPage = () => {
       return;
     }
 
-    // validating email if provided
     if (email) {
       const emailResult = validateEmail(email);
       if (!emailResult.valid) {
@@ -89,7 +109,6 @@ const DonationPage = () => {
       }
     }
 
-    // validating phone only for M-Pesa
     if (donationMethod === "mpesa") {
       const phone = phoneNumber;
       const result = validatePhone(phone);
@@ -111,10 +130,13 @@ const DonationPage = () => {
 
     const currency = donationMethod === "mpesa" ? "KES" : "USD";
 
-    // Normalize phone for submission: remove leading 0, add 254 if needed
-    let normalizedPhone = phoneNumber;
-    if (donationMethod === "mpesa") {
-      normalizedPhone = validatePhone(phoneNumber).normalized;
+    // Format phone to international format for the backend
+    let phoneToSend = undefined;
+    if (donationMethod === "mpesa" && phoneNumber) {
+      const result = validatePhone(phoneNumber);
+      if (result.valid) {
+        phoneToSend = formatPhoneForBackend(result.normalized);
+      }
     }
 
     const { ok, source, record } = await submitDonation({
@@ -123,8 +145,8 @@ const DonationPage = () => {
       amount: donationAmount,
       method: donationMethod,
       currency: currency,
-      phone: donationMethod === "mpesa" ? normalizedPhone : undefined,
-      send_whatsapp_receipt: sendWhatsApp,
+      phone: phoneToSend,
+      // send_whatsapp_receipt omitted (checkbox removed)
     });
 
     toast.dismiss(loadingToastId);
@@ -361,16 +383,9 @@ const DonationPage = () => {
                     />
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
-                    Format: 0712345678 or 712345678 (max 12 digits)
+                    Enter digits only (max 12)
                   </p>
-                  <label className="flex items-center gap-2 mt-3 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={sendWhatsApp}
-                      onChange={(e) => setSendWhatsApp(e.target.checked)}
-                    />
-                    Send my receipt on WhatsApp too
-                  </label>
+                  {/* WhatsApp checkbox removed */}
                 </div>
               )}
 
