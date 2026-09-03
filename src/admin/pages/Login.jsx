@@ -91,11 +91,13 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+
+          {/* TODO: Forgot password logic flow  */}
+          {/* <div className="flex justify-end">
             <Link to="/admin/forgot-password" className="font-body text-sm text-anika-blue hover:underline">
               Forgot password?
             </Link>
-          </div>
+          </div> */}
 
           {error && <p className="font-body text-sm text-coral">{error}</p>}
 
