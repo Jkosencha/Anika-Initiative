@@ -1,34 +1,32 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   fetchRegistrations,
   fetchApplications,
   fetchDonations,
   fetchWhatsAppInbox,
+  fetchWhatsAppBroadcasts,
   normalizeDonation,
 } from '../../lib/api'
 
-// Adjust this import path if this file doesn't end up next to Sidebar.jsx /
-// Topbar.jsx (it mirrors Sidebar's existing '../../lib/api' import).
-
 const READ_KEY = 'anika_admin_notifications_read'
+const DISMISSED_KEY = 'anika_admin_notifications_dismissed'
 const POLL_MS = 45000
 const MAX_NOTIFICATIONS = 20
 
-function readReadSet() {
+function readSetFromStorage(key) {
   try {
-    const raw = localStorage.getItem(READ_KEY)
+    const raw = localStorage.getItem(key)
     return new Set(raw ? JSON.parse(raw) : [])
   } catch {
     return new Set()
   }
 }
-
-function persistReadSet(set) {
+function persistSet(key, set) {
   try {
-    // Cap so this never grows unbounded over a long admin session.
-    localStorage.setItem(READ_KEY, JSON.stringify([...set].slice(-500)))
+    localStorage.setItem(key, JSON.stringify([...set].slice(-500)))
   } catch {
-    // ignore quota errors — read state just won't survive a refresh
+    // quota errors — read/dismissed state just won't survive a refresh
   }
 }
 
@@ -57,27 +55,42 @@ function donationText(row) {
   const method = d.method === 'mpesa' ? 'M-Pesa' : d.method.charAt(0).toUpperCase() + d.method.slice(1)
   return `${method} donation of ${d.currency} ${d.amount.toLocaleString()} received`
 }
-
-// NOTE: registration/application record shapes weren't available to check,
-// so these two assume `eventTitle`/`title` and `applicantName`/`name`.
-// Swap in the real field names if they differ.
+// NOTE: eventTitle confirmed real (Registrations.jsx uses it).
+// applicantName/name for applications is still a guess — adjust if wrong.
 function registrationText(r) {
   return `New registration for "${r.eventTitle ?? r.title ?? r.event ?? 'an event'}"`
 }
 function applicationText(a) {
   return `New application from ${a.applicantName ?? a.name ?? 'a new applicant'}`
 }
+// NOTE: uses inbox thread createdAt as a stand-in for last-message time —
+// no separate "last message at" field is available from the API.
+function whatsappMessageText(c) {
+  return `New WhatsApp message from ${c.name ?? c.phone ?? 'a contact'}`
+}
+function broadcastText(b) {
+  return `Broadcast sent: "${b.title}" to ${b.recipients ?? 0} recipients`
+}
 
-// --- Module-level shared store -------------------------------------------
-// Sidebar (badges) and Topbar (notification bell) both call this hook.
-// Without a shared store, each component instance would run its own fetch
-// + 45s interval — two timers hitting the API for the same data. This
-// keeps exactly one poll running regardless of how many components use it.
+function countUnread(prefix, items) {
+  return items.filter((n) => n.id.startsWith(prefix) && !n.read).length
+}
+function badgesFrom(items, whatsappInboxUnread) {
+  return {
+    registrations: countUnread('registration-', items),
+    applications: countUnread('application-', items),
+    donations: countUnread('donation-', items),
+    whatsappInboxUnread,
+  }
+}
+
+// --- Shared module-level store — one poll for Sidebar + Topbar ---
 let state = { badges: {}, notifications: [] }
 let listeners = new Set()
 let intervalId = null
 let started = false
-let readSet = readReadSet()
+let readSet = readSetFromStorage(READ_KEY)
+let dismissedSet = readSetFromStorage(DISMISSED_KEY)
 
 function notifyListeners() {
   listeners.forEach((l) => l(state))
@@ -85,27 +98,22 @@ function notifyListeners() {
 
 async function loadOnce() {
   try {
-    const [registrationsRes, applicationsRes, donationsRes, inboxRes] = await Promise.all([
+    const [registrationsRes, applicationsRes, donationsRes, inboxRes, broadcastsRes] = await Promise.all([
       fetchRegistrations(),
       fetchApplications(),
       fetchDonations(),
       fetchWhatsAppInbox(),
+      fetchWhatsAppBroadcasts(),
     ])
 
     const registrations = registrationsRes.rows || []
     const applications = applicationsRes.rows || []
     const donations = donationsRes.rows || []
     const inbox = inboxRes.rows || []
-    const unreadTotal = inbox.reduce((sum, c) => sum + (c.unread || 0), 0)
+    const broadcasts = broadcastsRes.rows || []
+    const unreadInboxTotal = inbox.reduce((sum, c) => sum + (c.unread || 0), 0)
 
-    const badges = {
-      registrations: registrations.length,
-      applications: applications.length,
-      donations: donations.length,
-      whatsappInboxUnread: unreadTotal,
-    }
-
-    const items = [
+    const fullItems = [
       ...registrations.map((r) => ({
         id: `registration-${r.id}`,
         text: registrationText(r),
@@ -124,16 +132,32 @@ async function loadOnce() {
         to: '/admin/donations',
         ts: getTimestamp(d),
       })),
+      ...inbox
+        .filter((c) => (c.unread || 0) > 0)
+        .map((c) => ({
+          id: `whatsapp-${c.id}`,
+          text: whatsappMessageText(c),
+          to: '/admin/whatsapp/inbox',
+          ts: getTimestamp(c),
+        })),
+      ...broadcasts.map((b) => ({
+        id: `broadcast-${b.id}`,
+        text: broadcastText(b),
+        to: '/admin/whatsapp/broadcast',
+        ts: getTimestamp(b),
+      })),
     ]
-      .filter((n) => n.ts > 0)
+      .filter((n) => n.ts > 0 && !dismissedSet.has(n.id))
       .sort((a, b) => b.ts - a.ts)
-      .slice(0, MAX_NOTIFICATIONS)
       .map((n) => ({ ...n, time: timeAgo(n.ts), read: readSet.has(n.id) }))
 
-    state = { badges, notifications: items }
+    state = {
+      badges: badgesFrom(fullItems, unreadInboxTotal),
+      notifications: fullItems.slice(0, MAX_NOTIFICATIONS),
+    }
     notifyListeners()
   } catch {
-    // Network hiccup — keep showing the last good state, try again next tick.
+    // network hiccup — keep last good state, retry next tick
   }
 }
 
@@ -152,34 +176,64 @@ function stopIfNoListeners() {
   }
 }
 
+// Visiting a section's page marks that section's notifications read —
+// e.g. landing on /admin/applications clears application items.
+function markReadForPath(pathname) {
+  const toMark = state.notifications.filter((n) => !n.read && pathname.startsWith(n.to))
+  if (toMark.length === 0) return
+  toMark.forEach((n) => readSet.add(n.id))
+  persistSet(READ_KEY, readSet)
+  const notifications = state.notifications.map((n) =>
+    pathname.startsWith(n.to) ? { ...n, read: true } : n
+  )
+  state = { badges: badgesFrom(notifications, state.badges.whatsappInboxUnread), notifications }
+  notifyListeners()
+}
+
 export function useAdminNotifications() {
   const [local, setLocal] = useState(state)
+  const location = useLocation()
 
   useEffect(() => {
     listeners.add(setLocal)
     ensureStarted()
-    setLocal(state) // pick up any data the store already has
+    setLocal(state)
     return () => {
       listeners.delete(setLocal)
       stopIfNoListeners()
     }
   }, [])
 
+  useEffect(() => {
+    markReadForPath(location.pathname)
+  }, [location.pathname])
+
   const markRead = useCallback((id) => {
     readSet.add(id)
-    persistReadSet(readSet)
-    state = { ...state, notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) }
+    persistSet(READ_KEY, readSet)
+    const notifications = state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+    state = { badges: badgesFrom(notifications, state.badges.whatsappInboxUnread), notifications }
     notifyListeners()
   }, [])
 
   const markAllRead = useCallback(() => {
     state.notifications.forEach((n) => readSet.add(n.id))
-    persistReadSet(readSet)
-    state = { ...state, notifications: state.notifications.map((n) => ({ ...n, read: true })) }
+    persistSet(READ_KEY, readSet)
+    const notifications = state.notifications.map((n) => ({ ...n, read: true }))
+    state = { badges: badgesFrom(notifications, state.badges.whatsappInboxUnread), notifications }
+    notifyListeners()
+  }, [])
+
+  // Removes notifications outright — won't reappear on next poll unless
+  // it's a genuinely new record.
+  const clearAll = useCallback(() => {
+    state.notifications.forEach((n) => dismissedSet.add(n.id))
+    persistSet(DISMISSED_KEY, dismissedSet)
+    state = { badges: badgesFrom([], state.badges.whatsappInboxUnread), notifications: [] }
     notifyListeners()
   }, [])
 
   const unreadCount = local.notifications.filter((n) => !n.read).length
 
-  return { badges: local.badges, notifications: local.notifications, unreadCount, markRead, markAllRead }
+  return { badges: local.badges, notifications: local.notifications, unreadCount, markRead, markAllRead, clearAll }
 }
