@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { parseEventDate } from '../../lib/eventDate'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -9,7 +10,8 @@ function sameDay(a, b) {
 
 function EventCalendar({ events, colors }) {
   const [cursor, setCursor] = useState(() => {
-    const first = events?.[0] ? new Date(events[0].date) : new Date()
+    const parsed = events?.[0] ? parseEventDate(events[0].date) : new Date()
+    const first = Number.isNaN(parsed.getTime()) ? new Date() : parsed
     return new Date(first.getFullYear(), first.getMonth(), 1)
   })
 
@@ -21,7 +23,8 @@ function EventCalendar({ events, colors }) {
 
   const eventsByDay = {}
   ;(events ?? []).forEach((e) => {
-    const d = new Date(e.date)
+    const d = parseEventDate(e.date)
+    if (Number.isNaN(d.getTime())) return
     if (d.getFullYear() === year && d.getMonth() === month) {
       ;(eventsByDay[d.getDate()] ??= []).push(e)
     }

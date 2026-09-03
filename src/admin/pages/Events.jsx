@@ -7,6 +7,7 @@ import {
   updateEvent as apiUpdateEvent,
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
+import { toISODateInput, fromISODateInput } from "../../lib/eventDate";
 
 const STATUS_STYLE = {
   Live: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -81,7 +82,7 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
   const [location, setLocation] = useState(initial?.location ?? "");
   const [capacity, setCapacity] = useState(initial?.capacity ?? "");
   const [pillar, setPillar] = useState(initial?.pillar ?? "Arts & Culture");
-  const [date, setDate] = useState(initial?.date ?? "");
+  const [date, setDate] = useState(toISODateInput(initial?.date ?? ""));
   const [time, setTime] = useState(initial?.time ?? "");
 
   function submit(e) {
@@ -90,7 +91,7 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
     onAdd({
       id: initial?.id ?? Date.now(),
       title: title.trim(),
-      date,
+      date: fromISODateInput(date),
       time,
       location: location.trim() || "Nairobi",
       pillar,
@@ -137,9 +138,10 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
                 Date
               </label>
               <input
+                type="date"
+                required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                placeholder="Sat, 12 Sep 2026"
                 className="px-3 py-2 rounded-lg text-sm outline-none"
                 style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               />
@@ -149,9 +151,9 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
                 Time
               </label>
               <input
+                type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                placeholder="14:00 EAT"
                 className="px-3 py-2 rounded-lg text-sm outline-none"
                 style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
               />
