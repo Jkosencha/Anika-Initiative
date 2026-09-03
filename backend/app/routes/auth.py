@@ -10,6 +10,7 @@ from flask_jwt_extended import (
     jwt_required,
 )
 
+from app.extensions import db
 from app.models.user import User
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
@@ -60,10 +61,59 @@ def login():
 def refresh():
     identity = get_jwt_identity()
     role = get_jwt().get("role")
- 
+
     new_access_token = create_access_token(
         identity=identity,
         additional_claims={"role": role},
         expires_delta=ACCESS_TOKEN_EXPIRY,
     )
     return jsonify({"access_token": new_access_token}), 200
+
+
+@auth_bp.route("/password", methods=["PATCH"])
+@jwt_required()
+def change_password():
+    """
+    Let the logged-in user change their own password.
+    ---
+    tags:
+      - Auth
+    summary: Change your own password
+    security:
+      - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [currentPassword, newPassword]
+          properties:
+            currentPassword: {type: string}
+            newPassword: {type: string, example: "at least 8 characters"}
+    responses:
+      200:
+        description: Password changed
+      400:
+        description: Validation error (missing fields, new password too short)
+      401:
+        description: Current password is wrong, or token missing/invalid
+    """
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("currentPassword") or ""
+    new_password = data.get("newPassword") or ""
+
+    if not current_password or not new_password:
+        return jsonify({"error": "currentPassword and newPassword are required"}), 400
+    if len(new_password) < 8:
+        return jsonify({"error": "New password must be at least 8 characters"}), 400
+
+    user = User.query.get_or_404(int(get_jwt_identity()))
+
+    if not user.check_password(current_password):
+        return jsonify({"error": "Current password is incorrect"}), 401
+
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({"message": "Password changed"}), 200
