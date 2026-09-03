@@ -63,39 +63,66 @@ def initialize_transaction(
     if metadata:
         payload["metadata"] = metadata
 
-    logger.info("Paystack initialize: ref=%s, amount=%s, curr=%s", reference, amount, currency)
-    resp = requests.post(
-        f"{base_url}/transaction/initialize", json=payload, headers=_headers(), timeout=15
+    # Log the full request details (mask email for privacy)
+    masked_email = email[:3] + "..." if len(email) > 3 else email
+    logger.info(
+        "Paystack initialize: ref=%s, amount=%s %s, currency=%s, channels=%s, email=%s",
+        reference, amount, currency, currency, channels, masked_email
     )
-    body = resp.json() if resp.content else {}
-    if not resp.ok or not body.get("status"):
-        logger.error("Paystack initialize failed: status=%s, msg=%s", resp.status_code, body.get("message"))
-        raise PaystackError(
-            body.get("message", "Failed to initialize Paystack transaction"),
-            status_code=resp.status_code or 502,
-            payload=body,
+    
+    # Log the raw payload (excluding email for privacy)
+    safe_payload = {**payload}
+    if "email" in safe_payload:
+        safe_payload["email"] = masked_email
+    logger.debug(f"Paystack payload: {safe_payload}")
+
+    try:
+        resp = requests.post(
+            f"{base_url}/transaction/initialize", json=payload, headers=_headers(), timeout=15
         )
-    logger.info("Paystack initialize success for ref=%s", reference)
-    return body["data"]
+        # Log the response status and first 200 chars of body for debugging
+        logger.info("Paystack response status: %s, body snippet: %s", resp.status_code, resp.text[:200])
+        
+        body = resp.json() if resp.content else {}
+        if not resp.ok or not body.get("status"):
+            logger.error(
+                "Paystack initialize failed: status_code=%s, message=%s, body=%s",
+                resp.status_code, body.get("message"), body
+            )
+            raise PaystackError(
+                body.get("message", "Failed to initialize Paystack transaction"),
+                status_code=resp.status_code or 502,
+                payload=body,
+            )
+        logger.info("Paystack initialize success for ref=%s, auth_url=%s", reference, body["data"].get("authorization_url"))
+        return body["data"]
+    except requests.exceptions.RequestException as e:
+        logger.error("Paystack request failed (network error): %s", e)
+        raise PaystackError(str(e), status_code=502)
 
 
 def verify_transaction(reference: str):
     """Verify a Paystack transaction."""
     base_url = current_app.config["PAYSTACK_BASE_URL"]
     logger.info("Paystack verify: ref=%s", reference)
-    resp = requests.get(
-        f"{base_url}/transaction/verify/{reference}", headers=_headers(), timeout=15
-    )
-    body = resp.json() if resp.content else {}
-    if not resp.ok or not body.get("status"):
-        logger.error("Paystack verify failed: status=%s, msg=%s", resp.status_code, body.get("message"))
-        raise PaystackError(
-            body.get("message", "Failed to verify Paystack transaction"),
-            status_code=resp.status_code or 502,
-            payload=body,
+    try:
+        resp = requests.get(
+            f"{base_url}/transaction/verify/{reference}", headers=_headers(), timeout=15
         )
-    logger.info("Paystack verify success for ref=%s", reference)
-    return body["data"]
+        logger.info("Paystack verify response status: %s, body snippet: %s", resp.status_code, resp.text[:200])
+        body = resp.json() if resp.content else {}
+        if not resp.ok or not body.get("status"):
+            logger.error("Paystack verify failed: status=%s, msg=%s, body=%s", resp.status_code, body.get("message"), body)
+            raise PaystackError(
+                body.get("message", "Failed to verify Paystack transaction"),
+                status_code=resp.status_code or 502,
+                payload=body,
+            )
+        logger.info("Paystack verify success for ref=%s, status=%s", reference, body["data"].get("status"))
+        return body["data"]
+    except requests.exceptions.RequestException as e:
+        logger.error("Paystack verify network error: %s", e)
+        raise PaystackError(str(e), status_code=502)
 
 
 def verify_webhook_signature(raw_body: bytes, signature_header: str) -> bool:
@@ -107,5 +134,7 @@ def verify_webhook_signature(raw_body: bytes, signature_header: str) -> bool:
     expected = hmac.new(secret_key.encode("utf-8"), raw_body, hashlib.sha512).hexdigest()
     result = hmac.compare_digest(expected, signature_header)
     if not result:
-        logger.warning("Webhook signature mismatch")
+        logger.warning("Webhook signature mismatch: expected=%s, got=%s", expected[:8], signature_header[:8])
+    else:
+        logger.info("Webhook signature verified successfully")
     return result
