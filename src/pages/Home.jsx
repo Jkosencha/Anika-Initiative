@@ -37,7 +37,7 @@ const polaroid = (rotate) =>
 function Home() {
   return (
     <>
-      <section className="relative overflow-hidden bg-charcoal text-cream">
+      <section className="relative -mt-[93px] overflow-hidden bg-charcoal pt-[93px] text-cream">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
