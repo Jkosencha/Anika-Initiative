@@ -8,7 +8,7 @@ import {
   Send,
   Mic,
   Mail,
-  MessageCircle,   // kept might be used elsewhere 
+  MessageCircle,
   CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -179,7 +179,7 @@ const GetInvolved = () => {
       return;
     }
 
-    // NEWSLETTER SUBSCRIPTION PATH 
+    // --- NEWSLETTER SUBSCRIPTION PATH ---
     if (isNewsletter) {
       const loadingToast = toast.loading("Subscribing you...");
 
@@ -269,32 +269,20 @@ const GetInvolved = () => {
         toast.error(err.message || "Something went wrong. Please try again.");
         setIsSubmitting(false);
         return;
-    // Validating phone number if it aint newsletter
+      }
+    }
+
+    // --- REGULAR APPLICATION PATH (volunteer, artist, partner) ---
+    // Phone validation using the new normalizePhone
     let normalizedPhone = formData.phone || undefined;
-    if (!isNewsletter) {
-      const phone = formData.phone;
-      const result = validatePhone(phone);
+    if (formData.phone) {
+      const result = validatePhone(formData.phone);
       if (!result.valid) {
         toast.error(result.message);
         setIsSubmitting(false);
         return;
       }
-      if (result.normalized) {
-        normalizedPhone = result.normalized;
-        setFormData((previous) => ({ ...previous, phone: result.normalized }));
-      }
-    }
-
-    // REGULAR APPLICATION PATH (volunteer, artist, partner)
-    // Validating phone number
-    const phone = formData.phone;
-    const result = validatePhone(phone);
-    if (!result.valid) {
-      toast.error(result.message);
-      setIsSubmitting(false);
-      return;
-    }
-    if (result.normalized) {
+      normalizedPhone = result.normalized;
       setFormData((previous) => ({ ...previous, phone: result.normalized }));
     }
 
@@ -632,7 +620,6 @@ const GetInvolved = () => {
                 </span>
               </label>
               */}
-              
 
               <button
                 type="submit"
