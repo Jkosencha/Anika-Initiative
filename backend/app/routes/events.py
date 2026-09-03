@@ -1,9 +1,44 @@
+import os
+import uuid
+
+import cloudinary.uploader
 from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models.event import EVENT_STATUSES, Event
+from app.utils.decorators import require_permission
 
 events_bp = Blueprint("events", __name__, url_prefix="/api/events")
+
+ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+MAX_IMAGE_SIZE_BYTES = 8 * 1024 * 1024
+
+
+@events_bp.post("/image")
+@require_permission("events")
+def upload_event_image():
+  if "image" not in request.files:
+    return jsonify({"error": "No image file provided"}), 400
+  image = request.files["image"]
+  extension = os.path.splitext(image.filename or "")[1].lower().lstrip(".")
+  if not image.filename or extension not in ALLOWED_IMAGE_EXTENSIONS:
+    return jsonify({"error": "Unsupported image type"}), 400
+  image.seek(0, os.SEEK_END)
+  size = image.tell()
+  image.seek(0)
+  if size > MAX_IMAGE_SIZE_BYTES:
+    return jsonify({"error": "File too large. Max 8MB."}), 400
+  try:
+    result = cloudinary.uploader.upload(
+      image,
+      folder="anika_events",
+      public_id=str(uuid.uuid4()),
+      resource_type="image",
+    )
+  except Exception as exc:
+    current_app.logger.error("Event image upload failed: %s", exc)
+    return jsonify({"error": "Image upload to storage provider failed"}), 502
+  return jsonify({"url": result["secure_url"]}), 201
 
 
 @events_bp.get("")
@@ -150,8 +185,8 @@ def update_event(event_id):
         "capacity", "registered", "status", "image", "imageAlt", "description",
     ]
     for field in allowed:
-        if field in data:
-            setattr(event, field, data[field])
+      if field in data:
+        setattr(event, "image_alt" if field == "imageAlt" else field, data[field])
     db.session.commit()
     current_app.logger.info("Event updated: id=%s", event.id)
     return jsonify(event.to_dict())

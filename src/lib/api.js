@@ -212,6 +212,14 @@ export function submitInquiry(payload) {
 export function fetchEvents() {
   return fetchCollection('event');
 }
+export async function fetchPublicEvents() {
+  try {
+    const rows = await request('GET', '/events?public=1');
+    return { ok: true, source: 'api', rows };
+  } catch {
+    return { ok: true, source: 'local', rows: getRecords(STORE_COLLECTION.event) };
+  }
+}
 export function fetchWhatsAppInbox() {
   return fetchCollection('whatsappInbox');
 }
