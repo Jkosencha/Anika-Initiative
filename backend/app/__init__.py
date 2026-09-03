@@ -106,6 +106,7 @@ def create_app(config_class=Config):
     from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_settings import WhatsAppSettings
     from app.models.newsletter import NewsletterSubscriber   
+    from app.models.export_log import ExportLog
 
     from app.routes import (
         applications_bp,

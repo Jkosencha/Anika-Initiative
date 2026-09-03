@@ -37,3 +37,39 @@ install` directly and don't add a `requirements.txt`.
 
 Stick to your own model/route files where possible — same "own your file" rule as the
 frontend, to avoid stepping on someone else's work.
+
+## Running Locally
+
+You'll need two terminals open - one for the backend and one for the frontend.
+
+### 1. Backend
+
+```bash
+cd backend
+pipenv shell            # activate the virtual environment(skip if already active)
+```
+
+Make sure your `.env` (in the `backend/`) has the seed credentials set for each role you want a login for (email, password, name) and the `JWT_SECRET_KEY`.
+
+Seed the four role accounts:
+```bash
+python seed.py
+```
+
+Start the backend:
+```bash
+flask run
+```
+
+The API runs at `http://localhost:5000`
+
+### 2. Frontend
+
+In a **seperate terminal**:
+```bash
+npm install         # first time only, or after pulling new dependencies
+npm run dev
+```
+The admin dashboard runs at `http://localhost:5173`. Log in at `/admin/login` using any of the seeded accounts above.
+ 
+> Both servers need to be running at the same time for the admin dashboard to work. The frontend calls the backend directly, it doesn't run standalone.
