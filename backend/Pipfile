@@ -15,6 +15,7 @@ requests = "*"
 marshmallow = "*"
 flask = "*"
 flask-mail = "*"
+gunicorn = "*"
 
 [dev-packages]
 
