@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
+import SuccessModal from '../components/SuccessModal'
 import { submitApplication } from '../lib/api'
 import { composePhone, COUNTRY_CODES, sanitizeLocalPhoneInput } from '../lib/phone'
 
@@ -29,6 +30,7 @@ const ROLE_SUBJECT = {
 export default function AlliancePage() {
   const [form, setForm] = useState({ name: '', email: '', org: '', country: '', countryCode: '254', localNumber: '', role: '', consent: true });
   const [status, setStatus] = useState(null);
+  const [submittedName, setSubmittedName] = useState('');
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -48,6 +50,7 @@ export default function AlliancePage() {
         message: `Alliance membership application. Role: ${form.role || 'Artist'}`,
         whatsapp_opt_in: form.consent,
       })
+      setSubmittedName(form.name)
       setForm({ name: '', email: '', org: '', country: '', countryCode: '254', localNumber: '', role: '', consent: true })
       setStatus('done')
     } catch {
@@ -170,14 +173,12 @@ export default function AlliancePage() {
               Share a few details and the ANIKA team will follow up via WhatsApp.
             </p>
 
-            {status === 'done' && (
-              <div className="mt-6 border border-anika-green bg-anika-green p-5 text-white">
-                <p className="font-display text-xl uppercase tracking-wide">Application received.</p>
-                <p className="mt-2 font-body text-base leading-6">
-                  Thank you, {form.name || 'friend'}. We’ll be in touch on WhatsApp shortly.
-                </p>
-              </div>
-            )}
+            <SuccessModal
+              open={status === 'done'}
+              onClose={() => setStatus(null)}
+              title="Application received."
+              message={`Thank you, ${submittedName || 'friend'}. We'll be in touch on WhatsApp shortly.`}
+            />
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>

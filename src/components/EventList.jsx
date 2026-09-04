@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Reveal from './Reveal';
+import SuccessModal from './SuccessModal';
 import { fetchPublicEvents, submitRegistration } from '../lib/api';
 import { composePhone, COUNTRY_CODES, sanitizeLocalPhoneInput } from '../lib/phone';
 import { 
@@ -46,6 +47,7 @@ export default function EventsList() {
   const [formStates, setFormStates] = useState({});
   const [loading, setLoading] = useState({});
   const [successMsg, setSuccessMsg] = useState({});
+  const [successModal, setSuccessModal] = useState(null);
   const [events, setEvents] = useState([]);
 
   // Events are managed from the admin dashboard.
@@ -99,8 +101,9 @@ export default function EventsList() {
         consent: currentForm.optIn,
         source: 'web',
       });
-      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Confirmed! Registration details sent via WhatsApp.' }));
+      setSuccessModal({ name: currentForm.fullName, eventTitle });
       setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', countryCode: '254', localNumber: '', optIn: true } }));
+      setOpenFormId(null);
     } catch {
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Could not confirm right now. Please try again.' }));
     } finally {
@@ -110,7 +113,13 @@ export default function EventsList() {
 
   return (
     <div className="bg-cream min-h-screen text-gray-900 font-sans">
-      
+      <SuccessModal
+        open={!!successModal}
+        onClose={() => setSuccessModal(null)}
+        title="Registration confirmed!"
+        message={`Thanks, ${successModal?.name || 'friend'} — details for ${successModal?.eventTitle || 'the event'} are on their way via WhatsApp.`}
+      />
+
       {/* 1. HERO SECTION */}
       <Reveal>
         <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
