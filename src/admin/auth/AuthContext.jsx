@@ -59,8 +59,6 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        setUser(null);
-        setToken(null);
         localStorage.removeItem(STORAGE_KEY);
         // Hard navigation (not React Router) so the app re-boots from scratch on
         // next sign-in — access.js/nav.js compute their role-access matrix once
