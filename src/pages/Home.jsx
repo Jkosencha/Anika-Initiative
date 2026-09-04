@@ -4,39 +4,32 @@ import { NavLink } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
 import { whatsappUrl } from '../lib/whatsapp'
-import { fetchEvents } from '../lib/api'
+import { fetchEvents, fetchImpactStats } from '../lib/api'
 import { storiesStore } from '../data/storiesStore'
 import { PILLARS } from '../data/pillars'
 import { parseEventDate } from '../lib/eventDate'
 
-// Same storage key + defaults as the admin "Impact metrics" editor
-// (src/admin/pages/Impact.jsx) — these stats are admin-edited there,
-// saved to localStorage, and read here so the two stay in sync.
-const IMPACT_STORAGE_KEY = 'anika_admin_impact_stats'
-const HOME_STATS = [
+// Matches the labels the admin "Impact metrics" editor (src/admin/pages/Impact.jsx)
+// ships by default -- these are the 4 shown on the homepage, out of however
+// many exist. Falls back to these values if the backend has none yet.
+const HOME_STATS_META = [
   { label: 'Events Held', fallback: '100+', color: 'text-coral' },
   { label: 'Forum Participants', fallback: '2,500+', color: 'text-anika-green' },
   { label: 'Artists Engaged', fallback: '150', color: 'text-gold' },
   { label: 'Online Impressions', fallback: '24M+', color: 'text-anika-blue' },
 ]
 
-// Admin stores values as free-text ("2,500+", "24M+") — split back into a
-// numeric target Counter can animate to, plus whatever suffix follows it.
+// Values are free-text ("2,500+", "24M+") -- split into a numeric target
+// Counter can animate to, plus whatever suffix follows it.
 function parseStatValue(value) {
   const match = /^([\d,.]+)\s*(.*)$/.exec(String(value ?? '').trim())
   if (!match) return { target: 0, suffix: '' }
   return { target: parseFloat(match[1].replace(/,/g, '')) || 0, suffix: match[2].trim() }
 }
 
-function readImpactStats() {
-  let saved = []
-  try {
-    saved = JSON.parse(localStorage.getItem(IMPACT_STORAGE_KEY)) || []
-  } catch {
-    saved = []
-  }
-  return HOME_STATS.map(({ label, fallback, color }) => {
-    const match = saved.find((s) => s.label?.toLowerCase() === label.toLowerCase())
+function buildHomeStats(fetched) {
+  return HOME_STATS_META.map(({ label, fallback, color }) => {
+    const match = fetched.find((s) => s.label?.toLowerCase() === label.toLowerCase())
     const { target, suffix } = parseStatValue(match?.value ?? fallback)
     return { label, target, suffix, color }
   })
@@ -58,7 +51,23 @@ function Home() {
   const [eventsLoading, setEventsLoading] = useState(true)
   const [stories, setStories] = useState([])
   const [storiesLoading, setStoriesLoading] = useState(true)
-  const [stats] = useState(readImpactStats)
+  const [stats, setStats] = useState([])
+  const [statsLoading, setStatsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchImpactStats()
+      .then((rows) => {
+        if (cancelled) return
+        setStats(buildHomeStats(Array.isArray(rows) ? rows : []))
+      })
+      .finally(() => {
+        if (!cancelled) setStatsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -152,14 +161,15 @@ function Home() {
 
       <section className="bg-charcoal">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-12 gap-y-8 px-6 py-10 sm:grid-cols-4 sm:gap-x-16">
-          {stats.map((stat, i) => (
-            <Reveal key={stat.label} delay={i * 100} className="text-center">
-              <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>
-                <Counter to={stat.target} suffix={stat.suffix} />
-              </p>
-              <p className="mt-1 font-body text-xs uppercase tracking-wide text-cream/60">{stat.label}</p>
-            </Reveal>
-          ))}
+          {!statsLoading &&
+            stats.map((stat, i) => (
+              <Reveal key={stat.label} delay={i * 100} className="text-center">
+                <p className={`font-display text-3xl sm:text-4xl ${stat.color}`}>
+                  <Counter to={stat.target} suffix={stat.suffix} />
+                </p>
+                <p className="mt-1 font-body text-xs uppercase tracking-wide text-cream/60">{stat.label}</p>
+              </Reveal>
+            ))}
         </div>
       </section>
 
