@@ -22,6 +22,8 @@ import { AuthProvider } from './admin/auth/AuthContext'
 import Login from './admin/pages/Login'
 import ProtectedRoute from './admin/auth/ProtectedRoute'
 import AdminRoutes from './admin/pages/AdminRoutes'
+import ForgotPassword from './admin/pages/ForgotPassword'
+import ResetPassword from './admin/pages/ResetPassword'
 
 function SiteLayout() {
   return (
@@ -57,6 +59,8 @@ function App() {
         <ScrollToTop />
         <Routes>
           <Route path="/admin/login" element={<Login />} />
+          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route
             path="/admin/*"
             element={
