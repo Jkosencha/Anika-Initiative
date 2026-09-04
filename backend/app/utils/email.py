@@ -146,3 +146,33 @@ def send_status_update_email(application, new_status):
     mail.send(msg)
     logger.info("Status update email sent to %s for application #%s (status: %s)",
                 application.email, application.id, new_status)
+
+# For Forgot Password
+def send_password_reset_email(user, raw_token):
+    """
+    Email a team member a link to reset their password.
+    """
+    subject = "Reset your ANIKA dashboard password"
+
+    origins = current_app.config.get("CORS_ORIGINS") or []
+    frontend_url = origins[0] if origins else "http://localhost:5173"
+
+    reset_link = f"{frontend_url}/admin/reset-password?token={raw_token}"
+
+    body = (
+        f"Hi {user.name},\n\n"
+        f"We received a request to reset your ANIKA dashboard password.\n\n"
+        f"Reset your password here: {reset_link}\n\n"
+        f"This link expires in 20 minutes. If you didn't request this, you can safely ignore this email.\n\n"
+        f"Best regards,\nThe Anika Initiative Team"
+    )
+
+    msg = Message(
+        subject=subject,
+        recipients=[user.email],
+        body=body,
+        sender=current_app.config.get("MAIL_DEFAULT_SENDER", "noreply@example.com"),
+    )
+
+    mail.send(msg)
+    logger.info("Password reset email sent to %s", user.email)
