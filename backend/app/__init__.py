@@ -107,6 +107,7 @@ def create_app(config_class=Config):
     from app.models.whatsapp_settings import WhatsAppSettings
     from app.models.newsletter import NewsletterSubscriber   
     from app.models.export_log import ExportLog
+    from app.models.impact_stat import ImpactStat
 
     from app.routes import (
         applications_bp,
@@ -116,6 +117,7 @@ def create_app(config_class=Config):
         events_bp,
         gallery_bp,
         health_bp,
+        impact_bp,
         metrics_bp,
         registrations_bp,
         reports_bp,

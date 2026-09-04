@@ -13,6 +13,7 @@ from .reports import reports_bp
 from .team import team_bp
 from .settings import settings_bp
 from .whatsapp import whatsapp_bp
+from .impact import impact_bp
 
 __all__ = [
     "applications_bp",
@@ -22,6 +23,7 @@ __all__ = [
     "events_bp",
     "gallery_bp",
     "health_bp",
+    "impact_bp",
     "metrics_bp",
     "registrations_bp",
     "reports_bp",
