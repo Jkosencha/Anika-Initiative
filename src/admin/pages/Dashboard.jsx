@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DollarSign, CalendarDays, UserPlus, Globe, MapPin, ChevronRight, Bot } from 'lucide-react'
+import { DollarSign, CalendarDays, UserPlus, Globe, MapPin, ChevronRight } from 'lucide-react'
 import StatCard from '../components/StatCard'
 import TrendBarChart from '../components/charts/TrendBarChart'
 import DonutChart from '../components/charts/DonutChart'
@@ -211,25 +211,6 @@ function Dashboard() {
         />
         <StatCard label="ACTIVE COUNTRIES" value="5" sub="KE · UG · RW · GH · ZA" icon={Globe} bg={COLORS.blue} to="#where-we-reach" />
       </div>
-
-      <Link
-        to="/admin/whatsapp/assistant"
-        className="mb-5 flex items-center gap-4 rounded-xl border p-4 transition-transform hover:-translate-y-0.5 hover:shadow-md"
-        style={{ background: '#1c1a17', borderColor: '#1c1a17' }}
-      >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: '#25D366' }}>
-          <Bot size={20} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-white">Anika Assistant</p>
-          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            {waStats.threads > 0
-              ? `${waStats.threads} conversations handled · ${waStats.unread} unread · ${waStats.escalated} escalations`
-              : 'Configure replies, test the bot live or reply from the inbox.'}
-          </p>
-        </div>
-        <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
-      </Link>
 
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr_1fr]">
         <Card title="Donation trend" colors={COLORS} to="/admin/donations">
