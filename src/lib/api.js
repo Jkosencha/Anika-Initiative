@@ -14,9 +14,11 @@
 
 import { addRecord, getRecords, updateRecord, deleteRecord, getMetrics } from './store';
 
-export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// --- Use VITE_API_BASE_URL (e.g., http://localhost:5000), without trailing slash.
+// If not defined, default to localhost:5000 so team members don't need a .env file.
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-// kind -> REST collection path
+// kind -> REST collection path (API prefix added in submit)
 const KIND_COLLECTION = {
   registration: 'registrations',
   application: 'applications',
@@ -154,7 +156,7 @@ const STORE_COLLECTION = {
 /** Fetch a collection. API-first, falls back to local store. */
 export async function fetchCollection(kind) {
   try {
-    const rows = await request('GET', `/${KIND_COLLECTION[kind]}`);
+    const rows = await request('GET', `/api/${KIND_COLLECTION[kind]}`);
     return { ok: true, source: 'api', rows };
   } catch {
     return { ok: true, source: 'local', rows: getRecords(STORE_COLLECTION[kind]) };
@@ -164,7 +166,8 @@ export async function fetchCollection(kind) {
 /** Create a record. API-first, falls back to local store. */
 async function submit(kind, payload) {
   try {
-    const data = await request('POST', `/${KIND_COLLECTION[kind]}`, payload);
+    const path = `/api/${KIND_COLLECTION[kind]}`;
+    const data = await request('POST', path, payload);
     return { ok: true, source: 'api', record: data };
   } catch {
     const record = addRecord(STORE_COLLECTION[kind], payload);
@@ -175,7 +178,7 @@ async function submit(kind, payload) {
 /** Update a record. API-first, falls back to local store. */
 export async function patchRecord(kind, id, patch) {
   try {
-    const data = await request('PATCH', `/${KIND_COLLECTION[kind]}/${id}`, patch);
+    const data = await request('PATCH', `/api/${KIND_COLLECTION[kind]}/${id}`, patch);
     return { ok: true, source: 'api', record: data };
   } catch {
     const record = updateRecord(STORE_COLLECTION[kind], id, patch);
@@ -186,7 +189,7 @@ export async function patchRecord(kind, id, patch) {
 /** Delete a record. API-first, falls back to local store. */
 export async function removeRecord(kind, id) {
   try {
-    await request('DELETE', `/${KIND_COLLECTION[kind]}/${id}`);
+    await request('DELETE', `/api/${KIND_COLLECTION[kind]}/${id}`);
     return { ok: true, source: 'api' };
   } catch {
     deleteRecord(STORE_COLLECTION[kind], id);
@@ -211,6 +214,14 @@ export function submitInquiry(payload) {
 // --- collection helpers ---
 export function fetchEvents() {
   return fetchCollection('event');
+}
+export async function fetchPublicEvents() {
+  try {
+    const rows = await request('GET', '/events?public=1');
+    return { ok: true, source: 'api', rows };
+  } catch {
+    return { ok: true, source: 'local', rows: getRecords(STORE_COLLECTION.event) };
+  }
 }
 export function fetchWhatsAppInbox() {
   return fetchCollection('whatsappInbox');

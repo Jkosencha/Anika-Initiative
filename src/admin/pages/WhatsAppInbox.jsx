@@ -24,7 +24,6 @@ const INTENT_META = {
   general: { label: "General", bg: "#ececec", text: "#555555" },
 };
 
-
 function StatBox({ label, value, dotColor, colors }) {
   return (
     <div style={{ background: colors.panel, border: `1px solid ${colors.border}` }} className="rounded-xl p-5">
@@ -47,9 +46,9 @@ export default function WhatsAppInbox() {
 
   useEffect(() => {
     fetchWhatsAppInbox().then(({ rows }) => {
-      const list = rows || [];
-      setConversations(list);
-      setActiveId((cur) => (list.some((c) => c.id === cur) ? cur : (list[0]?.id ?? null)));
+      const nextRows = Array.isArray(rows) ? rows : [];
+      setConversations(nextRows);
+      setActiveId((cur) => (nextRows.some((c) => c.id === cur) ? cur : (nextRows[0]?.id ?? null)));
     });
   }, []);
 

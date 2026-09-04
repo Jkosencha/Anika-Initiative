@@ -7,7 +7,7 @@ export default function PartnerCTA() {
         
         <Reveal>
             <h2 className='font-editorial italic text-4xl md:text-5xl text-center mb-4 text-ink mx-auto max-w-6xl px-6'>
-                Want to Partner or Participate?
+                Want to Participate?
             </h2>
         </Reveal>
 

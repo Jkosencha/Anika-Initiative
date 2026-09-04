@@ -132,6 +132,12 @@ def create_donation():
     donor_name = (data.get("donor_name") or "Anonymous").strip() or "Anonymous"
     phone = (data.get("phone") or "").strip() or None
 
+    # Log the incoming donation request with all details
+    logger.info(
+        "Donation request: method=%s, amount=%.2f, currency=%s, email=%s, phone=%s, donor=%s",
+        method, amount, data.get("currency", "KES"), data.get("email"), phone, donor_name
+    )
+
     if method == "manual":
         donation = Donation(
             donor_name=donor_name,
@@ -164,8 +170,17 @@ def create_donation():
     # method is 'mpesa' or 'card' -> go through Paystack
     email = data.get("email") or "donor@anika.org"
     currency = (data.get("currency") or "KES").upper()
+    
+    # Validate currency/method combinations
     if method == "mpesa" and currency != "KES":
+        logger.warning("M-Pesa donation with non-KES currency: %s (rejected)", currency)
         return jsonify({"error": "M-Pesa only supports KES currency"}), 400
+    if method == "card" and currency not in ("KES", "USD"):
+        logger.warning("Card donation with unsupported currency: %s (rejected)", currency)
+        return jsonify({"error": "Card donations only support KES or USD"}), 400
+    if currency == "USD" and method != "card":
+        logger.warning("USD donation attempted with method %s (rejected)", method)
+        return jsonify({"error": "USD donations only supported via card."}), 400
 
     amount_in_smallest_unit = int(amount * 100)
     channels = ["mobile_money"] if method == "mpesa" else ["card"]
@@ -199,8 +214,8 @@ def create_donation():
 
     try:
         logger.info(
-            "Initializing Paystack: ref=%s, amount=%d %s",
-            reference, amount_in_smallest_unit, currency
+            "Initializing Paystack: ref=%s, amount=%d (subunit), currency=%s, channels=%s",
+            reference, amount_in_smallest_unit, currency, channels
         )
         result = initialize_transaction(
             email=email,
@@ -211,10 +226,15 @@ def create_donation():
             channels=channels,
             metadata={"donor_name": donor_name, "phone": phone, "donation_id": donation.id},
         )
-        logger.info("Paystack initialization successful for ref=%s", reference)
+        logger.info(
+            "Paystack initialization successful for ref=%s, auth_url=%s, access_code=%s",
+            reference, result.get("authorization_url"), result.get("access_code")
+        )
     except PaystackError as exc:
-        logger.error("Paystack error for ref=%s: status=%s, message=%s",
-                     reference, exc.status_code, exc.message)
+        logger.error(
+            "Paystack error for ref=%s: status=%s, message=%s, payload=%s",
+            reference, exc.status_code, exc.message, exc.payload
+        )
         donation.status = "Failed"
         donation.gateway_response = exc.message
         db.session.commit()

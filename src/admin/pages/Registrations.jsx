@@ -97,7 +97,7 @@ function AddRegistrationModal({ onClose, onAdd, colors, eventOptions }) {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>WhatsApp number</label>
-            <input value={phone} onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))} placeholder="+254 712 000 000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
+            <input value={phone} inputMode="numeric" onChange={(e) => setPhone(sanitizePhoneInput(e.target.value))} placeholder="25471200000" className="px-3 py-2 rounded-lg text-sm outline-none" style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }} />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>Event</label>

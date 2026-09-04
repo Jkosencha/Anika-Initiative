@@ -14,9 +14,8 @@ import {
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
 import { submitApplication } from '../lib/api';
-import { normalizePhone, phoneError } from '../lib/phone';
 
-// validation for email and phone helpers
+// ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email) return { valid: false, message: "Email is required." };
@@ -24,14 +23,40 @@ const validateEmail = (email) => {
   return { valid: true };
 };
 
+// Phone validation: digits only, max 12, accepts 0712345678 or 254712345678
 const validatePhone = (phone) => {
-  const normalized = normalizePhone(phone);
-  return normalized ? { valid: true, normalized } : { valid: false, message: phoneError(phone) };
+  if (!phone) return { valid: false, message: "Phone number is required." };
+  const cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return { valid: true, normalized: '0' + cleaned };
+  }
+  if (cleaned.length === 10 && cleaned.startsWith('0')) {
+    return { valid: true, normalized: cleaned };
+  }
+  if (cleaned.length === 12 && cleaned.startsWith('254')) {
+    return { valid: true, normalized: cleaned };
+  }
+  return { valid: false, message: "Enter a valid Kenyan phone number (e.g., 0712345678 or 254712345678)." };
 };
 
-// stripping phone number
+// Format phone to international +254... for the backend
+const formatPhoneForBackend = (phone) => {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) {
+    return '+254' + digits.slice(1);
+  }
+  if (digits.startsWith('254')) {
+    return '+' + digits;
+  }
+  // if it's 9 digits (without leading 0) we already added 0 in validate, so this won't happen
+  return phone; // fallback
+};
+
+// Phone input formatter – strip non-digits, limit to 12 digits
 const formatPhoneInput = (value) => {
-  return value.replace(/[^0-9+().\s-]/g, '').slice(0, 20);
+  const digits = value.replace(/[^0-9]/g, '');
+  return digits.slice(0, 12);
 };
 
 const roles = [
@@ -125,7 +150,7 @@ const GetInvolved = () => {
     subject: "artist",
     message: "",
   });
-  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  // const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [selectedRole, setSelectedRole] = useState("artist");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -179,25 +204,113 @@ const GetInvolved = () => {
       return;
     }
 
-    // Validating phone number if it aint newsletter
+    // --- NEWSLETTER SUBSCRIPTION PATH ---
+    if (isNewsletter) {
+      const loadingToast = toast.loading("Subscribing you...");
+
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/subscribe`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: formData.email,
+              name: formData.name,
+            }),
+          }
+        );
+        const data = await response.json();
+
+        toast.dismiss(loadingToast);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Subscription failed.");
+        }
+
+        // Check for duplicate / already subscribed messages
+        const msg = data.message || "";
+        if (
+          msg === "You're already subscribed to our newsletter!" ||
+          msg === "You're already an approved subscriber!" ||
+          msg === "You already have a pending application. We'll notify you once it's reviewed."
+        ) {
+          let title = "Already Subscribed!";
+          let description = "You're already on our newsletter list.";
+          if (msg.includes("pending application")) {
+            title = "Pending Approval";
+            description = "You already have a pending application. We'll notify you once it's reviewed.";
+          } else if (msg.includes("approved")) {
+            title = "Already Approved!";
+            description = "You're already an approved subscriber. You'll receive our newsletters.";
+          }
+          toast.info(
+            <div>
+              <p className="font-semibold text-sm">{title}</p>
+              <p className="mt-1 text-base text-gray-600">{description}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Check your email for our latest updates.
+              </p>
+            </div>,
+            {
+              duration: 5000,
+              icon: <Mail className="w-4 h-4 text-blue-500" />,
+            }
+          );
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Successful new subscription
+        toast.success(
+          <div>
+            <p className="font-semibold text-sm">Howdy! You're subscribed!</p>
+            <p className="mt-1 text-base text-gray-600">
+              Thanks for subscribing to updates from ANIKA.
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              You'll hear from us with stories, events and campaign updates.
+            </p>
+          </div>,
+          {
+            duration: 6000,
+            icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+          }
+        );
+
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          organisation: "",
+          country: "",
+          subject: currentRole.subject,
+          message: "",
+        });
+        setIsSubmitting(false);
+        return;
+      } catch (err) {
+        toast.dismiss(loadingToast);
+        toast.error(err.message || "Something went wrong. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // --- REGULAR APPLICATION PATH (volunteer, artist, partner) ---
     let normalizedPhone = formData.phone || undefined;
-    if (!isNewsletter) {
-      const phone = formData.phone;
-      const result = validatePhone(phone);
+    if (formData.phone) {
+      const result = validatePhone(formData.phone);
       if (!result.valid) {
         toast.error(result.message);
         setIsSubmitting(false);
         return;
       }
-      if (result.normalized) {
-        normalizedPhone = result.normalized;
-        setFormData((previous) => ({ ...previous, phone: result.normalized }));
-      }
+      normalizedPhone = formatPhoneForBackend(result.normalized);
+      setFormData((previous) => ({ ...previous, phone: result.normalized }));
     }
 
-    const loadingToast = toast.loading(
-      isNewsletter ? "Subscribing you..." : "Sending your message...",
-    );
+    const loadingToast = toast.loading("Sending your message...");
 
     try {
       await submitApplication({
@@ -208,7 +321,7 @@ const GetInvolved = () => {
         country: formData.country || undefined,
         subject: formData.subject || currentRole.subject,
         message: formData.message || undefined,
-        whatsapp_opt_in: whatsappOptIn,
+        // whatsapp_opt_in: whatsappOptIn,
       });
 
       toast.dismiss(loadingToast);
@@ -217,28 +330,18 @@ const GetInvolved = () => {
 
       toast.success(
         <div>
-          <p className="font-semibold text-sm">
-            {isNewsletter ? "Howdy! You're subscribed " : "Howdy! Message Sent "}
-          </p>
+          <p className="font-semibold text-sm">Howdy! Message Sent</p>
           <p className="mt-1 text-base text-gray-600">
-            {isNewsletter ? (
-              <>Thanks for subscribing to updates from ANIKA.</>
-            ) : (
-              <>
-                Thanks for reaching out as a <strong>{roleLabel}</strong>.
-              </>
-            )}
+            Thanks for reaching out as a <strong>{roleLabel}</strong>.
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {isNewsletter
-              ? "You'll hear from us with stories, events and campaign updates."
-              : "We will get back to you within 48 hours. Check your inbox for a confirmation email."}
+            We will get back to you within 48 hours. Check your inbox for a confirmation email.
           </p>
         </div>,
         {
           duration: 6000,
           icon: <CheckCircle className="w-4 h-4 text-green-500" />,
-        },
+        }
       );
 
       setFormData({
@@ -250,7 +353,7 @@ const GetInvolved = () => {
         subject: currentRole.subject,
         message: "",
       });
-      setWhatsappOptIn(false);
+      // setWhatsappOptIn(false);
     } catch (err) {
       toast.dismiss(loadingToast);
       toast.error(err.message || "Something went wrong. Please try again.");
@@ -261,7 +364,6 @@ const GetInvolved = () => {
 
   return (
     <main className="min-h-screen bg-cream text-[#1E1A18] font-body">
-      {/* Hero Section – text revealed individually */}
       <section className="relative overflow-hidden bg-charcoal text-cream py-16 md:py-12">
         <img
           src="/anika-flower.png"
@@ -285,7 +387,6 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      {/* Ways to get involved cards – revealed with delay and toned-down background */}
       <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {waysToGetInvolved.map((way, index) => {
@@ -314,7 +415,6 @@ const GetInvolved = () => {
         </div>
       </section>
 
-      {/* Form Section – text elements revealed individually */}
       <section className="px-4 py-16 bg-cream" id="get-involved-form">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-10">
@@ -426,13 +526,13 @@ const GetInvolved = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="0712345678 or +254712345678"
+                        placeholder="0712345678 or 254712345678"
                         maxLength="12"
                         required
                         className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90"
                       />
                       <p className="text-xs text-gray-400 mt-1">
-                        Format: 0712345678 or +254712345678 (max 12 digits)
+                        Enter digits only (max 12)
                       </p>
                     </div>
 
@@ -522,6 +622,7 @@ const GetInvolved = () => {
                 )}
               </div>
 
+              {/* 
               <label
                 htmlFor="whatsappOptIn"
                 className="mt-6 flex items-start gap-3 rounded-lg border border-gray-200 bg-white/70 p-4 cursor-pointer"
@@ -542,6 +643,7 @@ const GetInvolved = () => {
                   </span>
                 </span>
               </label>
+              */}
 
               <button
                 type="submit"

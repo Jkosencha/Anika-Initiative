@@ -4,15 +4,7 @@ import {
 } from 'lucide-react'
 import { useAdminColors } from '../theme'
 import { useAuth } from '../auth/AuthContext'
-
-// TODO(backend): replace with a real fetch of what's actually been
-// generated (donations/contacts/events/impact export history), same data
-// source the per-page export buttons already write to.
-const RECENT_EXPORTS = [
-  { id: 1, report: 'Contact export', by: 'Admin', date: 'Today, 09:20', format: 'CSV', formatColor: 'blue' },
-  { id: 2, report: 'Event summary - Sema-Anika', by: 'Programs Team', date: '14 Aug 2026', format: 'PDF', formatColor: 'red' },
-  { id: 3, report: 'Donor report - Q2', by: 'MEL Officer', date: '2 Aug 2026', format: 'Excel', formatColor: 'green' },
-]
+import { apiRequest } from '../utils/api'
 
 const REPORT_TYPES = [
   { id: 'donor', label: 'Donor report' },
@@ -27,16 +19,13 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 
 const FORMATS = ['PDF', 'Excel', 'CSV']
 
-const SCHEDULES_KEY = 'anika_admin_scheduled_reports'
-const ANNUAL_REPORT_KEY = 'anika_admin_annual_report'
-
 function emptyFormState() {
   return {
     id: null,
     reportTypes: [],
     frequency: 'Monthly',
     weekday: WEEKDAYS[0],
-    dayOfMonth: 1,
+    dayOfMonth: '',
     specificDate: '',
     sendTo: '',
     format: '',
@@ -48,9 +37,9 @@ function describeFrequency(schedule) {
     case 'Weekly':
       return `Weekly, every ${schedule.weekday}`
     case 'Monthly':
-      return `Monthly, on the ${schedule.dayOfMonth}th`
+      return `Monthly, day ${schedule.dayOfMonth}`
     case 'Quarterly':
-      return `Quarterly, ${schedule.dayOfMonth}th day of first month`
+      return `Quarterly, day ${schedule.dayOfMonth} of first month`
     case 'Annually':
       return `Annually, ${schedule.specificDate || '—'}`
     default:
@@ -65,7 +54,7 @@ function canManageSchedule(schedule, user) {
   return false
 }
 
-function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors }) {
+function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors, saving }) {
   function toggleType(id) {
     setForm((f) => ({
       ...f,
@@ -97,16 +86,15 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
         )}
       </div>
 
-      {/* Report types — multi-select checklist */}
       <div className="mt-4">
         <label className="text-xs font-semibold" style={{ color: colors.muted }}>
           Report contents
         </label>
-        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 font-body">
           {REPORT_TYPES.map((type) => (
             <label
               key={type.id}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-body"
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm"
               style={{
                 border: `1px solid ${colors.border}`,
                 background: form.reportTypes.includes(type.id) ? colors.buttonBg : colors.inputBg,
@@ -130,7 +118,6 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
         )}
       </div>
 
-      {/* Frequency */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold" style={{ color: colors.muted }}>
@@ -148,7 +135,6 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
           </select>
         </div>
 
-        {/* Frequency-dependent second input */}
         {form.frequency === 'Weekly' && (
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>
@@ -200,7 +186,6 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
         )}
       </div>
 
-      {/* Send to + format */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold" style={{ color: colors.muted }}>
@@ -221,11 +206,11 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
           <label className="text-xs font-semibold" style={{ color: colors.muted }}>
             Format
           </label>
-          <div className="flex gap-2 font-body">
+          <div className="flex gap-2">
             {FORMATS.map((fmt) => (
               <label
                 key={fmt}
-                className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold"
+                className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold font-body"
                 style={{
                   border: `1px solid ${colors.border}`,
                   background: form.format === fmt ? colors.buttonBg : colors.inputBg,
@@ -248,62 +233,79 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
       </div>
 
       <p className="mt-3 text-xs italic" style={{ color: colors.muted }}>
-        Scheduling isn't wired up to an email dispatch yet — this saves your preference for when it is.
+        Saved schedules are stored now -- scheduled email delivery not wired up yet.
       </p>
 
       <div className="mt-4 flex justify-end">
         <button
           type="submit"
-          disabled={form.reportTypes.length === 0}
-          style={{ background: colors.buttonBg, color: colors.buttonText, opacity: form.reportTypes.length === 0 ? 0.5 : 1 }}
+          disabled={form.reportTypes.length === 0 || saving}
+          style={{ background: colors.buttonBg, color: colors.buttonText, opacity: (form.reportTypes.length === 0 || saving) ? 0.5 : 1 }}
           className="flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold font-body"
         >
-          {isEditing ? 'Save changes' : 'Save preference'}
+          {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save preference'}
         </button>
       </div>
     </form>
   )
 }
 
-function AnnualReportPanel({ colors, user }) {
+function AnnualReportPanel({ colors, user, showToast }) {
   const [report, setReport] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(ANNUAL_REPORT_KEY) || 'null')
-      setReport(stored)
-    } catch {
-      setReport(null)
-    }
+    let cancelled = false
+    apiRequest('/api/reports/annual')
+      .then((data) => {
+        if (!cancelled) setReport(data)
+      })
+      .catch((err) => {
+        // 404 just means nothing's been uploaded yet -- not a real error.
+        if (!cancelled && err.status !== 404) {
+          showToast('Could not load the annual report.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
   }, [])
 
   const canUpload = user?.role === 'leadership' || user?.role === 'mel'
   const canDelete = user?.role === 'leadership'
 
-  function handleUpload(e) {
+  async function handleUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // TODO(backend): upload to Cloudinary/backend storage and persist the
-    // real URL, e.g. POST /api/reports/annual — this object URL is a
-    // browser-only stand-in that won't survive a page reload or be visible
-    // to anyone but you.
-    const record = {
-      name: file.name,
-      url: URL.createObjectURL(file),
-      uploadedBy: user?.name || 'Unknown',
-      uploadedAt: new Date().toLocaleDateString(),
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const record = await apiRequest('/api/reports/annual', { method: 'POST', body: formData })
+      setReport(record)
+      showToast('Annual report uploaded.')
+    } catch (err) {
+      showToast(err.message || 'Upload failed.')
+    } finally {
+      setUploading(false)
+      e.target.value = ''
     }
-    localStorage.setItem(ANNUAL_REPORT_KEY, JSON.stringify(record))
-    setReport(record)
-    e.target.value = ''
   }
 
-  function handleDelete() {
-    localStorage.removeItem(ANNUAL_REPORT_KEY)
-    setReport(null)
-    setConfirmDelete(false)
+  async function handleDelete() {
+    try {
+      await apiRequest('/api/reports/annual', { method: 'DELETE' })
+      setReport(null)
+      showToast('Annual report deleted.')
+    } catch (err) {
+      showToast(err.message || 'Delete failed.')
+    } finally {
+      setConfirmDelete(false)
+    }
   }
 
   return (
@@ -315,10 +317,12 @@ function AnnualReportPanel({ colors, user }) {
         Annual report (2025)
       </h2>
       <p className="mt-1 text-sm font-body" style={{ color: colors.muted }}>
-        Interested Donors and Partners can download from the public site's impact page.
+        Interested Partners and Donors can download from the public site's impact page.
       </p>
 
-      {report ? (
+      {loading ? (
+        <p className="mt-4 text-sm" style={{ color: colors.muted }}>Loading…</p>
+      ) : report ? (
         <div
           className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg p-3"
           style={{ border: `1px solid ${colors.border}`, background: colors.inputBg }}
@@ -327,8 +331,8 @@ function AnnualReportPanel({ colors, user }) {
             <FileText size={18} color={colors.red} />
             <div>
               <p className="text-sm font-semibold font-body" style={{ color: colors.text }}>{report.name}</p>
-              <p className="text-xs font-body" style={{ color: colors.muted }}>
-                Uploaded by {report.uploadedBy} on {report.uploadedAt}
+              <p className="text-xs" style={{ color: colors.muted }}>
+                Uploaded by {report.uploadedBy} on {new Date(report.uploadedAt).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -345,10 +349,10 @@ function AnnualReportPanel({ colors, user }) {
             {canUpload && (
               <label
                 className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-bold"
-                style={{ background: colors.buttonBg, color: colors.buttonText }}
+                style={{ background: colors.buttonBg, color: colors.buttonText, opacity: uploading ? 0.6 : 1 }}
               >
-                REPLACE
-                <input type="file" accept="application/pdf" onChange={handleUpload} className="hidden" />
+                {uploading ? 'UPLOADING…' : 'REPLACE'}
+                <input type="file" accept="application/pdf" onChange={handleUpload} disabled={uploading} className="hidden" />
               </label>
             )}
             {canDelete && (
@@ -366,11 +370,11 @@ function AnnualReportPanel({ colors, user }) {
       ) : canUpload ? (
         <label
           className="mt-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-sm"
-          style={{ borderColor: colors.border, color: colors.muted }}
+          style={{ borderColor: colors.border, color: colors.muted, opacity: uploading ? 0.6 : 1 }}
         >
           <Upload size={20} />
-          Click to upload the 2025 annual report (PDF)
-          <input type="file" accept="application/pdf" onChange={handleUpload} className="hidden" />
+          {uploading ? 'Uploading…' : 'Click to upload the 2025 annual report (PDF)'}
+          <input type="file" accept="application/pdf" onChange={handleUpload} disabled={uploading} className="hidden" />
         </label>
       ) : (
         <p className="mt-4 text-sm" style={{ color: colors.muted }}>
@@ -428,92 +432,137 @@ export default function Reports() {
   const { user } = useAuth()
   const [toast, setToast] = useState('')
   const [schedules, setSchedules] = useState([])
+  const [loadingSchedules, setLoadingSchedules] = useState(true)
+  const [exports, setExports] = useState([])
+  const [loadingExports, setLoadingExports] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(emptyFormState())
   const [deleteTarget, setDeleteTarget] = useState(null)
-
-  useEffect(() => {
-    // TODO(backend): replace with GET /api/reports/schedules
-    try {
-      const stored = JSON.parse(localStorage.getItem(SCHEDULES_KEY) || '[]')
-      setSchedules(stored)
-    } catch {
-      setSchedules([])
-    }
-  }, [])
-
-  function persist(next) {
-    setSchedules(next)
-    localStorage.setItem(SCHEDULES_KEY, JSON.stringify(next))
-  }
 
   function showToast(message) {
     setToast(message)
     setTimeout(() => setToast(''), 3200)
   }
 
-  function submitForm(e) {
+  useEffect(() => {
+    let cancelled = false
+    apiRequest('/api/reports/schedules')
+      .then((data) => {
+        if (!cancelled) setSchedules(data)
+      })
+      .catch(() => {
+        if (!cancelled) showToast('Could not load saved schedules.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSchedules(false)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    apiRequest('/api/reports/exports')
+      .then((data) => {
+        if (!cancelled) setExports(data)
+      })
+      .catch(() => {
+        if (!cancelled) showToast('Could not load export history.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingExports(false)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  async function submitForm(e) {
     e.preventDefault()
     if (form.reportTypes.length === 0) return
 
-    if (form.id) {
-      // Editing an existing schedule — TODO(backend): PATCH /api/reports/schedules/:id
-      const next = schedules.map((s) => (s.id === form.id ? { ...s, ...form } : s))
-      persist(next)
-      showToast('Schedule updated.')
-    } else {
-      // TODO(backend): POST /api/reports/schedules
-      const record = {
-        ...form,
-        id: Date.now(),
-        createdBy: user?.name || 'Unknown',
-        createdByEmail: user?.email || null,
-      }
-      persist([...schedules, record])
-      showToast('Schedule saved.')
+    const payload = {
+      reportTypes: form.reportTypes,
+      frequency: form.frequency,
+      weekday: form.frequency === 'Weekly' ? form.weekday : null,
+      dayOfMonth: (form.frequency === 'Monthly' || form.frequency === 'Quarterly') ? form.dayOfMonth : null,
+      specificDate: form.frequency === 'Annually' ? form.specificDate : null,
+      sendTo: form.sendTo,
+      format: form.format,
     }
-    setForm(emptyFormState())
+
+    setSaving(true)
+    try {
+      if (form.id) {
+        const updated = await apiRequest(`/api/reports/schedules/${form.id}`, { method: 'PATCH', body: payload })
+        setSchedules((prev) => prev.map((s) => (s.id === form.id ? updated : s)))
+        showToast('Schedule updated.')
+      } else {
+        const created = await apiRequest('/api/reports/schedules', { method: 'POST', body: payload })
+        setSchedules((prev) => [created, ...prev])
+        showToast('Schedule saved.')
+      }
+      setForm(emptyFormState())
+    } catch (err) {
+      showToast(err.message || 'Could not save schedule.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   function startEdit(schedule) {
-    setForm({ ...schedule })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setForm({
+      id: schedule.id,
+      reportTypes: schedule.reportTypes,
+      frequency: schedule.frequency,
+      weekday: schedule.weekday || WEEKDAYS[0],
+      dayOfMonth: schedule.dayOfMonth || 1,
+      specificDate: schedule.specificDate || '',
+      sendTo: schedule.sendTo,
+      format: schedule.format,
+    })
+    document.getElementById('schedule-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   function cancelEdit() {
     setForm(emptyFormState())
   }
 
-  function confirmDelete() {
-    // TODO(backend): DELETE /api/reports/schedules/:id
-    persist(schedules.filter((s) => s.id !== deleteTarget.id))
-    setDeleteTarget(null)
-    showToast('Schedule deleted.')
+  async function confirmDelete() {
+    try {
+      await apiRequest(`/api/reports/schedules/${deleteTarget.id}`, { method: 'DELETE' })
+      setSchedules((prev) => prev.filter((s) => s.id !== deleteTarget.id))
+      showToast('Schedule deleted.')
+    } catch (err) {
+      showToast(err.message || 'Could not delete schedule.')
+    } finally {
+      setDeleteTarget(null)
+    }
   }
 
   return (
     <div style={{ background: COLORS.bg, minHeight: '100%' }} className="rounded-lg p-6 font-sans">
       <div className="mb-6">
-        <h1 className="font-display text-2xl" style={{ color: COLORS.text }}>
+        <h1 className="font-body font-bold text-2xl" style={{ color: COLORS.text }}>
           Reports & export
         </h1>
         <p className="mt-1 text-sm font-body" style={{ color: COLORS.muted }}>
-          Scheduled exports and the public annual report for grant reporting, the board, and audits.
+          Scheduled exports and the public annual report, for grant reporting, the board, and audits.
         </p>
       </div>
 
       <div className="space-y-6">
-        <AnnualReportPanel colors={COLORS} user={user} />
+        <AnnualReportPanel colors={COLORS} user={user} showToast={showToast} />
 
-        <ScheduleForm
-          form={form}
-          setForm={setForm}
-          onSubmit={submitForm}
-          onCancelEdit={cancelEdit}
-          isEditing={Boolean(form.id)}
-          colors={COLORS}
-        />
-
-        {/* Saved schedules */}
+        <div id = "schedule-form" style={{ scrollMarginTop: '96px'}}>
+          <ScheduleForm
+            form={form}
+            setForm={setForm}
+            onSubmit={submitForm}
+            onCancelEdit={cancelEdit}
+            isEditing={Boolean(form.id)}
+            colors={COLORS}
+            saving={saving}
+          />
+        </div>
+        
         <div
           style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
           className="overflow-x-auto rounded-xl"
@@ -523,7 +572,9 @@ export default function Reports() {
               Saved schedules
             </h2>
           </div>
-          {schedules.length === 0 ? (
+          {loadingSchedules ? (
+            <p className="p-5 text-sm" style={{ color: COLORS.muted }}>Loading…</p>
+          ) : schedules.length === 0 ? (
             <p className="p-5 text-sm" style={{ color: COLORS.muted }}>
               No schedules saved yet.
             </p>
@@ -595,7 +646,9 @@ export default function Reports() {
           )}
         </div>
 
-        {/* Recent exports — unchanged, still stub data */}
+        {/* Recent exports — real data - empty until dispatch job
+        fires for the first time
+        */}
         <div
           style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}` }}
           className="overflow-x-auto rounded-xl"
@@ -605,43 +658,54 @@ export default function Reports() {
               Recent exports
             </h2>
           </div>
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr
-                className="border-b text-xs font-bold tracking-wide"
-                style={{ borderColor: COLORS.border, color: COLORS.muted }}
-              >
-                <th className="px-5 py-3">REPORT</th>
-                <th className="px-5 py-3">GENERATED BY</th>
-                <th className="px-5 py-3">DATE</th>
-                <th className="px-5 py-3">FORMAT</th>
-              </tr>
-            </thead>
-            <tbody>
-              {RECENT_EXPORTS.map((row) => (
-                <tr key={row.id} className="border-t" style={{ borderColor: COLORS.border }}>
-                  <td className="px-5 py-3 font-semibold" style={{ color: COLORS.text }}>
-                    {row.report}
-                  </td>
-                  <td className="px-5 py-3" style={{ color: COLORS.muted }}>
-                    {row.by}
-                  </td>
-                  <td className="px-5 py-3" style={{ color: COLORS.muted }}>
-                    {row.date}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span
-                      className="flex items-center gap-1.5 text-xs font-bold"
-                      style={{ color: COLORS[row.formatColor] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: COLORS[row.formatColor] }} />
-                      {row.format}
-                    </span>
-                  </td>
+          {loadingExports ? (
+            <p className="p-5 text-sm" style={{ color: COLORS.muted }}>Loading…</p>
+          ) : exports.length === 0 ? (
+            <p className="p-5 text-sm" style={{ color: COLORS.muted }}>
+              No exports yet. Scheduled reports will show up here once they're sent.
+            </p>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr
+                  className="border-b text-xs font-bold tracking-wide"
+                  style={{ borderColor: COLORS.border, color: COLORS.muted }}
+                >
+                  <th className="px-5 py-3">REPORT</th>
+                  <th className="px-5 py-3">SENT TO</th>
+                  <th className="px-5 py-3">DATE</th>
+                  <th className="px-5 py-3">FORMAT</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {exports.map((row) => {
+                  const formatColor = row.format === 'PDF' ? COLORS.red : row.format === 'Excel' ? COLORS.green : COLORS.blue
+                  return (
+                    <tr key={row.id} className="border-t" style={{ borderColor: COLORS.border }}>
+                      <td className="px-5 py-3 font-semibold" style={{ color: COLORS.text }}>
+                        {row.reportTypes
+                          .map((id) => REPORT_TYPES.find((t) => t.id === id)?.label)
+                          .filter(Boolean)
+                          .join(', ')}
+                      </td>
+                      <td className="px-5 py-3" style={{ color: COLORS.muted }}>
+                        {row.sentTo}
+                      </td>
+                      <td className="px-5 py-3" style={{ color: COLORS.muted }}>
+                        {new Date(row.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="flex items-center gap-1.5 text-xs font-bold" style={{ color: formatColor }}>
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: formatColor }} />
+                          {row.format}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -654,7 +718,7 @@ export default function Reports() {
         </div>
       )}
 
-      {deleteTarget && (
+       {deleteTarget && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(20,18,15,0.45)' }}

@@ -5,7 +5,7 @@ import ProgramsHeader from '../components/programs/ProgramsHeader'
 import ProgramTabs from '../components/programs/ProgramTabs'
 import ProgramCard from '../components/programs/ProgramCard'
 import Methodologies from '../components/programs/Methodologies'
-import PartnerCTA from '../components/programs/PartnerCTA'
+import PartnerCTA from '../components/programs/ParticipateCTA'
 
 export default function Programs() {
   const [activeId, setActiveId] = useState(programs[0].id);

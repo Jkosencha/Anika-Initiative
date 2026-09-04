@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
 import { submitApplication } from '../lib/api'
-import { normalizePhone, sanitizePhoneInput } from '../lib/phone'
+import { composePhone, COUNTRY_CODES, sanitizeLocalPhoneInput } from '../lib/phone'
 
 const BENEFITS = [
   { title: 'Residencies', text: 'Priority access to cross-border artistic residencies.', accent: 'gold' },
@@ -27,12 +27,12 @@ const ROLE_SUBJECT = {
 };
 
 export default function AlliancePage() {
-  const [form, setForm] = useState({ name: '', email: '', org: '', country: '', phone: '', role: '', consent: true });
+  const [form, setForm] = useState({ name: '', email: '', org: '', country: '', countryCode: '254', localNumber: '', role: '', consent: true });
   const [status, setStatus] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim() || !form.email.trim() || !normalizePhone(form.phone)) {
+    if (!form.name.trim() || !form.email.trim() || form.localNumber.length !== 9) {
       setStatus('error')
       return
     }
@@ -41,14 +41,14 @@ export default function AlliancePage() {
       await submitApplication({
         name: form.name,
         email: form.email || undefined,
-        phone: normalizePhone(form.phone),
+        phone: composePhone(form.countryCode, form.localNumber),
         organisation: form.org || undefined,
         country: form.country || undefined,
         subject: ROLE_SUBJECT[form.role] || 'partnership',
         message: `Alliance membership application. Role: ${form.role || 'Artist'}`,
         whatsapp_opt_in: form.consent,
       })
-      setForm({ name: '', email: '', org: '', country: '', phone: '', role: '', consent: true })
+      setForm({ name: '', email: '', org: '', country: '', countryCode: '254', localNumber: '', role: '', consent: true })
       setStatus('done')
     } catch {
       setStatus('error')
@@ -253,14 +253,27 @@ export default function AlliancePage() {
                 <label htmlFor="a-phone" className="mb-1 block font-body text-xs font-extrabold uppercase">
                   WhatsApp Number *
                 </label>
-                <input
-                  id="a-phone"
-                  type="tel"
-                  className="field w-full border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
-                  placeholder="+254 712 345 678"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })}
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={form.countryCode}
+                    onChange={(e) => setForm({ ...form, countryCode: e.target.value })}
+                    className="field w-32 border border-ink/25 bg-white px-3 py-3 font-body text-sm text-ink outline-none focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                    aria-label="Country code"
+                  >
+                    {COUNTRY_CODES.map(({ code, country }) => <option key={code} value={code}>+{code} {country}</option>)}
+                  </select>
+                  <input
+                    id="a-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={9}
+                    className="field min-w-0 flex-1 border border-ink/25 bg-white px-4 py-3 font-body text-sm text-ink outline-none transition-colors placeholder:text-ink/40 focus:border-anika-blue focus:ring-2 focus:ring-anika-blue/20"
+                    placeholder="712 345 678"
+                    value={form.localNumber}
+                    onChange={(e) => setForm({ ...form, localNumber: sanitizeLocalPhoneInput(e.target.value) })}
+                  />
+                </div>
+                <p className="mt-1 font-body text-xs text-ink/50">Enter 9 digits after the country code.</p>
               </div>
 
               <label className="flex cursor-pointer items-start gap-3 border border-anika-green/30 bg-anika-green/10 p-3">

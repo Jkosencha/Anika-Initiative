@@ -1,25 +1,32 @@
-from .user import User
 from app.models.donation import Donation
+
+from .annual_report import AnnualReport
 from .application import Application
-from .gallery import GalleryImage
-from .story import Story
 from .contact import Contact
 from .event import Event
+from .gallery import GalleryImage
 from .registration import Registration
-from .whatsapp_conversation import WhatsAppConversation
+from .report_schedule import ReportSchedule
+from .story import Story
+from .user import User
 from .whatsapp_broadcast import WhatsAppBroadcast
+from .whatsapp_conversation import WhatsAppConversation
 from .whatsapp_settings import WhatsAppSettings
+from app.models.newsletter import NewsletterSubscriber
 
 __all__ = [
-    "User",
-    "Donation",
+    "AnnualReport",
     "Application",
-    "GalleryImage",
-    "Story",
     "Contact",
+    "Donation",
     "Event",
+    "GalleryImage",
     "Registration",
-    "WhatsAppConversation",
+    "ReportSchedule",
+    "Story",
+    "User",
     "WhatsAppBroadcast",
+    "WhatsAppConversation",
     "WhatsAppSettings",
+    "NewsletterSubscriber"
 ]

@@ -8,6 +8,7 @@ import {
 } from "../../lib/api";
 import { useAdminColors } from "../theme";
 import { toISODateInput, fromISODateInput } from "../../lib/eventDate";
+import { apiRequest } from "../utils/api";
 
 const STATUS_STYLE = {
   Live: { bg: "#dcefe0", text: "#2d7a43", dot: "#2d7a43" },
@@ -84,10 +85,27 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
   const [pillar, setPillar] = useState(initial?.pillar ?? "Arts & Culture");
   const [date, setDate] = useState(toISODateInput(initial?.date ?? ""));
   const [time, setTime] = useState(initial?.time ?? "");
+  const [image, setImage] = useState(initial?.image ?? "");
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     if (!title.trim()) return;
+    let uploadedImage = image;
+    if (imageFile) {
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        const result = await apiRequest("/api/events/image", { method: "POST", body: formData });
+        uploadedImage = result.url;
+      } catch {
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
     onAdd({
       id: initial?.id ?? Date.now(),
       title: title.trim(),
@@ -98,6 +116,7 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
       capacity: parseInt(capacity, 10) || (initial?.capacity || 0),
       registered: initial?.registered ?? 0,
       status: initial?.status ?? "Live",
+      image: uploadedImage,
     });
     onClose();
   }
@@ -202,13 +221,30 @@ function AddEventModal({ onClose, onAdd, colors, initial }) {
               />
             </div>
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold" style={{ color: colors.muted }}>
+              Event image
+            </label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setImageFile(file);
+                if (file) setImage(URL.createObjectURL(file));
+              }}
+              className="px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ border: `1px solid ${colors.border}`, background: colors.inputBg, color: colors.text }}
+            />
+            {image && <img src={image} alt="Event preview" className="mt-2 h-24 w-full rounded-lg object-cover" />}
+          </div>
         </div>
         <div className="flex items-center justify-between p-4 border-t" style={{ borderColor: colors.border }}>
           <button type="button" onClick={onClose} className="text-sm font-semibold px-3 py-2" style={{ color: colors.muted }}>
             Cancel
           </button>
-          <button type="submit" style={{ background: colors.buttonBg, color: colors.buttonText }} className="text-sm font-semibold px-4 py-2 rounded-lg">
-            {initial ? "Update event" : "Create event"}
+          <button type="submit" disabled={uploading} style={{ background: colors.buttonBg, color: colors.buttonText }} className="text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-60">
+            {uploading ? "Uploading image..." : initial ? "Update event" : "Create event"}
           </button>
         </div>
       </form>

@@ -47,11 +47,11 @@ export default function WhatsAppBroadcast() {
 
   useEffect(() => {
     fetchWhatsAppBroadcasts().then(({ rows }) => {
-      setHistory(rows || []);
+      setHistory(Array.isArray(rows) ? rows : []);
     });
     fetchWhatsAppStats().then(setWaStats);
     fetchWhatsAppInbox().then(({ rows }) => {
-      if (rows && rows.length) setConversations(rows);
+      setConversations(Array.isArray(rows) ? rows : []);
     });
   }, []);
 
@@ -60,12 +60,8 @@ export default function WhatsAppBroadcast() {
   // Audience sizes come from the real conversation list when it exists, so the
   // counts match what the assistant actually knows. A fallback base keeps the
   // composer sane before the first registrations/bot threads are created.
-  const fallbackBase = 1284;
-  const liveContacts = conversations.length > 0 ? conversations.length : fallbackBase;
-  const liveOptIns =
-    conversations.length > 0
-      ? conversations.filter((c) => !c.optedOut).length
-      : Math.round(fallbackBase * 0.62);
+  const liveContacts = conversations.length;
+  const liveOptIns = conversations.filter((c) => !c.optedOut).length;
 
   const effectiveAudience = useMemo(() => {
     if (audience === "All opted-in") return liveOptIns;

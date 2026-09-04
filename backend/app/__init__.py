@@ -89,35 +89,46 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
+    
+    # Import all models
+    from app.models.annual_report import AnnualReport
     from app.models.application import Application
     from app.models.contact import Contact
     from app.models.donation import Donation
+    from app.models.event import Event
     from app.models.gallery import GalleryImage
+    from app.models.registration import Registration
+    from app.models.report_schedule import ReportSchedule
+    from app.models.settings import Settings
     from app.models.story import Story
     from app.models.user import User
-    from app.models.event import Event
-    from app.models.registration import Registration
-    from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_broadcast import WhatsAppBroadcast
+    from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_settings import WhatsAppSettings
-    from app.models.settings import Settings
+    from app.models.newsletter import NewsletterSubscriber   
+    from app.models.export_log import ExportLog
+    from app.models.impact_stat import ImpactStat
 
     from app.routes import (
         applications_bp,
         auth_bp,
         contacts_bp,
         donations_bp,
+        events_bp,
         gallery_bp,
         health_bp,
-        stories_bp,
-        events_bp,
-        registrations_bp,
-        whatsapp_bp,
+        impact_bp,
         metrics_bp,
+        registrations_bp,
+        reports_bp,
         team_bp,
         settings_bp,
+        stories_bp,
+        whatsapp_bp,
     )
+    from app.routes.newsletter import newsletter_bp          
 
+    # Register blueprints
     app.register_blueprint(health_bp)
     app.register_blueprint(donations_bp)
     app.register_blueprint(applications_bp)
@@ -131,6 +142,9 @@ def create_app(config_class=Config):
     app.register_blueprint(metrics_bp)
     app.register_blueprint(team_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(reports_bp)
+    app.register_blueprint(newsletter_bp)  
+    app.register_blueprint(impact_bp)                  
 
     with app.app_context():
         db.create_all()
