@@ -1,8 +1,27 @@
+import { useEffect, useState } from 'react'
 import Reveal from '../Reveal';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+
 export default function ReportBanner() {
-    const hasReport = false; //change to true once report PDF is sent
-    const reportUrl = '/documents/annual-impact-report.pdf'; //report link placeholder
+    const [report, setReport] = useState(null)
+
+    useEffect(() => {
+        let cancelled = false
+        fetch(`${API_BASE}/api/reports/annual`)
+            .then((res) => (res.ok ? res.json() : Promise.reject()))
+            .then((data) => {
+                if (!cancelled) setReport(data)
+            })
+            .catch(() => {
+                // 404 (nothing uploaded yet) or unreachable -- stays null,
+                // same as the old hasReport = false placeholder state.
+            })
+        return () => { cancelled = true }
+    }, [])
+
+    const hasReport = Boolean(report?.url)
+    const reportUrl = report?.url
 
   return (
     <Reveal>
@@ -22,6 +41,8 @@ export default function ReportBanner() {
                     <a 
                         href={reportUrl}
                         download
+                        target="_blank"
+                        rel="noreferrer"
                         className='inline-block border-2 border-white px-6 py-3 uppercase text-sm font-semibold tracking-wide hover:bg-white hover:text-anika-blue transition-colors duration-200 whitespace-nowrap'
                     >
                         Download PDF 
