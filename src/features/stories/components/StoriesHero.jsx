@@ -8,7 +8,7 @@ const StoriesHero = () => {
     <Reveal>
       <section className="relative overflow-hidden bg-charcoal py-16 text-cream">
         <img
-          src="/public/anika-blue-blob.png"
+          src="/anika-blue-blob.png"
           alt=""
           aria-hidden="true"
           className='absolute -top-10 right-0 w-64 h-64 md:w-80 md:h-80 object-contain pointer-events-none select-none'
