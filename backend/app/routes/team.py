@@ -1,4 +1,5 @@
 import logging
+import socket
 import threading
 
 from flask import Blueprint, current_app, jsonify, request
@@ -93,10 +94,17 @@ def create_team_member():
 
     def _send_invite_email_async():
         with app_obj.app_context():
+            # flask-mail doesn't expose a connection timeout, and a blocked/
+            # slow SMTP path (seen on some hosts) can otherwise hang here
+            # indefinitely. Scoped to this thread's own send attempt only.
+            previous_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(5)
             try:
                 send_team_invite_email(user, password)
             except Exception:
                 logger.exception("Failed to send invite email to %s", user.email)
+            finally:
+                socket.setdefaulttimeout(previous_timeout)
 
     threading.Thread(target=_send_invite_email_async, daemon=True).start()
 
