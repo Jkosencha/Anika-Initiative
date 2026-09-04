@@ -551,7 +551,7 @@ export default function Reports() {
       <div className="space-y-6">
         <AnnualReportPanel colors={COLORS} user={user} showToast={showToast} />
 
-        <div id = "schedule-form">
+        <div id = "schedule-form" style={{ scrollMarginTop: '96px'}}>
           <ScheduleForm
             form={form}
             setForm={setForm}
