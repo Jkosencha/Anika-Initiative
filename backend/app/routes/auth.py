@@ -1,4 +1,3 @@
-
 import uuid
 from datetime import timedelta
 
@@ -13,7 +12,9 @@ from flask_jwt_extended import (
 )
 
 from app.extensions import db
+from app.models.password_reset_token import PasswordResetToken
 from app.models.user import User
+from app.utils.email import send_password_reset_email
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -253,3 +254,97 @@ def upload_avatar():
     db.session.commit()
 
     return jsonify(user.to_dict())
+
+# For Reseting password
+
+GENERIC_FORGOT_PASSWORD_MESSAGE = (
+    "If an account exists with this email, check your inbox for password reset instructions."
+)
+
+@auth_bp.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    """
+    Request a password reset link. Always returns a generic response,
+    regardless of whether the email matches an account, to avoid leaking
+    which emails are registered.
+    ---
+    tags:
+      - Auth
+    summary: Request a password reset email
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [email]
+          properties:
+            email: {type: string}
+    responses:
+      200:
+        description: Generic confirmation (sent or not, response is identical)
+    """
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+
+    if email:
+        user = User.query.filter_by(email=email).first()
+        if user and user.is_active and not PasswordResetToken.has_recent_unexpired(user.id):
+              _token, raw_token = PasswordResetToken.create_for_user(user)
+              db.session.commit()
+              try:
+                send_password_reset_email(user, raw_token)
+              except Exception:
+                current_app.logger.exception(
+                  "Failed to send password reset email to %s", user.email
+                )
+
+    return jsonify({"message": GENERIC_FORGOT_PASSWORD_MESSAGE}), 200
+
+
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    """
+    Complete a password reset using a token from the reset email.
+    ---
+    tags:
+      - Auth
+    summary: Reset password with a token
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [token, newPassword]
+          properties:
+            token: {type: string}
+            newPassword: {type: string, example: "at least 8 characters"}
+    responses:
+      200:
+        description: Password reset
+      400:
+        description: Missing fields, weak password, or invalid/expired token
+    """
+    data = request.get_json(silent=True) or {}
+    raw_token = data.get("token") or ""
+    new_password = data.get("newPassword") or ""
+
+    if not raw_token or not new_password:
+        return jsonify({"error": "token and newPassword are required"}), 400
+    if len(new_password) < 8:
+        return jsonify({"error": "New password must be at least 8 characters"}), 400
+
+    reset_token = PasswordResetToken.find_valid(raw_token)
+    if not reset_token:
+        return jsonify({"error": "This link is invalid or has expired"}), 400
+
+    user = User.query.get(reset_token.user_id)
+    if not user or not user.is_active:
+        return jsonify({"error": "This link is invalid or has expired"}), 400
+
+    user.set_password(new_password)
+    reset_token.used = True
+    db.session.commit()
+
+    return jsonify({"message": "Password reset successfully"}), 200
