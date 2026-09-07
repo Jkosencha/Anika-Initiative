@@ -24,7 +24,6 @@ donations_bp = Blueprint("donations", __name__, url_prefix="/api/donations")
 logger = logging.getLogger(__name__)
 
 
-# ---------- new helper for admin notification ----------
 def _send_admin_donation_notification(donation):
     """
     Send an email to the organisation admin when a donation is completed.
@@ -44,7 +43,7 @@ def _send_admin_donation_notification(donation):
     admin_email = current_app.config.get("ORG_NOTIFICATION_EMAIL") or \
                   current_app.config.get("ADMIN_EMAIL", "admin@example.com")
     _send_email(admin_email, subject, body)
-# ---------- end of new helper ----------
+
 
 
 def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
@@ -175,7 +174,7 @@ def create_donation():
         )
         db.session.add(donation)
 
-        # Only create a contact if an email is provided (manual donations may skip it)
+        # Only create a contact if an email is provided 
         if data.get("email"):
             create_contact_from_data(
                 name=donor_name,
@@ -461,7 +460,7 @@ def paystack_webhook():
     db.session.commit()
     logger.info("Donation %s status updated to %s", reference, donation.status)
 
-    # Send admin notification if newly completed (old status was not Completed)
+    # Send admin notification if newly completed 
     if donation.status == "Completed" and old_status != "Completed":
         _send_admin_donation_notification(donation)
 

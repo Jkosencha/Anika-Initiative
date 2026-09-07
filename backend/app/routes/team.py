@@ -7,7 +7,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.user import ROLES, User
-from app.models.password_reset_token import PasswordResetToken  # added to fix delete
+from app.models.password_reset_token import PasswordResetToken  
 from app.utils.decorators import require_role
 from app.utils.email import send_team_invite_email
 
@@ -88,16 +88,10 @@ def create_team_member():
     db.session.add(user)
     db.session.commit()
 
-    # Sent in the background: a slow/unreachable SMTP server (seen on some
-    # hosts) would otherwise block this whole request for as long as the
-    # connection hangs. Account creation itself must never wait on email.
     app_obj = current_app._get_current_object()
 
     def _send_invite_email_async():
         with app_obj.app_context():
-            # flask-mail doesn't expose a connection timeout, and a blocked/
-            # slow SMTP path (seen on some hosts) can otherwise hang here
-            # indefinitely. Scoped to this thread's own send attempt only.
             previous_timeout = socket.getdefaulttimeout()
             socket.setdefaulttimeout(5)
             try:
@@ -212,8 +206,6 @@ def delete_team_member(user_id):
         if remaining == 0:
             return jsonify({"error": "Can't remove the last leadership account"}), 400
 
-    # Delete any password reset tokens associated with this user to avoid
-    # foreign key constraint violations when the user is removed.
     PasswordResetToken.query.filter_by(user_id=user.id).delete()
 
     db.session.delete(user)

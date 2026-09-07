@@ -42,12 +42,10 @@ def _send_email(to_email, subject, body, sender_override=None, sender_name=None)
                 return True
             else:
                 logger.error("Brevo API error %s: %s", response.status_code, response.text)
-                # fallback to SMTP if API fails
+                
         except requests.RequestException as e:
             logger.error("Brevo API request failed: %s", e)
-            # fallback to SMTP
-
-    # Fallback to Flask-Mail (SMTP)
+            
     try:
         msg = Message(
             subject=subject,

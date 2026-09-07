@@ -3,7 +3,7 @@ import os
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify
-from flask_migrate import Migrate  # <-- ADDED for Alembic
+from flask_migrate import Migrate  
 
 from config import BASE_DIR, Config
 from app.extensions import cors, db, jwt, mail, swagger
@@ -42,8 +42,7 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     mail.init_app(app)
 
-    # --- Initialize Flask-Migrate (Alembic) ---
-    migrate = Migrate(app, db)  # <-- ADDED
+    migrate = Migrate(app, db)  
 
     app.config["SWAGGER"] = SWAGGER_CONFIG
     swagger.template = SWAGGER_TEMPLATE

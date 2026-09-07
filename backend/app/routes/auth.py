@@ -255,7 +255,6 @@ def upload_avatar():
 
     return jsonify(user.to_dict())
 
-# For Reseting password
 
 GENERIC_FORGOT_PASSWORD_MESSAGE = (
     "If an account exists with this email, check your inbox for password reset instructions."

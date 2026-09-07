@@ -53,7 +53,7 @@ def _validate_schedule_payload(data):
     return None
 
 
-# SCHEDULES
+
 
 @reports_bp.get("/schedules")
 @require_permission("reports")
@@ -176,8 +176,7 @@ def upload_annual_report():
         current_app.logger.error("Cloudinary annual report upload failed: %s", exc)
         return jsonify({"error": "Upload to storage provider failed"}), 502
 
-    # Replace-only: remove whatever was there before, so there's always
-    # exactly one row, matching the "latest report only" spec.
+   
     AnnualReport.query.delete()
 
     report = AnnualReport(

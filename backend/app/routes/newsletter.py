@@ -33,7 +33,7 @@ def subscribe():
     if existing_app:
         return jsonify({"message": "You already have a pending application. We'll notify you once it's reviewed."}), 200
 
-    # Create contact record
+
     try:
         create_contact_from_data(
             name=name or email,
@@ -49,7 +49,6 @@ def subscribe():
     except Exception as e:
         current_app.logger.error(f"Failed to create contact for {email}: {e}")
 
-    # Create application record
     try:
         app_entry = Application(
             name=name or email,

@@ -25,7 +25,7 @@ class Config:
         "DONATION_CALLBACK_URL", "http://localhost:5173/donate/thank-you"
     )
 
-    # Flask-Mail (SMTP) – kept for backward compatibility
+
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', '1', 'yes']
@@ -48,7 +48,7 @@ class Config:
         if o.strip()
     ]
 
-    # WhatsApp Business Cloud API (Meta)
+
     WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN", "")
     WHATSAPP_PHONE_ID = os.environ.get("WHATSAPP_PHONE_ID", "")
     WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
@@ -56,7 +56,7 @@ class Config:
         "WHATSAPP_BASE_URL", "https://graph.facebook.com/v21.0"
     )
 
-    # Cloudinary
+   
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
     CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
     CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
