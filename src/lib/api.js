@@ -217,7 +217,7 @@ export function fetchEvents() {
 }
 export async function fetchPublicEvents() {
   try {
-    const rows = await request('GET', '/events?public=1');
+    const rows = await request('GET', '/api/events?public=1');
     return { ok: true, source: 'api', rows };
   } catch {
     return { ok: true, source: 'local', rows: getRecords(STORE_COLLECTION.event) };
@@ -262,7 +262,7 @@ export function updateWhatsAppSettings(id, patch) {
 /** Aggregate WhatsApp live-state (shared across Assistant / Inbox / Broadcast). */
 export async function fetchWhatsAppStats() {
   try {
-    const stats = await request('GET', '/whatsapp/stats');
+    const stats = await request('GET', '/api/whatsapp/stats');
     return stats;
   } catch {
     const { rows } = await fetchCollection('whatsappInbox');
@@ -283,14 +283,14 @@ export async function fetchWhatsAppStats() {
  * the resulting thread lands in the shared inbox.
  */
 export async function simulateWhatsAppMessage({ name, phone, message }) {
-  const data = await request('POST', '/whatsapp/simulate', { name, phone, message }, 8000);
+  const data = await request('POST', '/api/whatsapp/simulate', { name, phone, message }, 8000);
   return data;
 }
 
 /** Whether the WhatsApp Cloud API is configured for real sends or simulated. */
 export async function fetchWhatsAppStatus() {
   try {
-    const status = await request('GET', '/whatsapp/status');
+    const status = await request('GET', '/api/whatsapp/status');
     if (!status?.configured && !status?.simulated) status.simulated = true;
     return status;
   } catch {
@@ -357,9 +357,18 @@ export function deleteTeamMember(id) {
 
 export async function fetchMetrics() {
   try {
-    return await request('GET', '/metrics');
+    return await request('GET', '/api/metrics');
   } catch {
     return getMetrics();
+  }
+}
+
+/** Public -- no auth. Same stats the admin "Impact metrics" page manages. */
+export async function fetchImpactStats() {
+  try {
+    return await request('GET', '/api/impact');
+  } catch {
+    return [];
   }
 }
 

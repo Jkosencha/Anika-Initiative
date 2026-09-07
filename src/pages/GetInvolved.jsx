@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
-import { submitApplication } from '../lib/api';
+import { submitApplication, API_BASE } from '../lib/api';
 
 // ---------- VALIDATION HELPERS ----------
 const validateEmail = (email) => {
@@ -210,7 +210,7 @@ const GetInvolved = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/subscribe`,
+          `${API_BASE}/api/newsletter/subscribe`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

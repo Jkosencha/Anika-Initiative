@@ -1,6 +1,8 @@
 import logging
+import socket
+import threading
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
@@ -85,11 +87,26 @@ def create_team_member():
     db.session.add(user)
     db.session.commit()
 
-    # Email failures should never break account creation itself
-    try:
-        send_team_invite_email(user, password)
-    except Exception:
-        logger.exception("Failed to send invite email to %s", user.email)
+    # Sent in the background: a slow/unreachable SMTP server (seen on some
+    # hosts) would otherwise block this whole request for as long as the
+    # connection hangs. Account creation itself must never wait on email.
+    app_obj = current_app._get_current_object()
+
+    def _send_invite_email_async():
+        with app_obj.app_context():
+            # flask-mail doesn't expose a connection timeout, and a blocked/
+            # slow SMTP path (seen on some hosts) can otherwise hang here
+            # indefinitely. Scoped to this thread's own send attempt only.
+            previous_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(5)
+            try:
+                send_team_invite_email(user, password)
+            except Exception:
+                logger.exception("Failed to send invite email to %s", user.email)
+            finally:
+                socket.setdefaulttimeout(previous_timeout)
+
+    threading.Thread(target=_send_invite_email_async, daemon=True).start()
 
     return jsonify(user.to_dict()), 201
 

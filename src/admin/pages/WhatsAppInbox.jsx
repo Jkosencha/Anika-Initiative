@@ -48,7 +48,7 @@ export default function WhatsAppInbox() {
     fetchWhatsAppInbox().then(({ rows }) => {
       const nextRows = Array.isArray(rows) ? rows : [];
       setConversations(nextRows);
-      setActiveId((cur) => nextRows.some((c) => c.id === cur) ? cur : nextRows[0]?.id ?? null);
+      setActiveId((cur) => (nextRows.some((c) => c.id === cur) ? cur : (nextRows[0]?.id ?? null)));
     });
   }, []);
 

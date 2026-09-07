@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+jobs:
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  backend:
+    name: Backend (boots cleanly)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pipenv
+      - run: pipenv install --deploy --dev
+
+      # Sanity check that the app factory boots with no env vars set (every
+      # Config value has a safe default) -- catches import errors, missing
+      # dependencies, and blueprint registration mistakes without needing a
+      # real database or credentials.
+      - run: pipenv run python -c "from app import create_app; create_app(); print('App booted OK')"

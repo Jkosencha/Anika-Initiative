@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { Send, Users, Mail, Trash2, X } from "lucide-react";
+import { API_BASE } from "../../lib/api";
 
 const lightColors = {
   bg: "#fafaf8",
@@ -130,7 +131,7 @@ export default function Newsletter() {
     try {
       const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/subscribers`,
+        `${API_BASE}/api/newsletter/subscribers`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -167,7 +168,7 @@ export default function Newsletter() {
     try {
       const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/send`,
+        `${API_BASE}/api/newsletter/send`,
         {
           method: "POST",
           headers: {
@@ -200,7 +201,7 @@ export default function Newsletter() {
     try {
       const token = getToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/newsletter/${id}`,
+        `${API_BASE}/api/newsletter/${id}`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },
