@@ -17,11 +17,34 @@ from app.services.paystack import (
 from app.utils.contact_utils import create_contact_from_data
 from app.utils.decorators import require_permission
 from app.utils.validation import load_json_or_400
+from app.utils.email import _send_email  # <-- new import
 
 donations_bp = Blueprint("donations", __name__, url_prefix="/api/donations")
 
-
 logger = logging.getLogger(__name__)
+
+
+# ---------- new helper for admin notification ----------
+def _send_admin_donation_notification(donation):
+    """
+    Send an email to the organisation admin when a donation is completed.
+    """
+    subject = f"New donation received – ANIKA"
+    body = (
+        f"A new donation has been received.\n\n"
+        f"Donor: {donation.donor_name}\n"
+        f"Amount: {donation.currency} {donation.amount:.2f}\n"
+        f"Method: {donation.method}\n"
+        f"Reference: {donation.reference}\n"
+        f"Status: {donation.status}\n"
+        f"Date: {donation.paid_at or donation.created_at}\n"
+        f"Phone: {donation.phone or 'N/A'}\n"
+        f"Email: {donation.email or 'N/A'}"
+    )
+    admin_email = current_app.config.get("ORG_NOTIFICATION_EMAIL") or \
+                  current_app.config.get("ADMIN_EMAIL", "admin@example.com")
+    _send_email(admin_email, subject, body)
+# ---------- end of new helper ----------
 
 
 def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
@@ -152,25 +175,31 @@ def create_donation():
         )
         db.session.add(donation)
 
-        create_contact_from_data(
-            name=donor_name,
-            email=data.get("email"),
-            phone=phone,
-            message=None,
-            source='donation',
-            subject=None,
-            country=None,
-            status='new'
-        )
+        # Only create a contact if an email is provided (manual donations may skip it)
+        if data.get("email"):
+            create_contact_from_data(
+                name=donor_name,
+                email=data["email"],
+                phone=phone,
+                message=None,
+                source='donation',
+                subject=None,
+                country=None,
+                status='new'
+            )
 
         db.session.commit()
         logger.info("Manual donation recorded: ref=%s, amount=%s", donation.reference, amount)
+
+        # Send admin notification for manual donation
+        _send_admin_donation_notification(donation)
+
         return jsonify(donation.to_dict()), 201
 
     # method is 'mpesa' or 'card' -> go through Paystack
     email = data.get("email") or "donor@anika.org"
     currency = (data.get("currency") or "KES").upper()
-    
+
     # Validate currency/method combinations
     if method == "mpesa" and currency != "KES":
         logger.warning("M-Pesa donation with non-KES currency: %s (rejected)", currency)
@@ -199,6 +228,7 @@ def create_donation():
     )
     db.session.add(donation)
 
+    # For Paystack, email is always present (we set a fallback above)
     create_contact_from_data(
         name=donor_name,
         email=email,
@@ -417,6 +447,9 @@ def paystack_webhook():
 
     logger.info("Webhook received for reference %s", reference)
 
+    # Store previous status to detect if it changes to Completed
+    old_status = donation.status
+
     # Re-verify with Paystack
     try:
         verified = verify_transaction(reference)
@@ -427,6 +460,10 @@ def paystack_webhook():
     _apply_paystack_result(donation, verified)
     db.session.commit()
     logger.info("Donation %s status updated to %s", reference, donation.status)
+
+    # Send admin notification if newly completed (old status was not Completed)
+    if donation.status == "Completed" and old_status != "Completed":
+        _send_admin_donation_notification(donation)
 
     # Send WhatsApp receipt if completed and requested
     if donation.status == "Completed" and donation.send_whatsapp_receipt and donation.phone:

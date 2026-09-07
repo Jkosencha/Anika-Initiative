@@ -120,8 +120,13 @@ async function doRequest(method, path, body, token, timeoutMs) {
 }
 
 async function request(method, path, body, timeoutMs = 4000) {
+  // DEBUG: log outgoing request
+  console.log(`[DEBUG] API request: ${method} ${path}`, body ? JSON.stringify(body) : '');
+
   const token = getAuthToken();
   let res = await doRequest(method, path, body, token, timeoutMs);
+
+  console.log(`[DEBUG] API response: ${method} ${path} -> ${res.status}`);
 
   if (res.status === 401) {
     if (getRefreshToken()) {
@@ -136,7 +141,17 @@ async function request(method, path, body, timeoutMs = 4000) {
     }
   }
 
-  if (!res.ok) throw new Error(`API ${path} responded ${res.status}`);
+  if (!res.ok) {
+    // Try to read error message from response
+    let errorMsg = `API ${path} responded ${res.status}`;
+    try {
+      const errorData = await res.json();
+      if (errorData?.error) errorMsg = errorData.error;
+    } catch (_) { /* ignore */ }
+    console.error(`[DEBUG] API error: ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
   return await res.json();
 }
 
@@ -165,11 +180,14 @@ export async function fetchCollection(kind) {
 
 /** Create a record. API-first, falls back to local store. */
 async function submit(kind, payload) {
+  console.log(`[DEBUG] submit(${kind}) payload:`, payload);
   try {
     const path = `/api/${KIND_COLLECTION[kind]}`;
     const data = await request('POST', path, payload);
+    console.log(`[DEBUG] submit(${kind}) success:`, data);
     return { ok: true, source: 'api', record: data };
-  } catch {
+  } catch (err) {
+    console.warn(`[DEBUG] submit(${kind}) falling back to local store due to:`, err);
     const record = addRecord(STORE_COLLECTION[kind], payload);
     return { ok: true, source: 'local', record };
   }

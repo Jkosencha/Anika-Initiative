@@ -7,6 +7,7 @@ from flask_jwt_extended import get_jwt_identity
 
 from app.extensions import db
 from app.models.user import ROLES, User
+from app.models.password_reset_token import PasswordResetToken  # added to fix delete
 from app.utils.decorators import require_role
 from app.utils.email import send_team_invite_email
 
@@ -210,6 +211,10 @@ def delete_team_member(user_id):
         remaining = User.query.filter_by(role="leadership").filter(User.id != user.id).count()
         if remaining == 0:
             return jsonify({"error": "Can't remove the last leadership account"}), 400
+
+    # Delete any password reset tokens associated with this user to avoid
+    # foreign key constraint violations when the user is removed.
+    PasswordResetToken.query.filter_by(user_id=user.id).delete()
 
     db.session.delete(user)
     db.session.commit()

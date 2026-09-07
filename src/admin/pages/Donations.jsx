@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { X, Plus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-import { apiRequest } from "../utils/api"; 
+import { apiRequest } from "../utils/api";
 import { normalizePhone, sanitizePhoneInput } from "../../lib/phone";
 
 const lightColors = {
@@ -84,10 +84,37 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
   function submit(e) {
     e.preventDefault();
     const amt = parseFloat(amount);
-    if (!donor.trim() || !amt || amt <= 0) return;
-    const normalizedPhone = phone.trim() ? normalizePhone(phone) : undefined;
-    if (phone.trim() && !normalizedPhone) return;
-    onAdd({ donor_name: donor.trim(), amount: amt, phone: normalizedPhone, status });
+    if (!donor.trim() || !amt || amt <= 0) {
+      toast.error("Please enter a donor name and a valid amount.");
+      return;
+    }
+
+    const rawPhone = phone.trim();
+    let finalPhone = undefined;
+
+    if (rawPhone) {
+      // Try the utility first
+      let normalized = normalizePhone(rawPhone);
+      if (normalized) {
+        finalPhone = normalized;
+      } else {
+        // Manual conversion for Kenyan numbers
+        let cleaned = rawPhone.replace(/\s/g, '').replace(/^\+/, '');
+        if (cleaned.startsWith('0')) {
+          cleaned = '254' + cleaned.slice(1);
+        } else if (cleaned.startsWith('7')) {
+          cleaned = '254' + cleaned;
+        }
+        if (/^254[17]\d{8}$/.test(cleaned)) {
+          finalPhone = '+' + cleaned;
+        } else {
+          toast.error("Please enter a valid Kenyan phone number (e.g., 0712345678).");
+          return;
+        }
+      }
+    }
+
+    onAdd({ donor_name: donor.trim(), amount: amt, phone: finalPhone, status });
   }
 
   return (
@@ -240,14 +267,17 @@ export default function Donations() {
   async function addDonation(payload) {
     setSaving(true);
     try {
+      console.log("Sending donation payload:", payload);
       const record = await apiRequest('/api/donations', {
         method: 'POST',
         body: { ...payload, method: 'manual' },
       });
+      console.log("Donation created:", record);
       setDonations((prev) => [record, ...prev]);
       toast.success(`Recorded ${payload.donor_name}'s donation.`);
       setModalOpen(false);
     } catch (err) {
+      console.error("Donation API error:", err);
       toast.error(err.message || "Couldn't record that donation.");
     } finally {
       setSaving(false);

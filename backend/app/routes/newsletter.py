@@ -1,12 +1,12 @@
 # app/routes/newsletter.py
 from datetime import datetime
 from flask import Blueprint, current_app, jsonify, request
-from flask_mail import Message
 
-from app.extensions import db, mail
+from app.extensions import db
 from app.models.application import Application
 from app.utils.contact_utils import create_contact_from_data
 from app.utils.decorators import require_permission
+from app.utils.email import _send_email
 
 newsletter_bp = Blueprint("newsletter", __name__, url_prefix="/api/newsletter")
 
@@ -27,15 +27,13 @@ def subscribe():
 
     current_app.logger.info(f"Newsletter subscription attempt for {email}")
 
-
     existing_app = Application.query.filter_by(email=email, subject='newsletter').first()
     if existing_app and existing_app.status == 'Accepted':
-
         return jsonify({"message": "You're already an approved subscriber!"}), 200
     if existing_app:
         return jsonify({"message": "You already have a pending application. We'll notify you once it's reviewed."}), 200
 
-
+    # Create contact record
     try:
         create_contact_from_data(
             name=name or email,
@@ -51,7 +49,7 @@ def subscribe():
     except Exception as e:
         current_app.logger.error(f"Failed to create contact for {email}: {e}")
 
-
+    # Create application record
     try:
         app_entry = Application(
             name=name or email,
@@ -62,7 +60,7 @@ def subscribe():
             subject='newsletter',
             message="Subscribed to newsletter",
             whatsapp_opt_in=False,
-            status='New'   
+            status='New'
         )
         db.session.add(app_entry)
         db.session.commit()
@@ -71,12 +69,10 @@ def subscribe():
         current_app.logger.error(f"Failed to create application for {email}: {e}")
         return jsonify({"error": "Failed to process subscription. Please try again."}), 500
 
+    # Send confirmation email via the helper (Brevo API or SMTP)
     try:
-        msg = Message(
-            subject="Thank you for subscribing to ANIKA Newsletter!",
-            sender=("ANIKA", current_app.config["MAIL_DEFAULT_SENDER"]),
-            recipients=[email],
-            body=f"""
+        subject = "Thank you for subscribing to ANIKA Newsletter!"
+        body = f"""
 Hello {name or "there"},
 
 Thank you for subscribing to the ANIKA newsletter!
@@ -88,8 +84,8 @@ We look forward to sharing our updates with you!
 Warm regards,
 The ANIKA Team
 """
-        )
-        mail.send(msg)
+        # Pass sender_name to display a branded sender
+        _send_email(email, subject, body.strip(), sender_name="ANIKA Newsletter")
         current_app.logger.info(f"Confirmation email sent to {email}")
     except Exception as e:
         current_app.logger.error(f"Failed to send confirmation email: {e}")
@@ -106,7 +102,6 @@ def unsubscribe():
     if not email:
         return jsonify({"error": "Email is required"}), 400
 
-    
     from app.models.newsletter import NewsletterSubscriber
     subscriber = NewsletterSubscriber.query.filter_by(email=email).first()
     if not subscriber:
@@ -168,14 +163,8 @@ def send_newsletter():
 
     for subscriber in subscribers:
         try:
-            msg = Message(
-                subject=subject,
-                sender=("ANIKA Newsletter", current_app.config["MAIL_DEFAULT_SENDER"]),
-                recipients=[subscriber.email],
-                html=content,
-                body=content,
-            )
-            mail.send(msg)
+            # Pass sender_name to display a branded sender for each email
+            _send_email(subscriber.email, subject, content, sender_name="ANIKA Newsletter")
             success_count += 1
         except Exception as e:
             current_app.logger.error(f"Failed to send to {subscriber.email}: {e}")

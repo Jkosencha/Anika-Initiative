@@ -10,6 +10,7 @@ import {
   Mail,
   MessageCircle,
   CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';
@@ -49,8 +50,7 @@ const formatPhoneForBackend = (phone) => {
   if (digits.startsWith('254')) {
     return '+' + digits;
   }
-  // if it's 9 digits (without leading 0) we already added 0 in validate, so this won't happen
-  return phone; // fallback
+  return phone;
 };
 
 // Phone input formatter – strip non-digits, limit to 12 digits
@@ -153,6 +153,10 @@ const GetInvolved = () => {
   // const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [selectedRole, setSelectedRole] = useState("artist");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // State for unsubscribe
+  const [unsubscribeEmail, setUnsubscribeEmail] = useState("");
+  const [isUnsubscribing, setIsUnsubscribing] = useState(false);
 
   const isNewsletter = selectedRole === "newsletter";
   const currentColors = roleColors[selectedRole] || roleColors.artist;
@@ -264,17 +268,17 @@ const GetInvolved = () => {
         // Successful new subscription
         toast.success(
           <div>
-            <p className="font-semibold text-sm">Howdy! You're subscribed!</p>
+            <p className="font-semibold text-sm">We've received your request!</p>
             <p className="mt-1 text-base text-gray-600">
-              Thanks for subscribing to updates from ANIKA.
+              Your subscription is pending approval. You'll get a confirmation email once our team reviews it.
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              You'll hear from us with stories, events and campaign updates.
+              You'll hear from us soon.
             </p>
           </div>,
           {
             duration: 6000,
-            icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+            icon: <Mail className="w-4 h-4 text-green-500" />,
           }
         );
 
@@ -359,6 +363,52 @@ const GetInvolved = () => {
       toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // ---------- UNSUBSCRIBE HANDLER ----------
+  const handleUnsubscribe = async () => {
+    if (!unsubscribeEmail) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+    const emailResult = validateEmail(unsubscribeEmail);
+    if (!emailResult.valid) {
+      toast.error(emailResult.message);
+      return;
+    }
+
+    setIsUnsubscribing(true);
+    const loadingToast = toast.loading("Unsubscribing...");
+
+    try {
+      const response = await fetch(`${API_BASE}/api/newsletter/unsubscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: unsubscribeEmail }),
+      });
+      const data = await response.json();
+      toast.dismiss(loadingToast);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unsubscribe failed.");
+      }
+
+      toast.success(
+        <div>
+          <p className="font-semibold text-sm">You've been unsubscribed.</p>
+          <p className="mt-1 text-base text-gray-600">
+            You will no longer receive our newsletters.
+          </p>
+        </div>,
+        { duration: 5000, icon: <CheckCircle className="w-4 h-4 text-green-500" /> }
+      );
+      setUnsubscribeEmail("");
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsUnsubscribing(false);
     }
   };
 
@@ -670,6 +720,36 @@ const GetInvolved = () => {
               </p>
             </form>
           </Reveal>
+
+          {/* --- UNSUBSCRIBE SECTION --- */}
+          <div className="mt-12 text-center">
+            <Reveal delay={300}>
+              <div className="max-w-md mx-auto border-t border-gray-200 pt-8">
+                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  Already subscribed and want to opt out?
+                </h3>
+                <p className="text-xs text-gray-400 mt-1 mb-4">
+                  Enter your email below and we'll remove you from our list.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={unsubscribeEmail}
+                    onChange={(e) => setUnsubscribeEmail(e.target.value)}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm outline-none focus:border-[#E6A15E] focus:ring-2 focus:ring-[#E6A15E]/20 bg-white/90 w-full sm:w-auto"
+                  />
+                  <button
+                    onClick={handleUnsubscribe}
+                    disabled={isUnsubscribing}
+                    className="rounded-lg bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-60"
+                  >
+                    {isUnsubscribing ? "Unsubscribing..." : "Unsubscribe"}
+                  </button>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
     </main>

@@ -2,33 +2,12 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from config import BASE_DIR, Config
 from flask import Flask, jsonify
-from sqlalchemy import inspect, text
+from flask_migrate import Migrate  # <-- ADDED for Alembic
 
+from config import BASE_DIR, Config
 from app.extensions import cors, db, jwt, mail, swagger
 from app.utils.cloudinary_config import init_cloudinary
-
-# db.create_all() only creates missing tables, never alters existing ones --
-# so columns added to a model after the table already exists (e.g. on
-# someone's already-seeded local db) need to be patched in by hand here.
-# Safe to run on every boot: skips any column that's already there.
-_PENDING_COLUMNS = [
-    ("users", "avatar_url", "VARCHAR(500)"),
-]
-
-
-def _apply_pending_migrations():
-    inspector = inspect(db.engine)
-    with db.engine.connect() as conn:
-        for table, column, ddl_type in _PENDING_COLUMNS:
-            if not inspector.has_table(table):
-                continue
-            existing = {c["name"] for c in inspector.get_columns(table)}
-            if column in existing:
-                continue
-            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
-            conn.commit()
 
 SWAGGER_TEMPLATE = {
     "swagger": "2.0",
@@ -51,6 +30,7 @@ SWAGGER_CONFIG = {
     "specs_route": "/api/docs/",
 }
 
+
 def create_app(config_class=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
@@ -60,11 +40,14 @@ def create_app(config_class=Config):
     db.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}})
     jwt.init_app(app)
+    mail.init_app(app)
+
+    # --- Initialize Flask-Migrate (Alembic) ---
+    migrate = Migrate(app, db)  # <-- ADDED
 
     app.config["SWAGGER"] = SWAGGER_CONFIG
     swagger.template = SWAGGER_TEMPLATE
     swagger.init_app(app)
-    mail.init_app(app)
 
     init_cloudinary(app)
 
@@ -74,7 +57,7 @@ def create_app(config_class=Config):
         os.makedirs(log_dir, exist_ok=True)
         log_file = os.path.join(log_dir, "anika.log")
 
-        file_handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5)
+        file_handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
         file_handler.setLevel(logging.INFO)
 
         console_handler = logging.StreamHandler()
@@ -89,8 +72,7 @@ def create_app(config_class=Config):
         app.logger.addHandler(file_handler)
         app.logger.addHandler(console_handler)
 
-    
-    # Import all models
+    # Import all models (so Alembic can detect them)
     from app.models.annual_report import AnnualReport
     from app.models.application import Application
     from app.models.contact import Contact
@@ -105,7 +87,7 @@ def create_app(config_class=Config):
     from app.models.whatsapp_broadcast import WhatsAppBroadcast
     from app.models.whatsapp_conversation import WhatsAppConversation
     from app.models.whatsapp_settings import WhatsAppSettings
-    from app.models.newsletter import NewsletterSubscriber   
+    from app.models.newsletter import NewsletterSubscriber
     from app.models.export_log import ExportLog
     from app.models.impact_stat import ImpactStat
 
@@ -126,7 +108,7 @@ def create_app(config_class=Config):
         stories_bp,
         whatsapp_bp,
     )
-    from app.routes.newsletter import newsletter_bp          
+    from app.routes.newsletter import newsletter_bp
 
     # Register blueprints
     app.register_blueprint(health_bp)
@@ -143,12 +125,13 @@ def create_app(config_class=Config):
     app.register_blueprint(team_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(reports_bp)
-    app.register_blueprint(newsletter_bp)  
-    app.register_blueprint(impact_bp)                  
+    app.register_blueprint(newsletter_bp)
+    app.register_blueprint(impact_bp)
 
+    # --- REMOVED db.create_all() and _apply_pending_migrations() ---
+    # Migrations are now managed via Alembic (flask db upgrade)
     with app.app_context():
-        db.create_all()
-        _apply_pending_migrations()
+        app.logger.info("Database migrations should be run with 'flask db upgrade'")
 
     @app.errorhandler(404)
     def not_found(_err):

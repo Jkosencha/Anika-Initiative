@@ -10,12 +10,13 @@ flask-jwt-extended = "*"
 python-dotenv = "*"
 cloudinary = "*"
 flasgger = "*"
-psycopg2-binary = "*"
 requests = "*"
 marshmallow = "*"
 flask = "*"
 flask-mail = "*"
 gunicorn = "*"
+flask-migrate = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 

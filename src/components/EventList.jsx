@@ -12,6 +12,7 @@ import {
   ChevronDown as ChevronDownIcon,
   ChevronUp as ChevronUpIcon
 } from 'lucide-react';
+import { toast } from 'sonner';  // added import for toast
 
 const PILLAR_STYLE = {
   PERFORMANCE: { color: '#EB4C47', badge: 'bg-coral' },
@@ -84,27 +85,62 @@ export default function EventsList() {
 
   const handleRegister = async (e, eventId) => {
     e.preventDefault();
-    const currentForm = formStates[eventId] || { fullName: '', countryCode: '254', localNumber: '', optIn: true };
+    // Merge defaults to ensure all fields have values
+    const defaultForm = { fullName: '', countryCode: '254', localNumber: '', optIn: true };
+    const currentForm = { ...defaultForm, ...(formStates[eventId] || {}) };
     const eventTitle = events.find(ev => ev.id === eventId)?.title || 'ANIKA Event';
     const phone = composePhone(currentForm.countryCode, currentForm.localNumber);
+
+    // DEBUG logs
+    console.log('[DEBUG] Registration attempt for event:', eventId, eventTitle);
+    console.log('[DEBUG] Name:', currentForm.fullName);
+    console.log('[DEBUG] Local number:', currentForm.localNumber);
+    console.log('[DEBUG] Composed phone:', phone);
+
+    // Validate local number length
     if (currentForm.localNumber.length !== 9) {
+      toast.error('Enter a country code and 9-digit WhatsApp number.');
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Enter a country code and 9-digit WhatsApp number.' }));
+      return;
+    }
+
+    // Validate composed phone
+    if (!phone || !phone.startsWith('+')) {
+      toast.error('Invalid phone number. Please ensure the country code and number are correct.');
+      setSuccessMsg(prev => ({ ...prev, [eventId]: 'Invalid phone number.' }));
       return;
     }
 
     setLoading(prev => ({ ...prev, [eventId]: true }));
     try {
-      await submitRegistration({
+      const payload = {
         name: currentForm.fullName,
-        phone,
-        eventTitle,
-        consent: currentForm.optIn,
+        phone: phone,
+        eventTitle: eventTitle,
         source: 'web',
-      });
+        consent: currentForm.optIn,
+      };
+      console.log('[DEBUG] Sending registration payload:', payload);
+
+      const result = await submitRegistration(payload);
+      console.log('[DEBUG] Registration result:', result);
+
+      // Check for API error
+      if (result?.ok === false) {
+        console.error('[DEBUG] Registration failed with result:', result);
+        toast.error(result?.error || 'Registration failed. Please try again.');
+        setSuccessMsg(prev => ({ ...prev, [eventId]: result?.error || 'Registration failed.' }));
+        return;
+      }
+
+      // Success
       setSuccessModal({ name: currentForm.fullName, eventTitle });
       setFormStates(prev => ({ ...prev, [eventId]: { fullName: '', countryCode: '254', localNumber: '', optIn: true } }));
       setOpenFormId(null);
-    } catch {
+      toast.success(`You're registered for ${eventTitle}!`);
+    } catch (err) {
+      console.error('[DEBUG] Registration error:', err);
+      toast.error(err.message || 'Could not confirm right now. Please try again.');
       setSuccessMsg(prev => ({ ...prev, [eventId]: 'Could not confirm right now. Please try again.' }));
     } finally {
       setLoading(prev => ({ ...prev, [eventId]: false }));
@@ -259,7 +295,9 @@ export default function EventsList() {
 
 // Helper function rendering the form inside drawers
 function renderRegistrationForm(eventId, formStates, handleInputChange, handleRegister, loading, successMsg) {
-  const currentForm = formStates[eventId] || { fullName: '', countryCode: '254', localNumber: '', optIn: true };
+  // Merge defaults to ensure countryCode is always defined
+  const defaultForm = { fullName: '', countryCode: '254', localNumber: '', optIn: true };
+  const currentForm = { ...defaultForm, ...(formStates[eventId] || {}) };
 
   if (successMsg[eventId]) {
     return (

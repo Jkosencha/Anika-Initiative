@@ -32,6 +32,7 @@ def sync_event_seats(event, delta):
     elif event.status == "Full" and event.registered < (event.capacity or 0):
         event.status = "Live"
 
+
 registrations_bp = Blueprint("registrations", __name__, url_prefix="/api/registrations")
 
 
@@ -63,16 +64,41 @@ def create_registration():
         description: Registration created
       400:
         description: Validation error
+      404:
+        description: Event not found
+      409:
+        description: Duplicate registration
     """
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
     phone = (data.get("phone") or "").strip()
     event_title = (data.get("eventTitle") or data.get("event") or "").strip()
+
     if not name or not phone or not event_title:
         return jsonify({"error": "name, phone and eventTitle are required"}), 400
+
+    # Normalize phone to E.164 format
     phone = normalize_phone(phone)
     if not phone:
-      return jsonify({"error": "phone must be a valid international number including country code"}), 400
+        return jsonify({
+            "error": "phone must be a valid international number including country code (e.g., +254712345678)"
+        }), 400
+
+    # Verify the event exists
+    event = find_event_by_title(event_title)
+    if not event:
+        return jsonify({"error": f"No event found with title '{event_title}'"}), 404
+
+    # Prevent duplicate registration (same phone + event)
+    existing = Registration.query.filter_by(
+        phone=phone,
+        event_title=event_title
+    ).first()
+    if existing:
+        return jsonify({
+            "error": "This phone number is already registered for this event",
+            "existing": existing.to_dict()
+        }), 409
 
     registration = Registration(
         name=name,
@@ -85,10 +111,10 @@ def create_registration():
     )
     db.session.add(registration)
 
-    # Keep the linked event's seat count in sync with real registrations.
-    sync_event_seats(find_event_by_title(event_title), +1)
+    # Keep the linked event's seat count in sync.
+    sync_event_seats(event, +1)
 
-    # Open/update a WhatsApp thread for the registrant (assistant flow).
+    # Open/update a WhatsApp thread for the registrant.
     conversation = WhatsAppConversation.query.filter_by(phone=phone).first()
     message = {
         "from": "them",
@@ -119,7 +145,6 @@ def create_registration():
     # Auto-send the WhatsApp confirmation (Anika Assistant outbound flow).
     try:
         from app.services import anika_assistant
-
         anika_assistant.send_registration_confirmation(registration)
     except Exception:
         current_app.logger.exception(
@@ -184,16 +209,20 @@ def update_registration(reg_id):
       200:
         description: Updated registration
       400:
-        description: Invalid status
+        description: Invalid status or phone
       404:
         description: Registration not found
     """
     reg = Registration.query.get_or_404(reg_id)
     data = request.get_json(silent=True) or {}
+
     if "phone" in data:
-      data["phone"] = normalize_phone(data["phone"])
-      if not data["phone"]:
-        return jsonify({"error": "phone must be a valid international number including country code"}), 400
+        normalized = normalize_phone(data["phone"])
+        if not normalized:
+            return jsonify({
+                "error": "phone must be a valid international number including country code"
+            }), 400
+        data["phone"] = normalized
 
     if "status" in data:
         if data["status"] not in REGISTRATION_STATUSES:
@@ -208,11 +237,12 @@ def update_registration(reg_id):
                 sync_event_seats(event, +1)
             elif reg.status == "Canceled" and old_status != "Canceled":
                 sync_event_seats(event, -1)
+
     for field in ("name", "phone", "email", "consent", "source"):
         if field in data:
             setattr(reg, field, data[field])
     if "eventTitle" in data:
-      reg.event_title = data["eventTitle"]
+        reg.event_title = data["eventTitle"]
     db.session.commit()
     return jsonify(reg.to_dict())
 
