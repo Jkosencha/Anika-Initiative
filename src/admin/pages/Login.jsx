@@ -32,7 +32,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
+
+      <div className="rounded-lg py-9 px-30 bg-white/70">
+          <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-6">
           <img src="/anika-logo.png" alt="ANIKA" className="w-10 h-10" />
           <span className="font-display text-2xl text-ink tracking-wide">ANIKA ADMIN</span>
@@ -45,8 +47,8 @@ export default function Login() {
           <div className="flex-1 bg-anika-blue" />
         </div>
 
-        <h1 className="font-display text-4xl text-ink mb-3">SIGN IN</h1>
-        <p className="font-body text-ink/60 mb-8">
+        <h1 className="font-display text-3xl text-ink mb-3">SIGN IN</h1>
+        <p className="font-body text-ink/60 mb-6">
           Enter your details to access your workspace.
         </p>
 
@@ -93,11 +95,11 @@ export default function Login() {
 
 
           {/* TODO: Forgot password logic flow  */}
-          {/* <div className="flex justify-end">
+          <div className="flex justify-end">
             <Link to="/admin/forgot-password" className="font-body text-sm text-anika-blue hover:underline">
               Forgot password?
             </Link>
-          </div> */}
+          </div>
 
           {error && <p className="font-body text-sm text-coral">{error}</p>}
 
@@ -110,6 +112,8 @@ export default function Login() {
           </button>
         </form>
       </div>
+      </div>
+      
     </div>
   )
 }
