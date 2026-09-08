@@ -119,7 +119,7 @@ async function doRequest(method, path, body, token, timeoutMs) {
   }
 }
 
-async function request(method, path, body, timeoutMs = 4000) {
+async function request(method, path, body, timeoutMs = 15000) {  // <-- increased to 15 seconds
   // DEBUG: log outgoing request
   console.log(`[DEBUG] API request: ${method} ${path}`, body ? JSON.stringify(body) : '');
 

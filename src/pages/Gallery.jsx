@@ -10,13 +10,14 @@ const Gallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await fetch("/api/gallery");
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+        const response = await fetch(`${API_BASE}/api/gallery`);
         if (!response.ok) {
           throw new Error("Hey mehn failed to load gallery");
         }
         const data = await response.json();
         const mapped = data.map(img => ({
-          src: img.src,
+          src: img.url || img.src,   // the backend returns 'url'
           alt: img.caption,
           id: img.id,
         }));
