@@ -17,6 +17,14 @@ class Config:
     ) or "sqlite:///" + os.path.join(BASE_DIR, "instance", "anika.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # SQLAlchemy connection pool settings to prevent SSL disconnections
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_timeout": 30,
+        "max_overflow": 10,
+    }
+
     PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY", "")
     PAYSTACK_PUBLIC_KEY = os.environ.get("PAYSTACK_PUBLIC_KEY", "")
     PAYSTACK_BASE_URL = os.environ.get("PAYSTACK_BASE_URL", "https://api.paystack.co")
@@ -24,7 +32,6 @@ class Config:
     DONATION_CALLBACK_URL = os.environ.get(
         "DONATION_CALLBACK_URL", "http://localhost:5173/donate/thank-you"
     )
-
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
@@ -48,7 +55,6 @@ class Config:
         if o.strip()
     ]
 
-
     WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN", "")
     WHATSAPP_PHONE_ID = os.environ.get("WHATSAPP_PHONE_ID", "")
     WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
@@ -56,7 +62,6 @@ class Config:
         "WHATSAPP_BASE_URL", "https://graph.facebook.com/v21.0"
     )
 
-   
     CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
     CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
     CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
