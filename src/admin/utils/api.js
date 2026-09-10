@@ -50,6 +50,8 @@ async function refreshAccessToken() {
   return refreshPromise;
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * apiRequest – authenticated fetch with token refresh and FormData support.
  */
@@ -68,18 +70,45 @@ export async function apiRequest(path, { method = 'GET', body, headers = {}, ...
 
     const requestBody = isFormData ? body : (body !== undefined ? JSON.stringify(body) : undefined);
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers: requestHeaders,
-      body: requestBody,
-      ...rest,
-    });
-
-    const data = await response.json().catch(() => null);
-    return { response, data };
+    // Render's free tier occasionally drops/resets a connection mid-response
+    // (no code fix for that -- it's the hosting tier), which surfaces here as
+    // fetch() throwing "Failed to fetch" with no HTTP response at all. GET is
+    // safe to silently retry once since it has no side effects; POST/PATCH/
+    // DELETE are left alone so a dropped response never causes a duplicate
+    // write.
+    try {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers: requestHeaders,
+        body: requestBody,
+        ...rest,
+      });
+      const data = await response.json().catch(() => null);
+      return { response, data };
+    } catch (err) {
+      if (method !== 'GET') throw err;
+      await sleep(800);
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers: requestHeaders,
+        body: requestBody,
+        ...rest,
+      });
+      const data = await response.json().catch(() => null);
+      return { response, data };
+    }
   };
 
-  let { response, data } = await doFetch();
+  let response, data;
+  try {
+    ({ response, data } = await doFetch());
+  } catch (err) {
+    if (method === 'GET') throw err;
+    // A dropped connection on a write leaves it genuinely unclear whether
+    // the server received it -- surface that instead of the raw browser
+    // "Failed to fetch", so the list gets checked before retrying.
+    throw new Error('Network error -- please check the list before retrying, in case this already went through.', { cause: err });
+  }
 
   if (response.status === 401) {
     const newAccessToken = await refreshAccessToken();
