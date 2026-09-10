@@ -111,8 +111,7 @@ def send_team_invite_email(user, password):
     Email a newly-invited team member their login credentials.
     """
     subject = "You've been added to the ANIKA dashboard"
-    origins = current_app.config.get("CORS_ORIGINS") or []
-    frontend_url = origins[0] if origins else "http://localhost:5173"
+    frontend_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
     body = (
         f"Hi {user.name},\n\n"
         f"An account has been created for you on the ANIKA admin dashboard as {user.role}.\n\n"
@@ -154,8 +153,7 @@ def send_password_reset_email(user, raw_token):
     Email a team member a link to reset their password.
     """
     subject = "Reset your ANIKA dashboard password"
-    origins = current_app.config.get("CORS_ORIGINS") or []
-    frontend_url = origins[0] if origins else "http://localhost:5173"
+    frontend_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
     reset_link = f"{frontend_url}/admin/reset-password?token={raw_token}"
     body = (
         f"Hi {user.name},\n\n"
