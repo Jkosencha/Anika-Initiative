@@ -31,9 +31,9 @@ export default function Login() {
     };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center px-6">
+    <div className="min-h-screen bg-cream flex items-center justify-center px-4 sm:px-6">
 
-      <div className="rounded-lg py-9 px-30 bg-white/70">
+      <div className="rounded-lg py-6 px-6 sm:py-8 sm:px-12 lg:py-9 lg:px-30 bg-white/70">
           <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-6">
           <img src="/anika-logo.png" alt="ANIKA" className="w-10 h-10" />
