@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Reveal from '../Reveal';
+import { resolveApiBase } from '../../lib/apiBaseUrl';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE = resolveApiBase('')
 
 export default function ReportBanner() {
     const [report, setReport] = useState(null)

@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+import { resolveApiBase } from '../../lib/apiBaseUrl';
+
+const API_BASE_URL = resolveApiBase('');
 const STORAGE_KEY = 'anika_admin_session';
 
 function getSession() {

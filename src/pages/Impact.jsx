@@ -4,8 +4,9 @@ import ImpactStats from '../components/impact/ImpactStats'
 import { caseStudies, impactStats as fallbackStats } from '../data/impact'
 import CaseStudies from '../components/impact/CaseStudies'
 import ReportBanner from '../components/impact/ReportBanner'
+import { resolveApiBase } from '../lib/apiBaseUrl'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+const API_BASE = resolveApiBase('')
 
 // Admin's colorKey (red/green/orange/blue, matching the admin dashboard's
 // own design tokens) doesn't match the public site's accentClass names

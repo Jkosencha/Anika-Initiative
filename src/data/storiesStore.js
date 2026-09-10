@@ -6,8 +6,9 @@
 // tweaks (await the previously-synchronous calls — see the updated
 // index.jsx / StoryDetailView.jsx / admin Stories.jsx).
 import React from "react";
+import { resolveApiBase } from "../lib/apiBaseUrl";
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL || ""}/api`;
+const API_BASE = `${resolveApiBase("")}/api`;
 
 // Same admin-slug -> public-slug mapping the old store used, kept here as a
 // safety net in case a caller passes an admin-format pillar slug directly.
