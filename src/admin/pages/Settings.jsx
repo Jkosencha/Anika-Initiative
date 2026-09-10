@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 
 // ---- API helpers -----------------------------------------------------
+import { resolveApiBase } from "../../lib/apiBaseUrl";
+
 const API_BASE = (() => {
-  const raw = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/+$/, "");
+  const raw = resolveApiBase("/api").replace(/\/+$/, "");
   return raw.endsWith("/api") ? raw : `${raw}/api`;
 })();
 

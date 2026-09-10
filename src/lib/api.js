@@ -13,10 +13,12 @@
    ============================================================ */
 
 import { addRecord, getRecords, updateRecord, deleteRecord, getMetrics } from './store';
+import { resolveApiBase } from './apiBaseUrl';
 
 // --- Use VITE_API_BASE_URL (e.g., http://localhost:5000), without trailing slash.
-// If not defined, default to localhost:5000 so team members don't need a .env file.
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+// If not defined: local dev defaults to localhost:5000 (no .env needed). See
+// apiBaseUrl.js for the production fallback.
+export const API_BASE = resolveApiBase('http://localhost:5000');
 
 // kind -> REST collection path (API prefix added in submit)
 const KIND_COLLECTION = {

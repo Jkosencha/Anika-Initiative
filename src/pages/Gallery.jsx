@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, X } from "lucide-react";
 import Reveal from '../components/Reveal';
+import { resolveApiBase } from '../lib/apiBaseUrl';
 
 const Gallery = () => {
   const [allImages, setAllImages] = useState([]);
@@ -10,7 +11,7 @@ const Gallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+        const API_BASE = resolveApiBase('');
         const response = await fetch(`${API_BASE}/api/gallery`);
         if (!response.ok) {
           throw new Error("Hey mehn failed to load gallery");
