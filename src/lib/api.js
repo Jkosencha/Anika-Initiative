@@ -15,8 +15,15 @@
 import { addRecord, getRecords, updateRecord, deleteRecord, getMetrics } from './store';
 
 // --- Use VITE_API_BASE_URL (e.g., http://localhost:5000), without trailing slash.
-// If not defined, default to localhost:5000 so team members don't need a .env file.
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+// If not defined: local dev defaults to localhost:5000 (no .env needed), and
+// production builds default to the real deployed backend -- Cloudflare's build
+// variable injection has proven unreliable for this project, so this fallback
+// is what actually keeps the live site working when that variable doesn't
+// reach the build. import.meta.env.PROD is set natively by Vite itself, not
+// dependent on any custom variable being passed through correctly.
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? 'https://anika-initiative.onrender.com' : 'http://localhost:5000');
 
 // kind -> REST collection path (API prefix added in submit)
 const KIND_COLLECTION = {
