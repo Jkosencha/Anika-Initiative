@@ -233,7 +233,7 @@ function ScheduleForm({ form, setForm, onSubmit, onCancelEdit, isEditing, colors
       </div>
 
       <p className="mt-3 text-xs italic" style={{ color: colors.muted }}>
-        Saved schedules are stored now -- scheduled email delivery not wired up yet.
+        Schedules saved successfully. Email delivery feature coming soon.
       </p>
 
       <div className="mt-4 flex justify-end">
