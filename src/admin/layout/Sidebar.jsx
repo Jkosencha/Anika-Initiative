@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
-import { navSections } from '../nav'
+import { buildNavSections } from '../nav'
 import { useAuth } from '../auth/AuthContext'
+import { useRoleAccess } from '../access/RoleAccessContext'
 import { getInitials } from '../utils/getInitials'
 import { useAdminNotifications } from './useAdminNotifications'
 import {
@@ -26,13 +27,14 @@ const ROLE_LABELS = {
 
 function Sidebar({ onOpenAccount }) {
   const { user, logout } = useAuth()
+  const { pageAccess } = useRoleAccess()
   const { badges } = useAdminNotifications()
   const { isMobile, setOpenMobile } = useSidebar()
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false)
   }
 
-  const visibleSections = navSections
+  const visibleSections = buildNavSections(pageAccess)
     .map((section) => ({
       ...section,
       items: section.items.filter((item) => item.allowedRoles.includes(user?.role)),

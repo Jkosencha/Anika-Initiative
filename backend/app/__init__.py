@@ -89,6 +89,7 @@ def create_app(config_class=Config):
     from app.models.newsletter import NewsletterSubscriber
     from app.models.export_log import ExportLog
     from app.models.impact_stat import ImpactStat
+    from app.models.role_permission import RolePermission
 
     from app.routes import (
         applications_bp,
@@ -102,6 +103,7 @@ def create_app(config_class=Config):
         metrics_bp,
         registrations_bp,
         reports_bp,
+        roles_access_bp,
         team_bp,
         settings_bp,
         stories_bp,
@@ -126,6 +128,7 @@ def create_app(config_class=Config):
     app.register_blueprint(reports_bp)
     app.register_blueprint(newsletter_bp)
     app.register_blueprint(impact_bp)
+    app.register_blueprint(roles_access_bp)
 
     # --- REMOVED db.create_all() and _apply_pending_migrations() ---
     # Migrations are now managed via Alembic (flask db upgrade)

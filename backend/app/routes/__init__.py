@@ -14,6 +14,7 @@ from .team import team_bp
 from .settings import settings_bp
 from .whatsapp import whatsapp_bp
 from .impact import impact_bp
+from .roles_access import roles_access_bp
 
 __all__ = [
     "applications_bp",
@@ -27,6 +28,7 @@ __all__ = [
     "metrics_bp",
     "registrations_bp",
     "reports_bp",
+    "roles_access_bp",
     "settings_bp",
     "stories_bp",
     "team_bp",

@@ -1,4 +1,5 @@
 from flask import Blueprint, current_app, jsonify, request
+from flask_jwt_extended import jwt_required
 
 from app.extensions import db
 from app.models.whatsapp_conversation import WhatsAppConversation, INTENTS
@@ -9,6 +10,7 @@ from app.models.whatsapp_settings import (
     DEFAULT_FLOWS,
     DEFAULT_GREETING,
 )
+from app.utils.decorators import require_permission
 from app.utils.phone import normalize_phone
 import time
 
@@ -18,6 +20,7 @@ whatsapp_bp = Blueprint("whatsapp", __name__)
 # ---- Inbox ---------------------------------------------------------------
 
 @whatsapp_bp.get("/api/whatsapp-inbox")
+@require_permission("whatsapp_inbox")
 def list_conversations():
     """
     List WhatsApp conversations (admin inbox), most recently active first.
@@ -36,6 +39,7 @@ def list_conversations():
 
 
 @whatsapp_bp.post("/api/whatsapp-inbox")
+@require_permission("whatsapp_inbox")
 def create_conversation():
     """
     Create a WhatsApp conversation thread (admin / internal).
@@ -89,6 +93,7 @@ def create_conversation():
 
 
 @whatsapp_bp.patch("/api/whatsapp-inbox/<int:conv_id>")
+@require_permission("whatsapp_inbox")
 def update_conversation(conv_id):
     """
     Update a conversation (admin) - reply, resolve, opt-out, escalate.
@@ -144,6 +149,7 @@ def update_conversation(conv_id):
 # ---- Broadcasts ----------------------------------------------------------
 
 @whatsapp_bp.get("/api/whatsapp-broadcasts")
+@require_permission("whatsapp_broadcast")
 def list_broadcasts():
     """
     List WhatsApp broadcasts (admin), newest first.
@@ -162,6 +168,7 @@ def list_broadcasts():
 
 
 @whatsapp_bp.post("/api/whatsapp-broadcasts")
+@require_permission("whatsapp_broadcast")
 def create_broadcast():
     """
     Create a WhatsApp broadcast (admin).
@@ -229,6 +236,7 @@ def _get_or_create_settings():
 
 
 @whatsapp_bp.get("/api/whatsapp-settings")
+@require_permission("whatsapp_assistant")
 def get_settings():
     """
     Get the WhatsApp assistant settings (creates defaults on first call).
@@ -245,6 +253,7 @@ def get_settings():
 
 
 @whatsapp_bp.post("/api/whatsapp-settings")
+@require_permission("whatsapp_assistant")
 def create_settings():
     """
     Create/upsert the WhatsApp assistant settings (admin). If a record with
@@ -300,6 +309,7 @@ def create_settings():
 
 
 @whatsapp_bp.patch("/api/whatsapp-settings/<int:settings_id>")
+@require_permission("whatsapp_assistant")
 def update_settings(settings_id):
     """
     Update the WhatsApp assistant settings (admin).
@@ -345,6 +355,7 @@ def update_settings(settings_id):
 # ---- Stats ---------------------------------------------------------------
 
 @whatsapp_bp.get("/api/whatsapp/stats")
+@jwt_required()
 def whatsapp_stats():
     """
     Aggregate WhatsApp live-state shared across Assistant / Inbox / Broadcast.
@@ -441,6 +452,7 @@ def whatsapp_webhook_receive():
 
 
 @whatsapp_bp.post("/api/whatsapp/simulate")
+@require_permission("whatsapp_assistant")
 def whatsapp_simulate():
     """
     Run the Anika Assistant on a visitor message (dashboard live test).
@@ -531,6 +543,7 @@ def whatsapp_simulate():
 
 
 @whatsapp_bp.get("/api/whatsapp/status")
+@jwt_required()
 def whatsapp_status():
     """
     Report whether the WhatsApp Cloud API is configured for real sending.

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 
 from app.models.registration import Registration
 from app.models.application import Application
@@ -11,6 +12,7 @@ metrics_bp = Blueprint("metrics", __name__, url_prefix="/api/metrics")
 
 
 @metrics_bp.get("")
+@jwt_required()
 def metrics():
     """
     Aggregate counts for the dashboard.
