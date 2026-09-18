@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { partnersIntro } from '../data/partners'
-import { usePartners } from '../context/PartnerContext'
+import { resolveApiBase } from '../../../lib/apiBaseUrl'
 
 const CARDS_PER_PAGE_DESKTOP = 4
 const AUTOPLAY_MS = 3000
@@ -79,9 +79,25 @@ function PartnerCard({ partner, compact = false }) {
 }
 
 export default function Partners() {
-  // Use the shared partner context
-  const { partners } = usePartners()
-  
+  const [partners, setPartners] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    const API_BASE = resolveApiBase('')
+    fetch(`${API_BASE}/api/partners`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`Request failed (${res.status})`))))
+      .then((rows) => {
+        if (!cancelled) setPartners(rows)
+      })
+      .catch(() => {
+        // No partners section shown is a fine degrade -- see the early
+        // return below for an empty list.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(MOBILE_QUERY).matches
   )

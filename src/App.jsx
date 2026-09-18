@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { PartnerProvider } from './features/about/context/PartnerContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import SplashScreen from './components/SplashScreen'
@@ -55,24 +54,22 @@ function SiteLayout() {
 function App() {
   return (
     <AuthProvider>
-      <PartnerProvider>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/reset-password" element={<ResetPassword />} />
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute>
-                <AdminRoutes />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/*" element={<SiteLayout />} />
-        </Routes>
-        <Toaster richColors position="top-right" />
-      </PartnerProvider>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute>
+              <AdminRoutes />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/*" element={<SiteLayout />} />
+      </Routes>
+      <Toaster richColors position="top-right" />
     </AuthProvider>
   )
 }

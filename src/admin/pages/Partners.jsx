@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-import { usePartners } from "../../features/about/context/PartnerContext";
+import { fetchPartners, createPartner, updatePartner, deletePartner } from "../utils/partnersApi";
 
 // Same light/dark palette shape as Donations.jsx
 const lightColors = {
@@ -51,7 +51,7 @@ function logoColor(name) {
   return LOGO_COLORS[Math.abs(hash) % LOGO_COLORS.length];
 }
 
-function DeleteConfirmModal({ isOpen, onClose, onConfirm, partnerName, colors }) {
+function DeleteConfirmModal({ isOpen, onClose, onConfirm, partnerName, colors, deleting, error }) {
   if (!isOpen) return null;
 
   return (
@@ -81,6 +81,12 @@ function DeleteConfirmModal({ isOpen, onClose, onConfirm, partnerName, colors })
           <p className="text-xs" style={{ color: colors.muted }}>
             This action cannot be undone.
           </p>
+          {error && (
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: colors.error }}>
+              <AlertCircle size={12} />
+              <span>{error}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 p-4 border-t" style={{ borderColor: colors.border }}>
@@ -95,10 +101,11 @@ function DeleteConfirmModal({ isOpen, onClose, onConfirm, partnerName, colors })
           <button
             type="button"
             onClick={onConfirm}
-            style={{ background: "#dc2626", color: "#ffffff" }}
+            disabled={deleting}
+            style={{ background: "#dc2626", color: "#ffffff", opacity: deleting ? 0.6 : 1 }}
             className="text-sm font-semibold px-4 py-2 rounded-full hover:bg-red-700"
           >
-            Delete
+            {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </div>
@@ -109,17 +116,17 @@ function DeleteConfirmModal({ isOpen, onClose, onConfirm, partnerName, colors })
 function PartnerModal({ onClose, onSave, colors, initial }) {
   const [name, setName] = useState(initial?.name || "");
   const [category, setCategory] = useState(initial?.category || "");
-  const [logo, setLogo] = useState(initial?.logo || null);
+  const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(initial?.logo || null);
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef(null);
 
   function validate() {
     const newErrors = {};
     if (!name.trim()) {
       newErrors.name = "Partner name is required";
-    }
-    if (name.trim().length < 2) {
+    } else if (name.trim().length < 2) {
       newErrors.name = "Partner name must be at least 2 characters";
     }
     setErrors(newErrors);
@@ -129,22 +136,19 @@ function PartnerModal({ onClose, onSave, colors, initial }) {
   function handleLogoChange(e) {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         setErrors({ ...errors, logo: "Please upload an image file" });
         return;
       }
-      // Validate file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         setErrors({ ...errors, logo: "Logo must be less than 2MB" });
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result);
-        setLogo(reader.result);
-        // Clear logo error if exists
+        setLogoFile(file);
         if (errors.logo) {
           const newErrors = { ...errors };
           delete newErrors.logo;
@@ -156,24 +160,31 @@ function PartnerModal({ onClose, onSave, colors, initial }) {
   }
 
   function removeLogo() {
-    setLogo(null);
+    setLogoFile(null);
     setLogoPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     if (!validate()) return;
-    
-    onSave({
-      id: initial?.id ?? Date.now(),
-      name: name.trim(),
-      category: category.trim() || "Partner",
-      logo: logo,
-    });
-    onClose();
+    setSaving(true);
+    setErrors((prev) => ({ ...prev, submit: undefined }));
+    try {
+      await onSave({
+        id: initial?.id,
+        name: name.trim(),
+        category: category.trim() || "Partner",
+        logoFile,
+      });
+      onClose();
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, submit: err.message }));
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -198,6 +209,16 @@ function PartnerModal({ onClose, onSave, colors, initial }) {
         </div>
 
         <div className="p-5 space-y-3">
+          {errors.submit && (
+            <div
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs"
+              style={{ background: colors.errorBg, color: colors.error }}
+            >
+              <AlertCircle size={12} />
+              <span>{errors.submit}</span>
+            </div>
+          )}
+
           {/* Logo Upload */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold" style={{ color: colors.muted }}>
@@ -316,10 +337,11 @@ function PartnerModal({ onClose, onSave, colors, initial }) {
           </button>
           <button
             type="submit"
-            style={{ background: colors.buttonBg, color: colors.buttonText }}
+            disabled={saving}
+            style={{ background: colors.buttonBg, color: colors.buttonText, opacity: saving ? 0.6 : 1 }}
             className="text-sm font-semibold px-4 py-2 rounded-full"
           >
-            {initial ? "Save changes" : "Add partner"}
+            {saving ? "Saving…" : initial ? "Save changes" : "Add partner"}
           </button>
         </div>
       </form>
@@ -377,13 +399,34 @@ function PartnerCard({ partner, colors, onEdit, onDelete }) {
 export default function Partners() {
   const { theme } = useOutletContext();
   const COLORS = theme === "dark" ? darkColors : lightColors;
-  
-  // Use the shared partner context
-  const { partners, savePartner, deletePartner } = usePartners();
+
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchPartners()
+      .then((rows) => {
+        if (cancelled) return;
+        setPartners(rows);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setLoadError(err.message);
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function openAdd() {
     setEditing(null);
@@ -395,14 +438,32 @@ export default function Partners() {
     setModalOpen(true);
   }
 
+  async function handleSave({ id, name, category, logoFile }) {
+    if (id) {
+      const updated = await updatePartner(id, { name, category, logoFile });
+      setPartners((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    } else {
+      const created = await createPartner({ name, category, logoFile });
+      setPartners((prev) => [created, ...prev]);
+    }
+  }
+
   function handleDelete(partner) {
+    setDeleteError(null);
     setDeleteConfirm(partner);
   }
 
-  function confirmDelete() {
-    if (deleteConfirm) {
-      deletePartner(deleteConfirm.id);
+  async function confirmDelete() {
+    if (!deleteConfirm) return;
+    setDeleting(true);
+    try {
+      await deletePartner(deleteConfirm.id);
+      setPartners((prev) => prev.filter((p) => p.id !== deleteConfirm.id));
       setDeleteConfirm(null);
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -433,7 +494,15 @@ export default function Partners() {
         </button>
       </div>
 
-      {partners.length === 0 ? (
+      {loading ? (
+        <p className="text-sm" style={{ color: COLORS.muted }}>
+          Loading partners…
+        </p>
+      ) : loadError ? (
+        <p className="text-sm" style={{ color: COLORS.error }}>
+          Couldn't load partners: {loadError}
+        </p>
+      ) : partners.length === 0 ? (
         <div
           style={{ background: COLORS.panel, border: `1px dashed ${COLORS.border}`, color: COLORS.muted }}
           className="rounded-xl p-10 text-center text-sm"
@@ -457,7 +526,7 @@ export default function Partners() {
       {modalOpen && (
         <PartnerModal
           onClose={() => setModalOpen(false)}
-          onSave={savePartner}
+          onSave={handleSave}
           colors={COLORS}
           initial={editing}
         />
@@ -469,6 +538,8 @@ export default function Partners() {
         onConfirm={confirmDelete}
         partnerName={deleteConfirm?.name || ""}
         colors={COLORS}
+        deleting={deleting}
+        error={deleteError}
       />
     </div>
   );

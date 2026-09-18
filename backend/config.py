@@ -33,6 +33,14 @@ class Config:
         "DONATION_CALLBACK_URL", "http://localhost:5173/donate/thank-you"
     )
 
+    # The one canonical site URL to put in outgoing emails (invite/reset
+    # links). Deliberately separate from CORS_ORIGINS, which is a security
+    # allowlist that can contain several valid origins (localhost for dev,
+    # multiple production domains) in no particular order -- picking
+    # origins[0] from that list previously sent localhost links in production
+    # whenever localhost happened to be listed first.
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', '1', 'yes']

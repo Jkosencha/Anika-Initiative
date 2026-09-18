@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models.event import Event
 from app.models.registration import REGISTRATION_STATUSES, Registration
 from app.models.whatsapp_conversation import WhatsAppConversation
+from app.utils.decorators import require_permission
 from app.utils.phone import normalize_phone
 
 
@@ -155,6 +156,7 @@ def create_registration():
 
 
 @registrations_bp.get("")
+@require_permission("registrations")
 def list_registrations():
     """
     List registrations (admin), newest first.
@@ -180,6 +182,7 @@ def list_registrations():
 
 
 @registrations_bp.patch("/<int:reg_id>")
+@require_permission("registrations")
 def update_registration(reg_id):
     """
     Update a registration (admin) - e.g. change status.
@@ -248,6 +251,7 @@ def update_registration(reg_id):
 
 
 @registrations_bp.delete("/<int:reg_id>")
+@require_permission("registrations")
 def delete_registration(reg_id):
     """
     Delete a registration (admin).
