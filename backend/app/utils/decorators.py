@@ -8,7 +8,7 @@ from flask_jwt_extended import get_jwt, verify_jwt_in_request
 ALL_RESOURCES = {
     "contacts", "stories", "gallery", "events", "applications",
     "donations", "newsletter", "impact", "reports", "registrations",
-    "whatsapp_inbox", "whatsapp_broadcast", "whatsapp_assistant",
+    "whatsapp_inbox", "whatsapp_broadcast", "whatsapp_assistant", "partners",
 }
 
 # Seed values and fallback for a role that hasn't been saved to the database
@@ -20,7 +20,7 @@ DEFAULT_RESOURCE_ACCESS = {
         "whatsapp_inbox", "whatsapp_broadcast", "whatsapp_assistant",
     },
     "programs": {
-        "contacts", "events", "registrations", "applications",
+        "contacts", "events", "registrations", "applications", "partners",
     },
     "mel": {
         "donations", "impact", "reports",

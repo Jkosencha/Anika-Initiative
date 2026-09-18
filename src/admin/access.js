@@ -9,13 +9,12 @@ const { LEADERSHIP, COMMS, PROGRAMS, MEL } = ROLES
 const ALL_ROLES = [LEADERSHIP, COMMS, PROGRAMS, MEL]
 
 // Pages with their own fixed rule, outside the backend's role_permissions
-// table -- Dashboard is meant to be open to every signed-in role, Team/
+// table -- Dashboard is meant to be open to every signed-in role, and Team/
 // Settings/Roles are leadership-only (enforced server-side via
-// @require_role("leadership")), and Partners has no backend endpoint yet to
-// gate at all. None of these are editable from the Roles & Access screen.
+// @require_role("leadership")). None of these are editable from the Roles &
+// Access screen.
 const FIXED_PAGE_ACCESS = {
   dashboard: [LEADERSHIP, COMMS, PROGRAMS, MEL],
-  partners: [LEADERSHIP, PROGRAMS],
   team: [LEADERSHIP],
   settings: [LEADERSHIP],
   roles: [LEADERSHIP],
@@ -26,6 +25,7 @@ const FIXED_PAGE_ACCESS = {
 // Listed explicitly rather than assumed identical, since a few differ.
 export const PAGE_TO_RESOURCE = {
   contacts: 'contacts',
+  partners: 'partners',
   events: 'events',
   registrations: 'registrations',
   applications: 'applications',
@@ -46,6 +46,7 @@ export const PAGE_TO_RESOURCE = {
 export const DEFAULT_PAGE_ACCESS = {
   ...FIXED_PAGE_ACCESS,
   contacts: [LEADERSHIP, COMMS, PROGRAMS],
+  partners: [LEADERSHIP, PROGRAMS],
   events: [LEADERSHIP, PROGRAMS],
   registrations: [LEADERSHIP, PROGRAMS],
   applications: [LEADERSHIP, PROGRAMS],

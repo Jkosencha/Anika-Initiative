@@ -24,7 +24,7 @@ const ROWS = [
   { label: 'Events', kind: 'resource', resource: 'events' },
   { label: 'Registrations', kind: 'resource', resource: 'registrations' },
   { label: 'Applications', kind: 'resource', resource: 'applications' },
-  { label: 'Partners', kind: 'fixed', roles: ['leadership', 'programs'] },
+  { label: 'Partners', kind: 'resource', resource: 'partners' },
   { label: 'Stories', kind: 'resource', resource: 'stories' },
   { label: 'Gallery', kind: 'resource', resource: 'gallery' },
   { label: 'Newsletter', kind: 'resource', resource: 'newsletter' },
