@@ -8,6 +8,7 @@ import {
   Users,
   Mic,
   CreditCard,
+  HeartPulse,
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from "../components/Reveal";
@@ -191,7 +192,7 @@ const DonationPage = () => {
         <div>
           <p className="font-semibold">Redirecting you to Paystack…</p>
           <p className="text-sm">
-            Reference <span className="font-mono">{record.reference}</span> — complete{" "}
+            Reference <span className="font-mono">{record.reference}</span>. Complete{" "}
             {donationMethod === "mpesa" ? "the STK push on your phone" : "your card details"} on
             the next screen.
           </p>
@@ -448,7 +449,7 @@ const DonationPage = () => {
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 icon: Mic,
@@ -464,6 +465,11 @@ const DonationPage = () => {
                 icon: Heart,
                 title: "Safe Spaces",
                 desc: "Therapy workshops and forums where hard conversations finally happen.",
+              },
+              {
+                icon: HeartPulse,
+                title: "Wellness & Healing",
+                desc: "Psychosocial support and trauma-informed care for artists and survivors alike.",
               },
             ].map((story, index) => (
               <Reveal key={story.title} delay={index * 150}>
