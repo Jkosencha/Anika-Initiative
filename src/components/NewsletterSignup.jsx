@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { resolveApiBase } from '../lib/apiBaseUrl'
 
 /**
@@ -15,6 +15,17 @@ export default function NewsletterSignup({
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState('idle') // idle | loading | done | error
   const [message, setMessage] = useState('')
+
+  // Confirmation/error text reads like a toast -- it shouldn't sit there
+  // forever once someone's moved on.
+  useEffect(() => {
+    if (status !== 'done' && status !== 'error') return
+    const timer = setTimeout(() => {
+      setStatus('idle')
+      setMessage('')
+    }, 6000)
+    return () => clearTimeout(timer)
+  }, [status, message])
 
   async function handleSubmit(e) {
     e.preventDefault()
