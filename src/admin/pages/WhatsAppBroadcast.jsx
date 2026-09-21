@@ -24,15 +24,6 @@ function StatCard({ label, value, sub, bg, textColor = "#fff" }) {
   );
 }
 
-// Audiences whose recipient counts reduce as contacts opt out.
-function adjustForOptOuts(audienceSize, optedOut) {
-  const reducible = ["All opted-in", "All contacts"];
-  if (reducible.includes(audienceSize.audience)) {
-    return Math.max(0, audienceSize.value - optedOut);
-  }
-  return audienceSize.value;
-}
-
 export default function WhatsAppBroadcast() {
   const COLORS = useAdminColors();
 
@@ -57,51 +48,64 @@ export default function WhatsAppBroadcast() {
 
   const MAX_CHARS = 1024;
 
-  // Audience sizes come from the real conversation list when it exists, so the
-  // counts match what the assistant actually knows. A fallback base keeps the
-  // composer sane before the first registrations/bot threads are created.
-  const liveContacts = conversations.length;
-  const liveOptIns = conversations.filter((c) => !c.optedOut).length;
+  // Audience counts are the real matching conversations, not a guessed
+  // percentage -- same segments the backend actually sends to
+  // (_resolve_broadcast_audience in routes/whatsapp.py). Every segment
+  // excludes opted-out contacts unconditionally: STOP is a real consent
+  // signal a broadcast has to respect regardless of which segment is
+  // picked, so "All contacts" and "All opted-in" mean the same thing here.
+  // "Nairobi artists" isn't offered: there's no geography field on a
+  // conversation, so there'd be nothing real to filter on.
+  const optedIn = useMemo(() => conversations.filter((c) => !c.optedOut), [conversations]);
 
-  const effectiveAudience = useMemo(() => {
-    if (audience === "All opted-in") return liveOptIns;
-    if (audience === "All contacts") return liveContacts;
-    if (audience === "Opted-in registrants") return Math.round(liveContacts * 0.25);
-    if (audience === "Alliance contacts") return Math.round(liveContacts * 0.16);
-    if (audience === "Nairobi artists") return Math.round(liveContacts * 0.3);
-    return liveOptIns;
-  }, [audience, liveContacts, liveOptIns]);
+  const audienceSize = useMemo(() => {
+    if (audience === "Opted-in registrants") {
+      return optedIn.filter((c) => c.intent === "registration").length;
+    }
+    if (audience === "Alliance contacts") {
+      return optedIn.filter((c) => c.intent === "alliance").length;
+    }
+    return optedIn.length; // "All opted-in" / "All contacts"
+  }, [audience, optedIn]);
 
-  const audienceSize = adjustForOptOuts({ audience, value: effectiveAudience }, waStats.optedOut);
+  // A contact who has only ever received messages from us, never replied --
+  // a real signal worth following up on, not a guessed share of contacts.
+  const freshCount = useMemo(
+    () => conversations.filter((c) => !(c.messages || []).some((m) => m.from === "them")).length,
+    [conversations]
+  );
 
   const stats = useMemo(() => {
     const totalSent = history.reduce((s, h) => s + h.recipients, 0);
-    const delivered = history.filter((h) => h.status === "Delivered").length;
+    const delivered = history.filter((h) => h.status === "Delivered" || h.status === "Sent").length;
     const scheduled = history.filter((h) => h.status === "Scheduled").length;
-    return { count: history.length, totalSent, delivered, scheduled, fresh: Math.round(liveContacts * 0.38) };
-  }, [history, liveContacts]);
+    return { count: history.length, totalSent, delivered, scheduled, fresh: freshCount };
+  }, [history, freshCount]);
 
-  function send() {
+  async function send() {
     if (!message.trim()) return;
     setSending(true);
-    setTimeout(() => {
-      const record = {
-        id: Date.now(),
-        title: message.trim().slice(0, 40) + (message.trim().length > 40 ? "…" : ""),
+    try {
+      const trimmed = message.trim();
+      const { record } = await addWhatsAppBroadcast({
+        title: trimmed.slice(0, 40) + (trimmed.length > 40 ? "…" : ""),
+        message: trimmed,
         audience,
         channel: "WhatsApp",
-        recipients: audienceSize,
         date: when === "now" ? "Just now" : `Scheduled ${scheduleDate || ""}`.trim(),
         status: when === "now" ? "Sent" : "Scheduled",
-      };
-      addWhatsAppBroadcast(record);
+      });
       setHistory((prev) => [record, ...prev]);
       setMessage("");
+      // A "Sent" broadcast just posted real messages -- opted-out/reply
+      // state on the affected conversations may have changed.
+      fetchWhatsAppInbox().then(({ rows }) => setConversations(Array.isArray(rows) ? rows : []));
+    } finally {
       setSending(false);
-    }, 800);
+    }
   }
 
-  const audiences = ["All opted-in", "All contacts", "Opted-in registrants", "Alliance contacts", "Nairobi artists"];
+  const audiences = ["All opted-in", "All contacts", "Opted-in registrants", "Alliance contacts"];
 
   return (
     <div style={{ background: COLORS.bg, minHeight: "100%" }} className="p-6 font-sans rounded-lg">

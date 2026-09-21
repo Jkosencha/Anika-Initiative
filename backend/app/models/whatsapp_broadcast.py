@@ -10,6 +10,7 @@ class WhatsAppBroadcast(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=False, default="")
     audience = db.Column(db.String(120), nullable=False, default="All opted-in")
     channel = db.Column(db.String(40), nullable=False, default="WhatsApp")
     recipients = db.Column(db.Integer, nullable=False, default=0)
@@ -22,6 +23,7 @@ class WhatsAppBroadcast(db.Model):
         return {
             "id": self.id,
             "title": self.title,
+            "message": self.message,
             "audience": self.audience,
             "channel": self.channel,
             "recipients": self.recipients,

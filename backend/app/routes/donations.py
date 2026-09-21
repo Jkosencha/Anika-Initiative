@@ -47,12 +47,11 @@ def _send_admin_donation_notification(donation):
 
 
 def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
-    """Sends a WhatsApp receipt (placeholder)."""
-    phone = phone.lstrip('+').strip()
-    if phone.startswith('0'):
-        phone = '254' + phone[1:]
-    elif not phone.startswith('254'):
-        phone = '254' + phone
+    """Sends a WhatsApp donation receipt and logs it to the shared inbox --
+    same pattern as anika_assistant.send_registration_confirmation(), so the
+    thread shows up in the dashboard's WhatsApp Inbox either way."""
+    from app.models.whatsapp_conversation import WhatsAppConversation
+    from app.services import whatsapp_cloud
 
     message = (
         f"Thank you, {donor_name}!\n"
@@ -60,9 +59,28 @@ def send_whatsapp_receipt(phone, amount, currency, reference, donor_name):
         f"Reference: {reference}\n"
         "Your support keeps the rooms open."
     )
-    # will be replaced with actual WhatsApp API call (Twilio, etc.)
-    print(f" WhatsApp receipt to {phone}: {message}")
-    logger.info(f"WhatsApp receipt sent to {phone} for reference {reference}")
+
+    conversation = WhatsAppConversation.query.filter_by(phone=phone).first()
+    bot_message = {"from": "me", "text": message, "time": "now"}
+    if conversation:
+        conversation.messages = (conversation.messages or []) + [bot_message]
+        conversation.preview = message
+    else:
+        conversation = WhatsAppConversation(
+            name=donor_name,
+            phone=phone,
+            intent="donation",
+            unread=0,
+            preview=message,
+            messages=[bot_message],
+        )
+        db.session.add(conversation)
+    db.session.commit()
+
+    result = whatsapp_cloud.send_text_message(phone, message)
+    logger.info(
+        "WhatsApp receipt %s to %s for reference %s", result["status"], phone, reference
+    )
 
 
 def _generate_reference() -> str:

@@ -133,7 +133,24 @@ def update_conversation(conv_id):
             return jsonify({"error": f"Invalid intent. Must be one of {INTENTS}"}), 400
         conv.intent = data["intent"]
     if "messages" in data:
-        conv.messages = data["messages"]
+        old_messages = conv.messages or []
+        new_messages = data["messages"]
+        conv.messages = new_messages
+        # The inbox always PATCHes the full array with the new reply
+        # appended -- whatever's new since the stored version and marked
+        # "from: me" is a real admin reply, so send it for real instead of
+        # only storing it.
+        if isinstance(new_messages, list) and len(new_messages) > len(old_messages):
+            from app.services import whatsapp_cloud
+
+            for msg in new_messages[len(old_messages):]:
+                if isinstance(msg, dict) and msg.get("from") == "me" and msg.get("text"):
+                    try:
+                        whatsapp_cloud.send_text_message(conv.phone, msg["text"])
+                    except Exception:
+                        current_app.logger.exception(
+                            "Failed to send WhatsApp reply to %s", conv.phone
+                        )
     if "preview" in data:
         conv.preview = data["preview"]
     if "unread" in data:
@@ -147,6 +164,26 @@ def update_conversation(conv_id):
 
 
 # ---- Broadcasts ----------------------------------------------------------
+
+def _resolve_broadcast_audience(audience_name):
+    """Real recipient list for a named audience -- no more guessed
+    percentages. Every branch excludes opted-out contacts unconditionally:
+    STOP is a real consent signal, and a broadcast is exactly the kind of
+    non-transactional message opting out is meant to stop, regardless of
+    which segment was picked. "Alliance contacts" and "Opted-in registrants"
+    map to the conversation's actual `intent`; there's no geography field on
+    a conversation, so an audience like "Nairobi artists" isn't offered here
+    since there'd be nothing real to filter on."""
+    query = WhatsAppConversation.query.filter_by(opted_out=False)
+    if audience_name == "Opted-in registrants":
+        return query.filter_by(intent="registration").all()
+    if audience_name == "Alliance contacts":
+        return query.filter_by(intent="alliance").all()
+    # "All opted-in" / "All contacts" (both mean the same thing once
+    # opted-out is excluded -- there's no second real field left to tell
+    # them apart)
+    return query.all()
+
 
 @whatsapp_bp.get("/api/whatsapp-broadcasts")
 @require_permission("whatsapp_broadcast")
@@ -182,39 +219,70 @@ def create_broadcast():
         required: true
         schema:
           type: object
-          required: [title]
+          required: [message]
           properties:
-            title: {type: string}
+            title: {type: string, description: "Defaults to the first 40 characters of message"}
+            message: {type: string}
             audience: {type: string}
             channel: {type: string}
-            recipients: {type: integer}
             date: {type: string}
             status: {type: string, enum: [Sent, Delivered, Scheduled, Failed]}
     responses:
       201:
-        description: Broadcast created
+        description: Broadcast created (and sent, if status is "Sent")
       400:
         description: Validation error
     """
     data = request.get_json(silent=True) or {}
-    title = (data.get("title") or "").strip()
-    if not title:
-        return jsonify({"error": "title is required"}), 400
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+    title = (data.get("title") or "").strip() or message[:40]
     status = data.get("status", "Sent")
     if status not in BROADCAST_STATUSES:
         return jsonify(
             {"error": f"Invalid status. Must be one of {BROADCAST_STATUSES}"}
         ), 400
+
+    audience_name = data.get("audience", "All opted-in")
+    recipients = _resolve_broadcast_audience(audience_name)
+
     b = WhatsAppBroadcast(
         title=title,
-        audience=data.get("audience", "All opted-in"),
+        message=message,
+        audience=audience_name,
         channel=data.get("channel", "WhatsApp"),
-        recipients=int(data.get("recipients") or 0),
+        recipients=len(recipients),
         date=data.get("date"),
         status=status,
     )
     db.session.add(b)
     db.session.commit()
+
+    # "Scheduled" is recorded but not sent -- there's no job runner yet to
+    # fire it later (same gap as the assistant's reminder/feedback flows).
+    # Only "send now" actually sends.
+    if status == "Sent":
+        from app.services import whatsapp_cloud
+
+        bot_message = {"from": "me", "text": message, "time": "now"}
+        sent_count = 0
+        for conv in recipients:
+            try:
+                whatsapp_cloud.send_text_message(conv.phone, message)
+            except Exception:
+                current_app.logger.exception(
+                    "Broadcast %s failed to send to %s", b.id, conv.phone
+                )
+                continue
+            sent_count += 1
+            conv.messages = (conv.messages or []) + [bot_message]
+            conv.preview = message
+        db.session.commit()
+        current_app.logger.info(
+            "Broadcast %s sent to %s/%s recipients", b.id, sent_count, len(recipients)
+        )
+
     return jsonify(b.to_dict()), 201
 
 
