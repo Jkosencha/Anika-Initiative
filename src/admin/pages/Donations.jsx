@@ -188,7 +188,7 @@ function AddDonationModal({ onClose, onAdd, colors, saving }) {
 }
 
 function formatLocalDate(utcString) {
-  if (!utcString) return "—";
+  if (!utcString) return "-";
   return new Date(utcString).toLocaleString('en-KE', {
     timeZone: 'Africa/Nairobi',
     year: 'numeric',

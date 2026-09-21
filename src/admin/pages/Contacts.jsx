@@ -228,13 +228,13 @@ function ViewContactModal({ contact, onClose, colors }) {
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Email:
               </span>
-              <div style={{ color: colors.text }}>{contact.email || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.email || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Phone:
               </span>
-              <div style={{ color: colors.text }}>{contact.phone || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.phone || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
@@ -246,13 +246,13 @@ function ViewContactModal({ contact, onClose, colors }) {
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Subject:
               </span>
-              <div style={{ color: colors.text }}>{contact.subject || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.subject || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Country:
               </span>
-              <div style={{ color: colors.text }}>{contact.country || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.country || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
@@ -271,7 +271,7 @@ function ViewContactModal({ contact, onClose, colors }) {
                 Message / Interest:
               </span>
               <div style={{ color: colors.text }} className="whitespace-pre-wrap">
-                {contact.interest || "—"}
+                {contact.interest || "-"}
               </div>
             </div>
           </div>
@@ -374,6 +374,7 @@ export default function Contacts() {
 
   const [tab, setTab] = useState("All");
   const [query, setQuery] = useState("");
+  const [countryFilter, setCountryFilter] = useState("All");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewTarget, setViewTarget] = useState(null);
 
@@ -424,9 +425,15 @@ export default function Contacts() {
     }
   };
 
+  const countries = useMemo(
+    () => Array.from(new Set(contacts.map((c) => c.country).filter(Boolean))).sort(),
+    [contacts]
+  );
+
   const filtered = useMemo(() => {
     let rows = contacts;
     if (tab !== "All") rows = rows.filter((c) => c.type === TAB_TO_TYPE[tab]);
+    if (countryFilter !== "All") rows = rows.filter((c) => c.country === countryFilter);
     if (query.trim()) {
       const q = query.toLowerCase();
       rows = rows.filter(
@@ -439,7 +446,7 @@ export default function Contacts() {
       );
     }
     return rows;
-  }, [contacts, tab, query]);
+  }, [contacts, tab, countryFilter, query]);
 
   const handleExport = () => {
     if (filtered.length === 0) return;
@@ -447,7 +454,7 @@ export default function Contacts() {
   };
 
   const truncate = (text, maxLen = 50) => {
-    if (!text) return '—';
+    if (!text) return '-';
     return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
   };
 
@@ -500,22 +507,41 @@ export default function Contacts() {
             </Pill>
           ))}
         </div>
-        <div
-          className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{
-            background: COLORS.panel,
-            border: `1px solid ${COLORS.border}`,
-            minWidth: 220,
-          }}
-        >
-          <Search size={15} color={COLORS.muted} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search contacts..."
-            className="search-input text-sm outline-none flex-1 bg-transparent"
-            style={{ color: COLORS.text }}
-          />
+        <div className="flex items-center gap-2 flex-wrap">
+          <select
+            value={countryFilter}
+            onChange={(e) => setCountryFilter(e.target.value)}
+            className="text-sm outline-none px-3 py-2 rounded-lg"
+            style={{
+              background: COLORS.panel,
+              border: `1px solid ${COLORS.border}`,
+              color: COLORS.text,
+            }}
+          >
+            <option value="All">All countries</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <div
+            className="flex items-center gap-2 px-3 py-2 rounded-lg"
+            style={{
+              background: COLORS.panel,
+              border: `1px solid ${COLORS.border}`,
+              minWidth: 220,
+            }}
+          >
+            <Search size={15} color={COLORS.muted} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search contacts..."
+              className="search-input text-sm outline-none flex-1 bg-transparent"
+              style={{ color: COLORS.text }}
+            />
+          </div>
         </div>
       </div>
 
@@ -601,7 +627,7 @@ export default function Contacts() {
                 {truncate(c.interest, 50)}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
-                {c.country || "—"}
+                {c.country || "-"}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {c.lastEngagement}

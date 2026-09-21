@@ -368,7 +368,7 @@ function StoryEditor({ story, onCancel, onSave }) {
       setSaveState('Saved')
     } catch (error) {
       console.error('Failed to save draft:', error)
-      setSaveState('Save failed — try again')
+      setSaveState('Save failed. Try again')
     } finally {
       setIsSaving(false)
     }
@@ -383,7 +383,7 @@ function StoryEditor({ story, onCancel, onSave }) {
       setSaveState('Saved')
     } catch (error) {
       console.error('Failed to publish story:', error)
-      setSaveState('Save failed — try again')
+      setSaveState('Save failed. Try again')
     } finally {
       setIsSaving(false)
     }
@@ -415,7 +415,7 @@ function StoryEditor({ story, onCancel, onSave }) {
         <div className="flex flex-wrap items-center gap-2">
           <span
             className="text-xs font-medium"
-            style={{ color: saveState === 'Save failed — try again' ? '#b23b3b' : COLORS.muted }}
+            style={{ color: saveState === 'Save failed. Try again' ? '#b23b3b' : COLORS.muted }}
           >
             {saveState}
           </span>
@@ -455,7 +455,7 @@ function StoryEditor({ story, onCancel, onSave }) {
       {/* Errors */}
       {(errors.pillar || errors.thumbnail) && (
         <div className="rounded-xl border border-coral/30 bg-coral/5 px-4 py-3 text-sm text-coral mb-6">
-          Can't save yet — {[errors.pillar, errors.thumbnail].filter(Boolean).join(' ')}
+          Can't save yet: {[errors.pillar, errors.thumbnail].filter(Boolean).join(' ')}
         </div>
       )}
 
@@ -700,7 +700,7 @@ function StoryEditor({ story, onCancel, onSave }) {
               </p>
               <p style={{ color: COLORS.muted }}>
                 <span className="mr-1.5 rounded bg-coral/15 px-1.5 py-0.5 font-semibold uppercase text-coral">Avoid</span>
-                Pity or saviour language — say <em>participant / survivor</em>, not <em>beneficiary / victim</em>.
+                Pity or saviour language: say <em>participant / survivor</em>, not <em>beneficiary / victim</em>.
               </p>
             </div>
 

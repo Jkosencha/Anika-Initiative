@@ -8,6 +8,7 @@ import {
   Users,
   Mic,
   CreditCard,
+  HeartPulse,
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from "../components/Reveal";
@@ -63,7 +64,7 @@ const DonationPage = () => {
   const [donationAmount, setDonationAmount] = useState(500);
   const [customAmount, setCustomAmount] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  // WhatsApp checkbox removed
+  const [waOptIn, setWaOptIn] = useState(false);
   const [donationMethod, setDonationMethod] = useState("mpesa");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -146,7 +147,7 @@ const DonationPage = () => {
       method: donationMethod,
       currency: currency,
       phone: phoneToSend,
-      // send_whatsapp_receipt omitted (checkbox removed)
+      send_whatsapp_receipt: donationMethod === "mpesa" && Boolean(phoneToSend) && waOptIn,
     });
 
     toast.dismiss(loadingToastId);
@@ -191,7 +192,7 @@ const DonationPage = () => {
         <div>
           <p className="font-semibold">Redirecting you to Paystack…</p>
           <p className="text-sm">
-            Reference <span className="font-mono">{record.reference}</span> — complete{" "}
+            Reference <span className="font-mono">{record.reference}</span>. Complete{" "}
             {donationMethod === "mpesa" ? "the STK push on your phone" : "your card details"} on
             the next screen.
           </p>
@@ -385,7 +386,15 @@ const DonationPage = () => {
                   <p className="text-xs text-gray-400 mt-1">
                     Enter digits only (max 12)
                   </p>
-                  {/* WhatsApp checkbox removed */}
+                  <label className="mt-3 flex items-start gap-2.5 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={waOptIn}
+                      onChange={(e) => setWaOptIn(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#E6A15E] focus:ring-[#E6A15E]/40"
+                    />
+                    <span>Send my donation receipt on WhatsApp too</span>
+                  </label>
                 </div>
               )}
 
@@ -440,7 +449,7 @@ const DonationPage = () => {
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 icon: Mic,
@@ -456,6 +465,11 @@ const DonationPage = () => {
                 icon: Heart,
                 title: "Safe Spaces",
                 desc: "Therapy workshops and forums where hard conversations finally happen.",
+              },
+              {
+                icon: HeartPulse,
+                title: "Wellness & Healing",
+                desc: "Psychosocial support and trauma-informed care for artists and survivors alike.",
               },
             ].map((story, index) => (
               <Reveal key={story.title} delay={index * 150}>

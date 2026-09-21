@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models.event import Event
 from app.models.registration import REGISTRATION_STATUSES, Registration
 from app.models.whatsapp_conversation import WhatsAppConversation
+from app.utils.contact_utils import create_contact_from_data
 from app.utils.decorators import require_permission
 from app.utils.phone import normalize_phone
 
@@ -142,6 +143,20 @@ def create_registration():
     current_app.logger.info(
         "Registration created: id=%s event=%r", registration.id, event_title
     )
+
+    # Contact.email is required, same constraint donations/applications
+    # already work around -- only fan out when one was actually given.
+    if registration.email:
+        create_contact_from_data(
+            name=registration.name,
+            email=registration.email,
+            phone=registration.phone,
+            message=f"Registered for '{event_title}'",
+            source="registration",
+            subject=None,
+            country=None,
+            status="new",
+        )
 
     # Auto-send the WhatsApp confirmation (Anika Assistant outbound flow).
     try:

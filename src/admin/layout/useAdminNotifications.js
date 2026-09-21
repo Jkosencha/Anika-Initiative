@@ -67,7 +67,7 @@ function applicationText(a) {
 // no separate "last message at" field is available from the API.
 function inboxNotificationText(c) {
   if (c.intent === 'escalation' && !c.resolved) {
-    return `AI escalated a conversation with ${c.name ?? c.phone ?? 'a contact'} — needs a human reply`
+    return `AI escalated a conversation with ${c.name ?? c.phone ?? 'a contact'}: needs a human reply`
   }
   return `New WhatsApp message from ${c.name ?? c.phone ?? 'a contact'}`
 }

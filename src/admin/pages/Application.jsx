@@ -472,7 +472,7 @@ export default function Applications() {
 
         {!loading && loadError && (
           <div className="px-5 py-10 text-center text-sm" style={{ color: "#b23b3b" }}>
-            {loadError} — is the backend running on localhost:5000?
+            {loadError}. Is the backend running on localhost:5000?
           </div>
         )}
 

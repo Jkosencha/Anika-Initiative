@@ -10,7 +10,7 @@ function ComingSoon({ title }) {
     >
       <h1 className="text-2xl font-bold">{title}</h1>
       <p className="mt-2 max-w-sm text-sm" style={{ color: COLORS.muted }}>
-        This section is under construction — check back soon.
+        This section is under construction. Check back soon.
       </p>
     </div>
   )

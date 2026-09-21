@@ -12,7 +12,7 @@ export default function Alliance({ onAirItOut }) {
           />
           <p className="mt-4 max-w-xl font-body text-gray-700">
             The Alliance connects artists, cultural organisations, enablers, and institutions
-            across the continent — trading craft, amplifying voices, and co-producing work that
+            across the continent, trading craft, amplifying voices, and co-producing work that
             crosses borders.
           </p>
           <ul className="mt-6 space-y-3 font-body text-sm text-gray-800">
@@ -42,7 +42,7 @@ export default function Alliance({ onAirItOut }) {
           </h3>
           <p className="mt-3 font-body text-sm text-white/80">
             Message our ANIKA assistant with the word{' '}
-            <span className="font-extrabold text-gold">ALLIANCE</span> to begin your application —
+            <span className="font-extrabold text-gold">ALLIANCE</span> to begin your application,
             or fill in your details here and we’ll reach out.
           </p>
           <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
