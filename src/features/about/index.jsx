@@ -9,6 +9,7 @@ import Objectives from './components/Objectives'
 import HistoryTimeline from './components/HistoryTimeline'
 import Governance from './components/Governance'
 import CoreValues from './components/CoreValues'
+import ChangePathway from './components/ChangePathway'
 import Partners from './components/Partners'
 import JoinCTA from './components/JoinCTA'
 
@@ -63,6 +64,10 @@ export default function AboutSection() {
       </Reveal>
 
       <Reveal>
+        <ChangePathway />
+      </Reveal>
+
+      <Reveal>
         <Partners />
       </Reveal>
 
@@ -83,6 +88,7 @@ export {
   HistoryTimeline,
   Governance,
   CoreValues,
+  ChangePathway,
   Partners,
   JoinCTA,
 }
