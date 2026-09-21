@@ -696,7 +696,9 @@ const GetInvolved = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`mt-6 w-full rounded-lg px-6 py-3.5 font-bold text-white transition-all flex items-center justify-center gap-2 ${currentColors.button} focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentColors.ring} disabled:opacity-70 disabled:cursor-not-allowed`}
+                className={`mt-6 w-full rounded-lg px-6 py-3.5 font-bold uppercase tracking-wide text-white transition-all flex items-center justify-center gap-2 ${
+                  isNewsletter ? 'bg-ink hover:opacity-90' : currentColors.button
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentColors.ring} disabled:opacity-70 disabled:cursor-not-allowed`}
               >
                 {isSubmitting ? (
                   <>
@@ -720,11 +722,14 @@ const GetInvolved = () => {
           </Reveal>
 
           {/* --- UNSUBSCRIBE SECTION --- */}
-          <div className="mt-12 text-center">
+          <div className="mt-12">
             <Reveal delay={300}>
-              <div className="max-w-md mx-auto border-t border-gray-200 pt-8">
-                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                  Already subscribed and want to opt out?
+              <div className="max-w-md mx-auto rounded-xl border border-ink/10 bg-white p-8 text-center">
+                <p className="font-body text-xs font-semibold uppercase tracking-[0.25em] text-coral">
+                  Opting Out
+                </p>
+                <h3 className="mt-2 font-display text-xl uppercase text-ink">
+                  Already subscribed?
                 </h3>
                 <p className="text-xs text-gray-400 mt-1 mb-4">
                   Enter your email below and we'll remove you from our list.
@@ -740,9 +745,9 @@ const GetInvolved = () => {
                   <button
                     onClick={handleUnsubscribe}
                     disabled={isUnsubscribing}
-                    className="rounded-lg bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 text-sm font-semibold transition-colors disabled:opacity-60"
+                    className="rounded-lg bg-ink hover:opacity-90 text-white px-6 py-2 text-sm font-bold uppercase tracking-wide transition-colors disabled:opacity-60"
                   >
-                    {isUnsubscribing ? "Unsubscribing..." : "Unsubscribe"}
+                    {isUnsubscribing ? "Unsubscribing…" : "Unsubscribe"}
                   </button>
                 </div>
               </div>
