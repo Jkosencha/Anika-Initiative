@@ -45,9 +45,6 @@ function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-12">
         <NavLink to="/" className="flex items-center gap-2">
           <img src="/anika-logo.png" alt="Anika Initiative" className="h-15 w-auto object-contain" />
-          <span className={`font-display text-lg uppercase tracking-wide transition-colors ${transparent ? 'text-cream' : 'text-ink'}`}>
-            Anika
-          </span>
         </NavLink>
 
         <ul className="hidden items-center gap-6 md:flex">
