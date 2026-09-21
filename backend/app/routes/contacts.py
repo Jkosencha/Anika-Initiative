@@ -110,6 +110,9 @@ def list_contacts():
         in: query
         type: string
         enum: [new, contacted, converted]
+      - name: country
+        in: query
+        type: string
     responses:
       200:
         description: Paginated list
@@ -133,12 +136,15 @@ def list_contacts():
     per_page = min(request.args.get('per_page', 20, type=int), 100)
     source = request.args.get('source')
     status = request.args.get('status')
+    country = request.args.get('country')
 
     query = Contact.query
     if source:
         query = query.filter_by(source=source)
     if status:
         query = query.filter_by(status=status)
+    if country:
+        query = query.filter_by(country=country)
 
     query = query.order_by(Contact.created_at.desc())
     paginated = query.paginate(page=page, per_page=per_page, error_out=False)
