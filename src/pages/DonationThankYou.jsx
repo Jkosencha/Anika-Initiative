@@ -40,12 +40,12 @@ export default function DonationThankYou() {
             { duration: 4000, icon: <CheckCircle className="w-5 h-5 text-green-500" /> }
           );
         } else if (data.status === "Failed") {
-          toast.error("That payment didn't go through — feel free to try again.", {
+          toast.error("That payment didn't go through. Feel free to try again.", {
             icon: <XCircle className="w-5 h-5 text-red-500" />,
           });
         } else {
           toast(
-            "We're still waiting for confirmation from Paystack — this can take a minute for M-Pesa.",
+            "We're still waiting for confirmation from Paystack. This can take a minute for M-Pesa.",
             { icon: <Clock className="w-5 h-5 text-amber-500" /> }
           );
         }

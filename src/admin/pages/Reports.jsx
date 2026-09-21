@@ -41,7 +41,7 @@ function describeFrequency(schedule) {
     case 'Quarterly':
       return `Quarterly, day ${schedule.dayOfMonth} of first month`
     case 'Annually':
-      return `Annually, ${schedule.specificDate || '—'}`
+      return `Annually, ${schedule.specificDate || '-'}`
     default:
       return schedule.frequency
   }

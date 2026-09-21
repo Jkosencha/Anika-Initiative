@@ -153,7 +153,7 @@ export default function EventsList() {
         open={!!successModal}
         onClose={() => setSuccessModal(null)}
         title="Registration confirmed!"
-        message={`Thanks, ${successModal?.name || 'friend'} — details for ${successModal?.eventTitle || 'the event'} are on their way via WhatsApp.`}
+        message={`Thanks, ${successModal?.name || 'friend'}. Details for ${successModal?.eventTitle || 'the event'} are on their way via WhatsApp.`}
       />
 
       {/* 1. HERO SECTION */}

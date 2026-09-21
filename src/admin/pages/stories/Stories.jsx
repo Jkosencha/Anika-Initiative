@@ -321,7 +321,7 @@ function Stories() {
                 )}
               </div>
               <div className="text-sm" style={{ color: COLORS.muted }}>
-                {story.date ? new Date(story.date).toLocaleDateString() : '—'}
+                {story.date ? new Date(story.date).toLocaleDateString() : '-'}
               </div>
               <div className="text-sm" style={{ color: COLORS.muted }}>
                 {new Date(story.updated).toLocaleDateString()}
@@ -417,7 +417,7 @@ function Stories() {
                     <div>
                       <p className="text-xs" style={{ color: COLORS.muted }}>Published Date</p>
                       <p className="font-medium" style={{ color: COLORS.text }}>
-                        {story.date ? new Date(story.date).toLocaleDateString() : '—'}
+                        {story.date ? new Date(story.date).toLocaleDateString() : '-'}
                       </p>
                     </div>
                     <div className="col-span-2">

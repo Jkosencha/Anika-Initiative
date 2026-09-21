@@ -228,13 +228,13 @@ function ViewContactModal({ contact, onClose, colors }) {
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Email:
               </span>
-              <div style={{ color: colors.text }}>{contact.email || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.email || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Phone:
               </span>
-              <div style={{ color: colors.text }}>{contact.phone || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.phone || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
@@ -246,13 +246,13 @@ function ViewContactModal({ contact, onClose, colors }) {
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Subject:
               </span>
-              <div style={{ color: colors.text }}>{contact.subject || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.subject || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
                 Country:
               </span>
-              <div style={{ color: colors.text }}>{contact.country || "—"}</div>
+              <div style={{ color: colors.text }}>{contact.country || "-"}</div>
             </div>
             <div>
               <span className="font-semibold" style={{ color: colors.muted }}>
@@ -271,7 +271,7 @@ function ViewContactModal({ contact, onClose, colors }) {
                 Message / Interest:
               </span>
               <div style={{ color: colors.text }} className="whitespace-pre-wrap">
-                {contact.interest || "—"}
+                {contact.interest || "-"}
               </div>
             </div>
           </div>
@@ -454,7 +454,7 @@ export default function Contacts() {
   };
 
   const truncate = (text, maxLen = 50) => {
-    if (!text) return '—';
+    if (!text) return '-';
     return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
   };
 
@@ -627,7 +627,7 @@ export default function Contacts() {
                 {truncate(c.interest, 50)}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
-                {c.country || "—"}
+                {c.country || "-"}
               </div>
               <div className="text-sm" style={{ color: COLORS.text }}>
                 {c.lastEngagement}
