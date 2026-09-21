@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import Counter from '../components/Counter'
+import BePartOfTheChange from '../components/BePartOfTheChange'
+import NewsletterSignup from '../components/NewsletterSignup'
 import { whatsappUrl } from '../lib/whatsapp'
 import { fetchEvents, fetchImpactStats } from '../lib/api'
 import { storiesStore } from '../data/storiesStore'
@@ -262,7 +264,7 @@ function Home() {
           {eventsLoading ? (
             <p className="mt-10 font-body text-sm text-cream/60">Loading upcoming events…</p>
           ) : events.length === 0 ? (
-            <p className="mt-10 font-body text-sm text-cream/60">No upcoming events scheduled right now — check back soon.</p>
+            <p className="mt-10 font-body text-sm text-cream/60">No upcoming events scheduled right now. Check back soon.</p>
           ) : (
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
               {events.map((event, i) => (
@@ -294,7 +296,7 @@ function Home() {
         {storiesLoading ? (
           <p className="mt-10 font-body text-sm text-ink/60">Loading stories…</p>
         ) : stories.length === 0 ? (
-          <p className="mt-10 font-body text-sm text-ink/60">New stories are on their way — check back soon.</p>
+          <p className="mt-10 font-body text-sm text-ink/60">New stories are on their way. Check back soon.</p>
         ) : (
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {stories.map((story, i) => (
@@ -319,6 +321,8 @@ function Home() {
           </div>
         )}
       </section>
+
+      <BePartOfTheChange />
 
       <section className="bg-anika-blue text-cream">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 lg:grid-cols-2 lg:gap-20">
@@ -356,6 +360,12 @@ function Home() {
           </Reveal>
         </div>
       </section>
+
+      <NewsletterSignup
+        eyebrow="Stay Connected"
+        heading="Never miss a story."
+        body="Get event invites, new stories and open calls for artists straight to your inbox."
+      />
     </>
   )
 }
