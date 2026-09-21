@@ -150,7 +150,7 @@ const GetInvolved = () => {
     subject: "artist",
     message: "",
   });
-  // const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
   const [selectedRole, setSelectedRole] = useState("artist");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -325,7 +325,7 @@ const GetInvolved = () => {
         country: formData.country || undefined,
         subject: formData.subject || currentRole.subject,
         message: formData.message || undefined,
-        // whatsapp_opt_in: whatsappOptIn,
+        whatsapp_opt_in: whatsappOptIn,
       });
 
       toast.dismiss(loadingToast);
@@ -672,7 +672,6 @@ const GetInvolved = () => {
                 )}
               </div>
 
-              {/* 
               <label
                 htmlFor="whatsappOptIn"
                 className="mt-6 flex items-start gap-3 rounded-lg border border-gray-200 bg-white/70 p-4 cursor-pointer"
@@ -693,7 +692,6 @@ const GetInvolved = () => {
                   </span>
                 </span>
               </label>
-              */}
 
               <button
                 type="submit"
