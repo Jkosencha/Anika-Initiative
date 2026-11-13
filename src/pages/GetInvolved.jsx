@@ -10,7 +10,6 @@ import {
   Mail,
   MessageCircle,
   CheckCircle,
-  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import Reveal from '../components/Reveal';

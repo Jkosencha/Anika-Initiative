@@ -135,7 +135,7 @@ function Tile({ item, onCaptionChange, onOpen, colors, onDeleteClick }) {
       )}
 
       <div
-        className="absolute inset-0 flex flex-col justify-between p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute inset-0 flex flex-col justify-between p-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity"
         style={{
           background: "linear-gradient(180deg, rgba(0,0,0,0.35), transparent 30%, transparent 70%, rgba(0,0,0,0.45))",
         }}

@@ -53,9 +53,9 @@ class Config:
     BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 
     # Custom emails
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'mumod758@gmail.com')
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'anika.silencekills@gmail.com')
     ORG_NOTIFICATION_EMAIL = os.environ.get('ORG_NOTIFICATION_EMAIL', ADMIN_EMAIL)
-    CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'mumod758@gmail.com')
+    CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'anika.silencekills@gmail.com')
 
     CORS_ORIGINS = [
         o.strip()
