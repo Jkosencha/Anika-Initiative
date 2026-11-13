@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { accentBg } from '../../utils/accentClasses'
-import { ArrowRight } from 'lucide-react';
 
 export default function ProgramCard({ program }) {
   return (

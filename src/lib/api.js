@@ -149,7 +149,7 @@ async function request(method, path, body, timeoutMs = 15000) {  // <-- increase
     try {
       const errorData = await res.json();
       if (errorData?.error) errorMsg = errorData.error;
-    } catch (_) { /* ignore */ }
+    } catch { /* ignore */ }
     console.error(`[DEBUG] API error: ${errorMsg}`);
     throw new Error(errorMsg);
   }
