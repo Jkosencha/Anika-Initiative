@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from "react-router-dom";
 import { useState } from "react"
 import { apiRequest } from '../utils/api';
@@ -16,7 +15,7 @@ export default function ForgotPassword() {
         method: 'POST',
         body: { email },
       });
-    } catch (err) {
+    } catch {
       // Network/server errors aside, the backend always returns a generic
       // 200 for valid requests — we still show the same message either way
       // so we don't leak anything client-side either.

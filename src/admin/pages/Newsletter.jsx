@@ -141,7 +141,7 @@ export default function Newsletter() {
         try {
           const data = await response.json();
           errMsg = data.error || data.message || errMsg;
-        } catch {}
+        } catch { /* response wasn't JSON -- keep the default message */ }
         throw new Error(errMsg);
       }
       const data = await response.json();
@@ -183,7 +183,7 @@ export default function Newsletter() {
         try {
           const data = await response.json();
           errMsg = data.error || data.message || errMsg;
-        } catch {}
+        } catch { /* response wasn't JSON -- keep the default message */ }
         throw new Error(errMsg);
       }
       const data = await response.json();
@@ -212,7 +212,7 @@ export default function Newsletter() {
         try {
           const data = await response.json();
           errMsg = data.error || data.message || errMsg;
-        } catch {}
+        } catch { /* response wasn't JSON -- keep the default message */ }
         throw new Error(errMsg);
       }
       toast.success("Subscriber deactivated.");

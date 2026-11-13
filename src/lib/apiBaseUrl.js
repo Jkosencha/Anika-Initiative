@@ -5,7 +5,7 @@
 // custom variable Cloudflare has to pass through), so production builds fall
 // back to the real Render backend instead of a relative/same-origin path,
 // which has no /api routes on the Workers static-asset domain.
-export const RENDER_BACKEND_URL = 'https://anika-initiative.onrender.com';
+export const RENDER_BACKEND_URL = 'https://anika-initiative-0uz5.onrender.com';
 
 export function resolveApiBase(devDefault = '') {
   return (
