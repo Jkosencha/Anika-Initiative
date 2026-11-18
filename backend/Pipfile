@@ -15,6 +15,7 @@ marshmallow = "*"
 flask = "*"
 flask-mail = "*"
 gunicorn = "*"
+flask-migrate = "*"
 psycopg2-binary = "*"
 
 [dev-packages]
