@@ -1,6 +1,7 @@
 import logging
 import socket
 import threading
+from types import SimpleNamespace
 
 from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity
@@ -90,20 +91,27 @@ def create_team_member():
 
     app_obj = current_app._get_current_object()
 
+    # Read everything off the ORM object before the email thread starts:
+    # touching `user` from two threads at once makes them share one DB
+    # session, which Postgres rejects ("concurrent operations are not
+    # permitted") and turned successful invites into a 500.
+    response_body = user.to_dict()
+    invitee = SimpleNamespace(name=user.name, email=user.email, role=user.role)
+
     def _send_invite_email_async():
         with app_obj.app_context():
             previous_timeout = socket.getdefaulttimeout()
             socket.setdefaulttimeout(5)
             try:
-                send_team_invite_email(user, password)
+                send_team_invite_email(invitee, password)
             except Exception:
-                logger.exception("Failed to send invite email to %s", user.email)
+                logger.exception("Failed to send invite email to %s", invitee.email)
             finally:
                 socket.setdefaulttimeout(previous_timeout)
 
     threading.Thread(target=_send_invite_email_async, daemon=True).start()
 
-    return jsonify(user.to_dict()), 201
+    return jsonify(response_body), 201
 
 
 @team_bp.patch("/<int:user_id>")
